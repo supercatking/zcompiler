@@ -8,3 +8,10 @@ add_test(
           ${CMAKE_SOURCE_DIR}
 )
 
+add_test(
+  NAME parser
+  COMMAND ${BASH_PROGRAM}
+          ${CMAKE_CURRENT_SOURCE_DIR}/parser/run.sh
+          $<TARGET_FILE:zc>
+          ${CMAKE_SOURCE_DIR}
+)

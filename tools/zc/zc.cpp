@@ -1,4 +1,5 @@
 #include "zcompiler/Lexer/Lexer.h"
+#include "zcompiler/Parser/Parser.h"
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
@@ -80,14 +81,14 @@ int main(int argc, char **argv) {
   InitLLVM initLLVM(argc, argv);
 
   cl::SetVersionPrinter([](raw_ostream &os) {
-    os << "zcompiler phase2 toy compiler lexer\n";
+    os << "zcompiler phase3 toy compiler parser\n";
   });
 
   cl::ParseCommandLineOptions(
       argc, argv,
       "zcompiler toy compiler\n\n"
-      "Phase 2 provides the command-line driver and lexer. Parser and MLIR "
-      "emission are implemented in later phases.\n");
+      "Phase 3 provides the command-line driver, lexer, parser, and AST dump. "
+      "MLIR emission is implemented in later phases.\n");
 
   if (EmitTokens)
     Emit = EmitAction::Tokens;
@@ -131,15 +132,34 @@ int main(int argc, char **argv) {
     return 0;
   }
 
+  zc::Lexer lexer(inputBuffer.get()->getBuffer());
+  std::vector<zc::Token> tokens = lexer.lexAll();
+
   if (Emit == EmitAction::Tokens) {
-    zc::Lexer lexer(inputBuffer.get()->getBuffer());
-    std::vector<zc::Token> tokens = lexer.lexAll();
     zc::printTokens(tokens, output);
     if (lexer.hasError()) {
       for (const std::string &diagnostic : lexer.getDiagnostics())
         WithColor::error(errs(), "zc") << diagnostic << "\n";
       return 1;
     }
+    return 0;
+  }
+
+  if (lexer.hasError()) {
+    for (const std::string &diagnostic : lexer.getDiagnostics())
+      WithColor::error(errs(), "zc") << diagnostic << "\n";
+    return 1;
+  }
+
+  if (Emit == EmitAction::AST) {
+    zc::Parser parser(tokens);
+    std::unique_ptr<zc::ModuleAST> module = parser.parseModule();
+    if (parser.hasError()) {
+      for (const std::string &diagnostic : parser.getDiagnostics())
+        WithColor::error(errs(), "zc") << diagnostic << "\n";
+      return 1;
+    }
+    module->dump(output);
     return 0;
   }
 

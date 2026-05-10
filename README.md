@@ -99,3 +99,9 @@ Phase 2 adds the first lexer test:
 ```bash
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-tokens
 ```
+
+Phase 3 adds the first parser and AST dump:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-ast
+```
