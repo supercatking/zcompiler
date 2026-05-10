@@ -87,3 +87,15 @@ Run the Phase 1 driver:
 /home/zyz/zcomipler/build/tools/zc/zc --help
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
 ```
+
+## Run Tests
+
+```bash
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
+Phase 2 adds the first lexer test:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-tokens
+```

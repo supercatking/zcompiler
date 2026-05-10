@@ -18,5 +18,10 @@ list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 include(AddLLVM)
 include(AddMLIR)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_subdirectory(lib)
 add_subdirectory(tools/zc)
 
+enable_testing()
+add_subdirectory(test)

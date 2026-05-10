@@ -1,3 +1,5 @@
+#include "zcompiler/Lexer/Lexer.h"
+
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
 #include "llvm/Support/FileSystem.h"
@@ -78,13 +80,13 @@ int main(int argc, char **argv) {
   InitLLVM initLLVM(argc, argv);
 
   cl::SetVersionPrinter([](raw_ostream &os) {
-    os << "zcompiler phase1 toy compiler skeleton\n";
+    os << "zcompiler phase2 toy compiler lexer\n";
   });
 
   cl::ParseCommandLineOptions(
       argc, argv,
       "zcompiler toy compiler\n\n"
-      "Phase 1 provides the command-line driver only. Lexer, parser, and MLIR "
+      "Phase 2 provides the command-line driver and lexer. Parser and MLIR "
       "emission are implemented in later phases.\n");
 
   if (EmitTokens)
@@ -123,20 +125,25 @@ int main(int argc, char **argv) {
   }
   raw_ostream &output = outputFile ? *outputFile : outs();
 
-  output << "zcompiler phase1 driver\n";
-  output << "input: " << InputFilename << "\n";
-  output << "emit: " << getEmitName(Emit) << "\n";
-
-  if (!OutputFilename.empty())
-    output << "output: " << OutputFilename << "\n";
-
   if (Emit == EmitAction::None) {
     output << "no emit action selected; use --emit=tokens, --emit=ast, or "
                "--emit=mlir\n";
     return 0;
   }
 
-  output << "selected action is not implemented until the next compiler "
-             "phase\n";
+  if (Emit == EmitAction::Tokens) {
+    zc::Lexer lexer(inputBuffer.get()->getBuffer());
+    std::vector<zc::Token> tokens = lexer.lexAll();
+    zc::printTokens(tokens, output);
+    if (lexer.hasError()) {
+      for (const std::string &diagnostic : lexer.getDiagnostics())
+        WithColor::error(errs(), "zc") << diagnostic << "\n";
+      return 1;
+    }
+    return 0;
+  }
+
+  output << "selected action '" << getEmitName(Emit)
+         << "' is not implemented until the next compiler phase\n";
   return 0;
 }
