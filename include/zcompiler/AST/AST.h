@@ -14,13 +14,28 @@ enum class ExprKind {
   Integer,
   Variable,
   Binary,
+  Call,
 };
 
 enum class StmtKind {
   Let,
+  Assign,
   Return,
   If,
   While,
+};
+
+class ParameterAST final {
+public:
+  ParameterAST(std::string name, std::string type)
+      : name(std::move(name)), type(std::move(type)) {}
+  void dump(llvm::raw_ostream &os, unsigned indent) const;
+  const std::string &getName() const { return name; }
+  const std::string &getType() const { return type; }
+
+private:
+  std::string name;
+  std::string type;
 };
 
 class ExprAST {
@@ -69,6 +84,20 @@ private:
   std::unique_ptr<ExprAST> rhs;
 };
 
+class CallExprAST final : public ExprAST {
+public:
+  CallExprAST(std::string callee, std::vector<std::unique_ptr<ExprAST>> args)
+      : callee(std::move(callee)), args(std::move(args)) {}
+  ExprKind getKind() const override { return ExprKind::Call; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getCallee() const { return callee; }
+  const std::vector<std::unique_ptr<ExprAST>> &getArgs() const { return args; }
+
+private:
+  std::string callee;
+  std::vector<std::unique_ptr<ExprAST>> args;
+};
+
 class StmtAST {
 public:
   virtual ~StmtAST() = default;
@@ -81,6 +110,20 @@ public:
   LetStmtAST(std::string name, std::unique_ptr<ExprAST> value)
       : name(std::move(name)), value(std::move(value)) {}
   StmtKind getKind() const override { return StmtKind::Let; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getName() const { return name; }
+  const ExprAST &getValue() const { return *value; }
+
+private:
+  std::string name;
+  std::unique_ptr<ExprAST> value;
+};
+
+class AssignStmtAST final : public StmtAST {
+public:
+  AssignStmtAST(std::string name, std::unique_ptr<ExprAST> value)
+      : name(std::move(name)), value(std::move(value)) {}
+  StmtKind getKind() const override { return StmtKind::Assign; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
   const std::string &getName() const { return name; }
   const ExprAST &getValue() const { return *value; }
@@ -142,17 +185,20 @@ private:
 
 class FunctionAST final {
 public:
-  FunctionAST(std::string name, std::string returnType,
+  FunctionAST(std::string name, std::vector<ParameterAST> parameters,
+              std::string returnType,
               std::vector<std::unique_ptr<StmtAST>> body)
-      : name(std::move(name)), returnType(std::move(returnType)),
-        body(std::move(body)) {}
+      : name(std::move(name)), parameters(std::move(parameters)),
+        returnType(std::move(returnType)), body(std::move(body)) {}
   void dump(llvm::raw_ostream &os, unsigned indent) const;
   const std::string &getName() const { return name; }
+  const std::vector<ParameterAST> &getParameters() const { return parameters; }
   const std::string &getReturnType() const { return returnType; }
   const std::vector<std::unique_ptr<StmtAST>> &getBody() const { return body; }
 
 private:
   std::string name;
+  std::vector<ParameterAST> parameters;
   std::string returnType;
   std::vector<std::unique_ptr<StmtAST>> body;
 };

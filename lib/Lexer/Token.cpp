@@ -58,6 +58,10 @@ StringRef getTokenKindName(TokenKind kind) {
     return "l_brace";
   case TokenKind::RBrace:
     return "r_brace";
+  case TokenKind::Colon:
+    return "colon";
+  case TokenKind::Comma:
+    return "comma";
   case TokenKind::Semicolon:
     return "semicolon";
   }

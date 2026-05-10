@@ -13,6 +13,11 @@ void writeIndent(raw_ostream &os, unsigned indent) {
 
 } // namespace
 
+void ParameterAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "Param name=" << name << " type=" << type << '\n';
+}
+
 void IntegerExprAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "IntegerExpr value=" << value << '\n';
@@ -30,9 +35,22 @@ void BinaryExprAST::dump(raw_ostream &os, unsigned indent) const {
   rhs->dump(os, indent + 1);
 }
 
+void CallExprAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "CallExpr callee=" << callee << '\n';
+  for (const auto &arg : args)
+    arg->dump(os, indent + 1);
+}
+
 void LetStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "LetStmt name=" << name << '\n';
+  value->dump(os, indent + 1);
+}
+
+void AssignStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "AssignStmt name=" << name << '\n';
   value->dump(os, indent + 1);
 }
 
@@ -75,6 +93,12 @@ void WhileStmtAST::dump(raw_ostream &os, unsigned indent) const {
 void FunctionAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "Function name=" << name << " return=" << returnType << '\n';
+  if (!parameters.empty()) {
+    writeIndent(os, indent + 1);
+    os << "Params\n";
+    for (const auto &parameter : parameters)
+      parameter.dump(os, indent + 2);
+  }
   for (const auto &statement : body)
     statement->dump(os, indent + 1);
 }

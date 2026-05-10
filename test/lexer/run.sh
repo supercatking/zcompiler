@@ -10,6 +10,10 @@ trap 'rm -rf "$tmp_dir"' EXIT
   > "$tmp_dir/hello.tokens"
 diff -u "$source_root/test/lexer/hello.tokens" "$tmp_dir/hello.tokens"
 
+"$zc_bin" "$source_root/examples/calls.zc" --emit-tokens \
+  > "$tmp_dir/calls.tokens"
+diff -u "$source_root/test/lexer/calls.tokens" "$tmp_dir/calls.tokens"
+
 set +e
 "$zc_bin" "$source_root/test/lexer/invalid.zc" --emit-tokens \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"
@@ -22,4 +26,3 @@ if [ "$status" -eq 0 ]; then
 fi
 
 diff -u "$source_root/test/lexer/invalid.err" "$tmp_dir/invalid.err"
-

@@ -1,0 +1,38 @@
+	.text
+	.attribute	4, 16
+	.attribute	5, "rv64i2p0_m2p0"
+	.file	"LLVMDialectModule"
+	.globl	add                             # -- Begin function add
+	.p2align	2
+	.type	add,@function
+add:                                    # @add
+	.cfi_startproc
+# %bb.0:
+	addw	a0, a0, a1
+	ret
+.Lfunc_end0:
+	.size	add, .Lfunc_end0-add
+	.cfi_endproc
+                                        # -- End function
+	.globl	main                            # -- Begin function main
+	.p2align	2
+	.type	main,@function
+main:                                   # @main
+	.cfi_startproc
+# %bb.0:
+	addi	sp, sp, -16
+	.cfi_def_cfa_offset 16
+	sd	ra, 8(sp)                       # 8-byte Folded Spill
+	.cfi_offset ra, -8
+	li	a0, 2
+	li	a1, 3
+	call	add@plt
+	addiw	a0, a0, 4
+	ld	ra, 8(sp)                       # 8-byte Folded Reload
+	addi	sp, sp, 16
+	ret
+.Lfunc_end1:
+	.size	main, .Lfunc_end1-main
+	.cfi_endproc
+                                        # -- End function
+	.section	".note.GNU-stack","",@progbits

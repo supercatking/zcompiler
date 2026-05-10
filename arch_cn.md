@@ -46,6 +46,12 @@ examples/hello.zc
 
 ## 2. Frontend
 
+Phase 17 的函数、调用、赋值和内存模型设计记录在：
+
+```text
+docs/phase17-functions-memory.md
+```
+
 Frontend 由 lexer 和 parser 两部分组成。
 
 ### Lexer

@@ -124,6 +124,11 @@ func main() -> i32 {
 - Function calls.
 - `if` / `else`.
 - `while` or `for`.
+
+Phase 17 starts the next language layer. Its design is recorded in
+[docs/phase17-functions-memory.md](docs/phase17-functions-memory.md): function
+parameters, function calls, straight-line assignment, and the first planned
+memory-model direction.
 - Arrays and memory references.
 - Vector values.
 - Builtin operations that map naturally to RVV.

@@ -30,8 +30,10 @@ private:
   void reportAtCurrent(llvm::StringRef message);
 
   std::unique_ptr<FunctionAST> parseFunction();
+  bool parseParameters(std::vector<ParameterAST> &parameters);
   std::unique_ptr<StmtAST> parseStatement();
   std::unique_ptr<StmtAST> parseLetStatement();
+  std::unique_ptr<StmtAST> parseAssignStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();
@@ -41,6 +43,8 @@ private:
   std::unique_ptr<ExprAST> parseBinaryRHS(int expressionPrecedence,
                                           std::unique_ptr<ExprAST> lhs);
   std::unique_ptr<ExprAST> parsePrimary();
+  std::unique_ptr<ExprAST> parseIdentifierExpression();
+  bool parseArguments(std::vector<std::unique_ptr<ExprAST>> &args);
   int getTokenPrecedence() const;
 
   llvm::ArrayRef<Token> tokens;

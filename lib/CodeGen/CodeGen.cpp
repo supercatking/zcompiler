@@ -34,17 +34,39 @@ public:
     variables.clear();
 
     if (dialect == TextDialect::LLVMIR) {
-      os << "define i32 @" << function.getName() << "() {\n";
+      os << "define i32 @" << function.getName() << "(";
+      for (size_t index = 0; index < function.getParameters().size();
+           ++index) {
+        if (index != 0)
+          os << ", ";
+        os << "i32 %" << function.getParameters()[index].getName();
+      }
+      os << ") {\n";
       os << "entry:\n";
+      for (const auto &parameter : function.getParameters())
+        variables[parameter.getName()] = "%" + parameter.getName();
     } else if (dialect == TextDialect::RiscVAssembly) {
       os << "  .text\n";
       os << "  .globl " << function.getName() << "\n";
       os << function.getName() << ":\n";
+      for (size_t index = 0; index < function.getParameters().size();
+           ++index)
+        variables[function.getParameters()[index].getName()] =
+            "a" + std::to_string(index);
     } else {
       const char *funcOp =
           dialect == TextDialect::ZC ? "zc.func" : "func.func";
-      os << "  " << funcOp << " @" << function.getName() << "() -> "
-         << function.getReturnType() << " {\n";
+      os << "  " << funcOp << " @" << function.getName() << "(";
+      for (size_t index = 0; index < function.getParameters().size();
+           ++index) {
+        if (index != 0)
+          os << ", ";
+        const ParameterAST &parameter = function.getParameters()[index];
+        std::string value = nextSSAValue();
+        variables[parameter.getName()] = value;
+        os << value << ": " << parameter.getType();
+      }
+      os << ") -> " << function.getReturnType() << " {\n";
     }
 
     for (const auto &statement : function.getBody())
@@ -73,6 +95,8 @@ private:
       return emitVariable(static_cast<const VariableExprAST &>(expression));
     case ExprKind::Binary:
       return emitBinary(static_cast<const BinaryExprAST &>(expression));
+    case ExprKind::Call:
+      return emitCall(static_cast<const CallExprAST &>(expression));
     }
     result.addDiagnostic("unknown expression kind");
     return {"", ""};
@@ -141,10 +165,63 @@ private:
     return {value, resultType};
   }
 
+  EmittedValue emitCall(const CallExprAST &expression) {
+    std::vector<EmittedValue> args;
+    for (const auto &arg : expression.getArgs()) {
+      EmittedValue value = emitExpression(*arg);
+      if (value.name.empty())
+        return {"", ""};
+      args.push_back(value);
+    }
+
+    std::string value = nextSSAValue();
+    if (dialect == TextDialect::LLVMIR) {
+      os << "  " << value << " = call i32 @" << expression.getCallee() << "(";
+      for (size_t index = 0; index < args.size(); ++index) {
+        if (index != 0)
+          os << ", ";
+        os << "i32 " << args[index].name;
+      }
+      os << ")\n";
+      return {value, "i32"};
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      for (size_t index = 0; index < args.size() && index < 8; ++index)
+        os << "  mv a" << index << ", " << args[index].name << "\n";
+      os << "  call " << expression.getCallee() << "\n";
+      std::string reg = nextTempRegister();
+      os << "  mv " << reg << ", a0\n";
+      return {reg, "i32"};
+    }
+
+    os << "    " << value << " = ";
+    if (dialect == TextDialect::ZC)
+      os << "zc.call @" << expression.getCallee() << "(";
+    else
+      os << "func.call @" << expression.getCallee() << "(";
+    for (size_t index = 0; index < args.size(); ++index) {
+      if (index != 0)
+        os << ", ";
+      os << args[index].name;
+    }
+    os << ") : (";
+    for (size_t index = 0; index < args.size(); ++index) {
+      if (index != 0)
+        os << ", ";
+      os << "i32";
+    }
+    os << ") -> i32\n";
+    return {value, "i32"};
+  }
+
   void emitStatement(const StmtAST &statement) {
     switch (statement.getKind()) {
     case StmtKind::Let:
       emitLet(static_cast<const LetStmtAST &>(statement));
+      return;
+    case StmtKind::Assign:
+      emitAssign(static_cast<const AssignStmtAST &>(statement));
       return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
@@ -160,6 +237,12 @@ private:
   }
 
   void emitLet(const LetStmtAST &statement) {
+    EmittedValue value = emitExpression(statement.getValue());
+    if (!value.name.empty())
+      variables[statement.getName()] = value.name;
+  }
+
+  void emitAssign(const AssignStmtAST &statement) {
     EmittedValue value = emitExpression(statement.getValue());
     if (!value.name.empty())
       variables[statement.getName()] = value.name;

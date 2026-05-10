@@ -569,3 +569,49 @@ Validated commands:
 riscv64-linux-gnu-as /tmp/new-hello.riscv -o /tmp/new-hello.o
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 17: Functions, Calls, and Assignment
+
+### Execution Target
+
+Extend the language toward simple kernel structure with function parameters,
+function calls, and straight-line assignment while documenting the next memory
+model step.
+
+### Execution Summary
+
+- Added [docs/phase17-functions-memory.md](docs/phase17-functions-memory.md).
+- Added lexer tokens for `:` and `,`.
+- Added AST support for:
+  - function parameters
+  - call expressions
+  - assignment statements
+- Extended the parser to support:
+  - `func add(a: i32, b: i32) -> i32`
+  - `add(2, 3)` expression calls
+  - `x = x + 4;` straight-line assignment
+- Extended text emitters and MLIRGen for parameters, calls, and straight-line
+  assignment.
+- Added `examples/calls.zc`.
+- Added lexer, parser, MLIR, LLVM IR, and RISC-V assembly golden coverage for
+  `calls.zc`.
+
+### Execution Result
+
+Completed for the first Phase 17 slice.
+
+Note: this phase intentionally models assignment as a new value bound to the
+same source name in straight-line code. Explicit array/memref load-store syntax
+is documented as the next memory-model slice.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-llvm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-riscv-asm
+/home/zyz/mlir/build/bin/mlir-opt /tmp/calls.mlir -o /tmp/calls.checked.mlir
+/home/zyz/mlir/build/bin/llvm-as /tmp/calls.ll -o /tmp/calls.bc
+riscv64-linux-gnu-as /tmp/calls.s -o /tmp/calls.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

@@ -357,6 +357,11 @@ riscv64-linux-gnu-as /tmp/hello.s -o /tmp/hello.o
 
 Goal: extend the source language enough to express simple kernels.
 
+Design note: the first implementation slice is documented in
+`docs/phase17-functions-memory.md`. It implements parameters, calls, and
+straight-line assignment first, then extends into explicit array/memref
+load/store syntax.
+
 Deliverables:
 
 - Function parameters.

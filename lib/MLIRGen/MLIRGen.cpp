@@ -5,6 +5,8 @@
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
 
+#include "llvm/ADT/STLExtras.h"
+
 #include <map>
 #include <string>
 
@@ -35,12 +37,16 @@ private:
     variables.clear();
     Location loc = builder.getUnknownLoc();
     Type i32 = builder.getI32Type();
-    auto functionType = builder.getFunctionType({}, {i32});
+    SmallVector<Type, 4> inputTypes(function.getParameters().size(), i32);
+    auto functionType = builder.getFunctionType(inputTypes, {i32});
     auto func = func::FuncOp::create(loc, function.getName(), functionType);
     builder.insert(func);
 
     Block *entry = func.addEntryBlock();
     builder.setInsertionPointToStart(entry);
+    for (auto [parameter, argument] :
+         llvm::zip(function.getParameters(), entry->getArguments()))
+      variables[parameter.getName()] = argument;
 
     bool hasTerminator = false;
     for (const auto &statement : function.getBody()) {
@@ -65,6 +71,8 @@ private:
       return emitVariable(static_cast<const VariableExprAST &>(expression));
     case ExprKind::Binary:
       return emitBinary(static_cast<const BinaryExprAST &>(expression));
+    case ExprKind::Call:
+      return emitCall(static_cast<const CallExprAST &>(expression));
     }
 
     result.addDiagnostic("unknown expression kind");
@@ -125,10 +133,28 @@ private:
     return nullptr;
   }
 
+  Value emitCall(const CallExprAST &expression) {
+    SmallVector<Value, 4> args;
+    for (const auto &arg : expression.getArgs()) {
+      Value value = emitExpression(*arg);
+      if (!value)
+        return nullptr;
+      args.push_back(value);
+    }
+
+    auto call = builder.create<func::CallOp>(
+        builder.getUnknownLoc(), expression.getCallee(),
+        TypeRange(builder.getI32Type()), ValueRange(args));
+    return call.getResult(0);
+  }
+
   void emitStatement(const StmtAST &statement) {
     switch (statement.getKind()) {
     case StmtKind::Let:
       emitLet(static_cast<const LetStmtAST &>(statement));
+      return;
+    case StmtKind::Assign:
+      emitAssign(static_cast<const AssignStmtAST &>(statement));
       return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
@@ -144,6 +170,12 @@ private:
   }
 
   void emitLet(const LetStmtAST &statement) {
+    Value value = emitExpression(statement.getValue());
+    if (value)
+      variables[statement.getName()] = value;
+  }
+
+  void emitAssign(const AssignStmtAST &statement) {
     Value value = emitExpression(statement.getValue());
     if (value)
       variables[statement.getName()] = value;

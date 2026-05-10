@@ -18,6 +18,10 @@ diff -u "$source_root/test/parser/control.ast" "$tmp_dir/control.ast"
   > "$tmp_dir/while.ast"
 diff -u "$source_root/test/parser/while.ast" "$tmp_dir/while.ast"
 
+"$zc_bin" "$source_root/examples/calls.zc" --emit-ast \
+  > "$tmp_dir/calls.ast"
+diff -u "$source_root/test/parser/calls.ast" "$tmp_dir/calls.ast"
+
 set +e
 "$zc_bin" "$source_root/test/parser/invalid.zc" --emit-ast \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"

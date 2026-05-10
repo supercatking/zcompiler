@@ -98,6 +98,12 @@ std::vector<Token> Lexer::lexAll() {
     case '}':
       tokens.push_back(makeToken(TokenKind::RBrace, start, tokenLine, tokenColumn));
       break;
+    case ':':
+      tokens.push_back(makeToken(TokenKind::Colon, start, tokenLine, tokenColumn));
+      break;
+    case ',':
+      tokens.push_back(makeToken(TokenKind::Comma, start, tokenLine, tokenColumn));
+      break;
     case ';':
       tokens.push_back(
           makeToken(TokenKind::Semicolon, start, tokenLine, tokenColumn));

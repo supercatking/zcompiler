@@ -1,0 +1,20 @@
+Module
+  Function name=add return=i32
+    Params
+      Param name=a type=i32
+      Param name=b type=i32
+    ReturnStmt
+      BinaryExpr op="+"
+        VariableExpr name=a
+        VariableExpr name=b
+  Function name=main return=i32
+    LetStmt name=x
+      CallExpr callee=add
+        IntegerExpr value=2
+        IntegerExpr value=3
+    AssignStmt name=x
+      BinaryExpr op="+"
+        VariableExpr name=x
+        IntegerExpr value=4
+    ReturnStmt
+      VariableExpr name=x
