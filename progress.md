@@ -317,6 +317,38 @@ Generated artifacts:
 /home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.objdump
 ```
 
+## Phase 22A: First AI-Assisted Experiment Record
+
+### Execution Target
+
+Create the first reproducible AI-assisted compiler experiment record so future
+optimization work has a reviewable history.
+
+### Execution Summary
+
+- Created `experiments/`.
+- Added `experiments/README.md`.
+- Added `experiments/results/vector_add_rvv_001.md`.
+- Updated [docs/ai-workflow.md](docs/ai-workflow.md) to point to the new
+  experiment directory.
+- Recorded:
+  - source program
+  - compiler path
+  - relevant commits
+  - validation commands
+  - expected RVV instruction families
+  - acceptance decision
+
+### Execution Result
+
+Completed.
+
+The first accepted experiment is:
+
+```text
+experiments/results/vector_add_rvv_001.md
+```
+
 ## Phase 20A: Direct RVV Reference Assembly
 
 ### Execution Target
