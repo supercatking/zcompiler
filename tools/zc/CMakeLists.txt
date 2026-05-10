@@ -21,6 +21,7 @@ target_compile_definitions(zc
 
 target_link_libraries(zc
   PRIVATE
+    ZCompilerCodeGen
     ZCompilerParser
     ZCompilerLexer
     ${LLVM_LIBS}

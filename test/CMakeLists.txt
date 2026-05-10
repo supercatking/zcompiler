@@ -15,3 +15,11 @@ add_test(
           $<TARGET_FILE:zc>
           ${CMAKE_SOURCE_DIR}
 )
+
+add_test(
+  NAME codegen
+  COMMAND ${BASH_PROGRAM}
+          ${CMAKE_CURRENT_SOURCE_DIR}/codegen/run.sh
+          $<TARGET_FILE:zc>
+          ${CMAKE_SOURCE_DIR}
+)
