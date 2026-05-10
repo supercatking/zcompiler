@@ -270,6 +270,53 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 21A: Reproducible Vector Add Artifacts
+
+### Execution Target
+
+Create the first reproducible benchmark artifact workflow for comparing RVV
+reference C output with zcompiler RVV output.
+
+### Execution Summary
+
+- Added `benchmarks/vector_add/`.
+- Added `reference_rvv.c`, a C implementation using RISC-V vector intrinsics.
+- Added `benchmarks/vector_add/run.sh`.
+- The script generates:
+  - reference RVV assembly
+  - reference RVV object
+  - reference RVV objdump
+  - zcompiler RVV assembly
+  - zcompiler RVV object
+  - zcompiler RVV objdump
+- The script checks both paths for:
+  - `vsetvli`
+  - `vle32.v`
+  - `vadd.vv`
+  - `vse32.v`
+
+### Execution Result
+
+Completed as an artifact workflow. This is not a timing benchmark yet; it is the
+first reproducible compile-and-inspect benchmark foundation.
+
+Validated command:
+
+```bash
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+```
+
+Generated artifacts:
+
+```text
+/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.s
+/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.o
+/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.objdump
+/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.s
+/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.o
+/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.objdump
+```
+
 ## Phase 20A: Direct RVV Reference Assembly
 
 ### Execution Target

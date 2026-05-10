@@ -474,6 +474,9 @@ Generated output contains expected RVV instruction families.
 Goal: define the target accelerator assumptions and measure scalar versus
 vector paths.
 
+Phase 21A starts with `benchmarks/vector_add/`, which generates reference C RVV
+artifacts and zcompiler RVV artifacts side by side.
+
 Deliverables:
 
 - Accelerator profile file.
