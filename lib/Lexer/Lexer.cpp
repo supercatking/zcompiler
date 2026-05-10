@@ -208,6 +208,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwLoad;
   else if (text == "store")
     kind = TokenKind::KwStore;
+  else if (text == "vector_add")
+    kind = TokenKind::KwVectorAdd;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

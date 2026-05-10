@@ -1,0 +1,4 @@
+func vadd(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, n: i32) -> i32 {
+  vector_add c, a, b, n;
+  return 0;
+}

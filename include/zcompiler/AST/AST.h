@@ -25,6 +25,7 @@ enum class StmtKind {
   Return,
   If,
   While,
+  VectorAdd,
 };
 
 class ParameterAST final {
@@ -165,6 +166,26 @@ private:
   std::string bufferName;
   std::unique_ptr<ExprAST> index;
   std::unique_ptr<ExprAST> value;
+};
+
+class VectorAddStmtAST final : public StmtAST {
+public:
+  VectorAddStmtAST(std::string output, std::string lhs, std::string rhs,
+                   std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorAdd; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
+  std::unique_ptr<ExprAST> length;
 };
 
 class ReturnStmtAST final : public StmtAST {

@@ -389,6 +389,10 @@ The compiler can represent and compile a simple array-style kernel skeleton.
 
 Goal: add source-level vector concepts.
 
+Design note: Phase 18A is documented in
+`docs/phase18-vector-syntax.md`. It starts with a target-independent
+`vector_add c, a, b, n;` statement over `ptr<i32>` buffers.
+
 Deliverables:
 
 - Vector type syntax.

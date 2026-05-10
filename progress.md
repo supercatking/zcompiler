@@ -270,6 +270,55 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 18A: Target-Independent Vector Add Syntax
+
+### Execution Target
+
+Introduce the first source-level vector operation without exposing RVV
+instruction names in the language.
+
+### Execution Summary
+
+- Added [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md).
+- Added the high-level statement:
+
+```zc
+vector_add c, a, b, n;
+```
+
+- Added lexer support for `vector_add`.
+- Added `VectorAddStmtAST`.
+- Added parser support for:
+  - output buffer
+  - left input buffer
+  - right input buffer
+  - length expression
+- Added `examples/vector_add.zc`.
+- Added lexer and parser golden tests.
+- Added a codegen negative test that confirms vector lowering is intentionally
+  rejected until Phase 19.
+
+### Execution Result
+
+Completed for source syntax and AST.
+
+The compiler can now parse this target-independent vector operation:
+
+```zc
+func vadd(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, n: i32) -> i32 {
+  vector_add c, a, b, n;
+  return 0;
+}
+```
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-tokens
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 ## Phase 17B: Scalar Memory and Array Access
 
 ### Execution Target

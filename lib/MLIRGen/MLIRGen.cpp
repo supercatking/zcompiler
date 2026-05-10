@@ -191,6 +191,9 @@ private:
       result.addDiagnostic(
           "MLIR API generation for while is planned for Phase 19");
       return;
+    case StmtKind::VectorAdd:
+      result.addDiagnostic("vector_add MLIR lowering is planned for Phase 19");
+      return;
     }
   }
 

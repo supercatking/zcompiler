@@ -36,6 +36,7 @@ private:
   std::unique_ptr<StmtAST> parseLetStatement();
   std::unique_ptr<StmtAST> parseAssignStatement();
   std::unique_ptr<StmtAST> parseStoreStatement();
+  std::unique_ptr<StmtAST> parseVectorAddStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();

@@ -143,6 +143,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseLetStatement();
   if (check(TokenKind::KwStore))
     return parseStoreStatement();
+  if (check(TokenKind::KwVectorAdd))
+    return parseVectorAddStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -154,6 +156,47 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
 
   reportAtCurrent("expected statement");
   return nullptr;
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorAddStatement() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected output buffer after 'vector_add'");
+    return nullptr;
+  }
+  std::string output = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_add output"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected left input buffer in vector_add");
+    return nullptr;
+  }
+  std::string lhs = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_add left input"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected right input buffer in vector_add");
+    return nullptr;
+  }
+  std::string rhs = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_add right input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon, "expected ';' after vector_add statement"))
+    return nullptr;
+
+  return std::make_unique<VectorAddStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseStoreStatement() {

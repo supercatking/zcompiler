@@ -298,6 +298,10 @@ private:
     case StmtKind::While:
       emitWhile(static_cast<const WhileStmtAST &>(statement));
       return;
+    case StmtKind::VectorAdd:
+      result.addDiagnostic(
+          "vector_add lowering is planned for Phase 19");
+      return;
     }
     result.addDiagnostic("unknown statement kind");
   }

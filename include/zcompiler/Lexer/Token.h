@@ -22,6 +22,7 @@ enum class TokenKind {
   KwPtr,
   KwLoad,
   KwStore,
+  KwVectorAdd,
 
   Plus,
   Minus,

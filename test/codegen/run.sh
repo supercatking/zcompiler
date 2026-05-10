@@ -56,6 +56,20 @@ diff -u "$source_root/test/codegen/arrays.ll" "$tmp_dir/arrays.ll"
   > "$tmp_dir/arrays.riscv"
 diff -u "$source_root/test/codegen/arrays.riscv" "$tmp_dir/arrays.riscv"
 
+set +e
+"$zc_bin" "$source_root/examples/vector_add.zc" --emit-mlir \
+  > "$tmp_dir/vector_add.out" 2> "$tmp_dir/vector_add.err"
+status="$?"
+set -e
+
+if [ "$status" -eq 0 ]; then
+  echo "expected vector_add MLIR lowering to fail before Phase 19" >&2
+  exit 1
+fi
+
+diff -u "$source_root/test/codegen/vector_add.err" \
+  "$tmp_dir/vector_add.err"
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"

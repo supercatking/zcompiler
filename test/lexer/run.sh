@@ -18,6 +18,11 @@ diff -u "$source_root/test/lexer/calls.tokens" "$tmp_dir/calls.tokens"
   > "$tmp_dir/arrays.tokens"
 diff -u "$source_root/test/lexer/arrays.tokens" "$tmp_dir/arrays.tokens"
 
+"$zc_bin" "$source_root/examples/vector_add.zc" --emit-tokens \
+  > "$tmp_dir/vector_add.tokens"
+diff -u "$source_root/test/lexer/vector_add.tokens" \
+  "$tmp_dir/vector_add.tokens"
+
 set +e
 "$zc_bin" "$source_root/test/lexer/invalid.zc" --emit-tokens \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"
