@@ -447,6 +447,10 @@ Generated MLIR contains vector dialect operations for vector examples.
 
 Goal: generate RVV-oriented LLVM IR or assembly.
 
+Design note: Phase 20A is documented in
+`docs/phase20-rvv-lowering.md`. It starts with a direct RVV reference assembly
+path for `vector_add`.
+
 Deliverables:
 
 - RVV target feature configuration.

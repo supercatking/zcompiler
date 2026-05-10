@@ -270,6 +270,49 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 20A: Direct RVV Reference Assembly
+
+### Execution Target
+
+Generate a first RVV-oriented assembly output for `vector_add` so the project
+has a concrete accelerator-target reference.
+
+### Execution Summary
+
+- Added [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md).
+- Added direct RISC-V RVV reference assembly emission for `VectorAddStmtAST`.
+- Generated a dynamic-vector-length loop using:
+  - `vsetvli`
+  - `vle32.v`
+  - `vadd.vv`
+  - `vse32.v`
+- Added `vector_add.riscv` golden output.
+- Added assembler validation with:
+  - `riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d`
+
+### Execution Result
+
+Completed as a reference RVV backend.
+
+The generated assembly follows this shape:
+
+```asm
+vsetvli t1, t1, e32, m1, ta, ma
+vle32.v v0, 0(t3)
+vle32.v v1, 0(t4)
+vadd.vv v2, v0, v1
+vse32.v v2, 0(t5)
+```
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_add.rvv.s -o /tmp/vector_add.rvv.o
+riscv64-linux-gnu-objdump -d /tmp/vector_add.rvv.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 ## Phase 19A: Vector Add to MLIR Vector Dialect
 
 ### Execution Target

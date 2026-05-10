@@ -61,6 +61,11 @@ diff -u "$source_root/test/codegen/arrays.riscv" "$tmp_dir/arrays.riscv"
 diff -u -B "$source_root/test/codegen/vector_add.mlir" \
   "$tmp_dir/vector_add.mlir"
 
+"$zc_bin" "$source_root/examples/vector_add.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_add.riscv"
+diff -u "$source_root/test/codegen/vector_add.riscv" \
+  "$tmp_dir/vector_add.riscv"
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -97,4 +102,6 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   riscv64-linux-gnu-as "$tmp_dir/hello.riscv" -o "$tmp_dir/hello.o"
   riscv64-linux-gnu-as "$tmp_dir/calls.riscv" -o "$tmp_dir/calls.o"
   riscv64-linux-gnu-as "$tmp_dir/arrays.riscv" -o "$tmp_dir/arrays.o"
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_add.riscv" -o "$tmp_dir/vector_add.o"
 fi

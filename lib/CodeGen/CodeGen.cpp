@@ -299,8 +299,7 @@ private:
       emitWhile(static_cast<const WhileStmtAST &>(statement));
       return;
     case StmtKind::VectorAdd:
-      result.addDiagnostic(
-          "vector_add lowering is planned for Phase 19");
+      emitVectorAdd(static_cast<const VectorAddStmtAST &>(statement));
       return;
     }
     result.addDiagnostic("unknown statement kind");
@@ -361,6 +360,57 @@ private:
        << " : i32 to index\n";
     os << "    memref.store " << value.name << ", " << found->second.name
        << "[" << indexValue << "] : memref<?xi32>\n";
+  }
+
+  void emitVectorAdd(const VectorAddStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic(
+          "vector_add text lowering is only available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_add statement");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string lhsAddress = nextTempRegister();
+    std::string rhsAddress = nextTempRegister();
+    std::string outputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_add");
+    std::string endLabel = nextLabel(".Lvector_add_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
+       << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
+       << offset << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
+       << offset << "\n";
+    os << "  add " << outputAddress << ", " << output->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v0, 0(" << lhsAddress << ")\n";
+    os << "  vle32.v v1, 0(" << rhsAddress << ")\n";
+    os << "  vadd.vv v2, v0, v1\n";
+    os << "  vse32.v v2, 0(" << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

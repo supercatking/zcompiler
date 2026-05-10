@@ -73,8 +73,9 @@ bool runMLIRToLLVMIR(StringRef mlirInputPath, StringRef llvmDialectPath,
     return false;
   }
 
+  StringRef devNull = "/dev/null";
   std::optional<StringRef> redirects[3] = {std::nullopt, std::nullopt,
-                                           std::nullopt};
+                                           devNull};
   SmallVector<StringRef, 8> mlirOptArgs = {
       kMLIROptPath,
       mlirInputPath,
