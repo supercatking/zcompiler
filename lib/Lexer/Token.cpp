@@ -18,6 +18,12 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_let";
   case TokenKind::KwReturn:
     return "kw_return";
+  case TokenKind::KwIf:
+    return "kw_if";
+  case TokenKind::KwElse:
+    return "kw_else";
+  case TokenKind::KwWhile:
+    return "kw_while";
   case TokenKind::KwI32:
     return "kw_i32";
   case TokenKind::Plus:
@@ -30,6 +36,18 @@ StringRef getTokenKindName(TokenKind kind) {
     return "slash";
   case TokenKind::Equal:
     return "equal";
+  case TokenKind::EqualEqual:
+    return "equal_equal";
+  case TokenKind::BangEqual:
+    return "bang_equal";
+  case TokenKind::Less:
+    return "less";
+  case TokenKind::LessEqual:
+    return "less_equal";
+  case TokenKind::Greater:
+    return "greater";
+  case TokenKind::GreaterEqual:
+    return "greater_equal";
   case TokenKind::Arrow:
     return "arrow";
   case TokenKind::LParen:
@@ -47,4 +65,3 @@ StringRef getTokenKindName(TokenKind kind) {
 }
 
 } // namespace zc
-

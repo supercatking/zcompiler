@@ -82,14 +82,7 @@ std::unique_ptr<FunctionAST> Parser::parseFunction() {
     return nullptr;
 
   std::vector<std::unique_ptr<StmtAST>> body;
-  while (!check(TokenKind::RBrace) && !check(TokenKind::EndOfFile)) {
-    auto statement = parseStatement();
-    if (!statement)
-      return nullptr;
-    body.push_back(std::move(statement));
-  }
-
-  if (!expect(TokenKind::RBrace, "expected '}' after function body"))
+  if (!parseBlock(body))
     return nullptr;
 
   return std::make_unique<FunctionAST>(std::move(name), std::move(returnType),
@@ -101,6 +94,10 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseLetStatement();
   if (check(TokenKind::KwReturn))
     return parseReturnStatement();
+  if (check(TokenKind::KwIf))
+    return parseIfStatement();
+  if (check(TokenKind::KwWhile))
+    return parseWhileStatement();
 
   reportAtCurrent("expected statement");
   return nullptr;
@@ -139,6 +136,60 @@ std::unique_ptr<StmtAST> Parser::parseReturnStatement() {
     return nullptr;
 
   return std::make_unique<ReturnStmtAST>(std::move(value));
+}
+
+std::unique_ptr<StmtAST> Parser::parseIfStatement() {
+  advance();
+
+  auto condition = parseExpression();
+  if (!condition)
+    return nullptr;
+
+  if (!expect(TokenKind::LBrace, "expected '{' before if body"))
+    return nullptr;
+
+  std::vector<std::unique_ptr<StmtAST>> thenBody;
+  if (!parseBlock(thenBody))
+    return nullptr;
+
+  std::vector<std::unique_ptr<StmtAST>> elseBody;
+  if (match(TokenKind::KwElse)) {
+    if (!expect(TokenKind::LBrace, "expected '{' before else body"))
+      return nullptr;
+    if (!parseBlock(elseBody))
+      return nullptr;
+  }
+
+  return std::make_unique<IfStmtAST>(std::move(condition), std::move(thenBody),
+                                     std::move(elseBody));
+}
+
+std::unique_ptr<StmtAST> Parser::parseWhileStatement() {
+  advance();
+
+  auto condition = parseExpression();
+  if (!condition)
+    return nullptr;
+
+  if (!expect(TokenKind::LBrace, "expected '{' before while body"))
+    return nullptr;
+
+  std::vector<std::unique_ptr<StmtAST>> body;
+  if (!parseBlock(body))
+    return nullptr;
+
+  return std::make_unique<WhileStmtAST>(std::move(condition), std::move(body));
+}
+
+bool Parser::parseBlock(std::vector<std::unique_ptr<StmtAST>> &statements) {
+  while (!check(TokenKind::RBrace) && !check(TokenKind::EndOfFile)) {
+    auto statement = parseStatement();
+    if (!statement)
+      return false;
+    statements.push_back(std::move(statement));
+  }
+
+  return expect(TokenKind::RBrace, "expected '}' after block");
 }
 
 std::unique_ptr<ExprAST> Parser::parseExpression() {
@@ -200,6 +251,13 @@ int Parser::getTokenPrecedence() const {
   case TokenKind::Star:
   case TokenKind::Slash:
     return 20;
+  case TokenKind::Less:
+  case TokenKind::LessEqual:
+  case TokenKind::Greater:
+  case TokenKind::GreaterEqual:
+  case TokenKind::EqualEqual:
+  case TokenKind::BangEqual:
+    return 5;
   default:
     return -1;
   }

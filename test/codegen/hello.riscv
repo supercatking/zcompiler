@@ -1,0 +1,11 @@
+  .option nopic
+  .text
+  .globl main
+main:
+  li t0, 1
+  li t1, 2
+  li t2, 3
+  mul t3, t1, t2
+  add t4, t0, t3
+  mv a0, t4
+  ret

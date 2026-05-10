@@ -25,6 +25,7 @@ enum class EmitAction {
   ZCMLIR,
   LoweredMLIR,
   LLVMIR,
+  RiscVAssembly,
 };
 
 cl::opt<std::string> InputFilename(
@@ -48,7 +49,9 @@ cl::opt<EmitAction> Emit(
         clEnumValN(EmitAction::ZCMLIR, "zc-mlir", "Print generated zc MLIR"),
         clEnumValN(EmitAction::LoweredMLIR, "lowered-mlir",
                    "Print zc MLIR lowered to standard MLIR"),
-        clEnumValN(EmitAction::LLVMIR, "llvm", "Print generated LLVM IR")),
+        clEnumValN(EmitAction::LLVMIR, "llvm", "Print generated LLVM IR"),
+        clEnumValN(EmitAction::RiscVAssembly, "riscv-asm",
+                   "Print generated RISC-V assembly")),
     cl::init(EmitAction::None));
 
 cl::opt<bool> EmitTokens(
@@ -87,6 +90,12 @@ cl::opt<bool> EmitLLVMIR(
     cl::init(false),
     cl::NotHidden);
 
+cl::opt<bool> EmitRiscVAssembly(
+    "emit-riscv-asm",
+    cl::desc("Print generated RISC-V assembly"),
+    cl::init(false),
+    cl::NotHidden);
+
 const char *getEmitName(EmitAction action) {
   switch (action) {
   case EmitAction::None:
@@ -103,6 +112,8 @@ const char *getEmitName(EmitAction action) {
     return "lowered-mlir";
   case EmitAction::LLVMIR:
     return "llvm";
+  case EmitAction::RiscVAssembly:
+    return "riscv-asm";
   }
   return "unknown";
 }
@@ -113,14 +124,15 @@ int main(int argc, char **argv) {
   InitLLVM initLLVM(argc, argv);
 
   cl::SetVersionPrinter([](raw_ostream &os) {
-    os << "zcompiler phase7 toy compiler llvm-ir\n";
+    os << "zcompiler phase11 toy compiler\n";
   });
 
   cl::ParseCommandLineOptions(
       argc, argv,
       "zcompiler toy compiler\n\n"
-      "Phase 7 provides lexer, parser, AST dump, MLIR text emission, zc MLIR "
-      "text emission, zc-to-standard lowering text, and LLVM IR text emission.\n");
+      "Phase 11 provides lexer, parser, AST dump, MLIR text emission, zc MLIR "
+      "text emission, zc-to-standard lowering text, LLVM IR text emission, "
+      "and RISC-V assembly text emission.\n");
 
   if (EmitTokens)
     Emit = EmitAction::Tokens;
@@ -134,6 +146,8 @@ int main(int argc, char **argv) {
     Emit = EmitAction::LoweredMLIR;
   if (EmitLLVMIR)
     Emit = EmitAction::LLVMIR;
+  if (EmitRiscVAssembly)
+    Emit = EmitAction::RiscVAssembly;
 
   if (InputFilename.empty()) {
     WithColor::error(errs(), "zc") << "missing input .zc file\n";
@@ -223,6 +237,9 @@ int main(int argc, char **argv) {
   case EmitAction::LLVMIR:
     codeGenResult = zc::emitLLVMIR(*module, output);
     break;
+  case EmitAction::RiscVAssembly:
+    codeGenResult = zc::emitRiscVAssembly(*module, output);
+    break;
   case EmitAction::None:
   case EmitAction::Tokens:
   case EmitAction::AST:
@@ -236,7 +253,8 @@ int main(int argc, char **argv) {
   }
 
   if (Emit == EmitAction::MLIR || Emit == EmitAction::ZCMLIR ||
-      Emit == EmitAction::LoweredMLIR || Emit == EmitAction::LLVMIR)
+      Emit == EmitAction::LoweredMLIR || Emit == EmitAction::LLVMIR ||
+      Emit == EmitAction::RiscVAssembly)
     return 0;
 
   output << "selected action '" << getEmitName(Emit)

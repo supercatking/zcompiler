@@ -33,6 +33,9 @@ private:
   std::unique_ptr<StmtAST> parseStatement();
   std::unique_ptr<StmtAST> parseLetStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
+  std::unique_ptr<StmtAST> parseIfStatement();
+  std::unique_ptr<StmtAST> parseWhileStatement();
+  bool parseBlock(std::vector<std::unique_ptr<StmtAST>> &statements);
 
   std::unique_ptr<ExprAST> parseExpression();
   std::unique_ptr<ExprAST> parseBinaryRHS(int expressionPrecedence,

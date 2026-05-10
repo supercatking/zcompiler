@@ -27,6 +27,7 @@ CodeGenResult emitStandardMLIR(const ModuleAST &module, llvm::raw_ostream &os);
 CodeGenResult emitZCMLIR(const ModuleAST &module, llvm::raw_ostream &os);
 CodeGenResult emitLoweredMLIR(const ModuleAST &module, llvm::raw_ostream &os);
 CodeGenResult emitLLVMIR(const ModuleAST &module, llvm::raw_ostream &os);
+CodeGenResult emitRiscVAssembly(const ModuleAST &module, llvm::raw_ostream &os);
 
 } // namespace zc
 

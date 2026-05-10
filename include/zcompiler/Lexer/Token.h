@@ -15,6 +15,9 @@ enum class TokenKind {
   KwFunc,
   KwLet,
   KwReturn,
+  KwIf,
+  KwElse,
+  KwWhile,
   KwI32,
 
   Plus,
@@ -22,6 +25,12 @@ enum class TokenKind {
   Star,
   Slash,
   Equal,
+  EqualEqual,
+  BangEqual,
+  Less,
+  LessEqual,
+  Greater,
+  GreaterEqual,
   Arrow,
 
   LParen,
@@ -43,4 +52,3 @@ llvm::StringRef getTokenKindName(TokenKind kind);
 } // namespace zc
 
 #endif // ZCOMPILER_LEXER_TOKEN_H
-

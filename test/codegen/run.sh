@@ -28,6 +28,18 @@ fi
   > "$tmp_dir/hello.ll"
 diff -u "$source_root/test/codegen/hello.ll" "$tmp_dir/hello.ll"
 
+"$zc_bin" "$source_root/examples/hello.zc" --emit-riscv-asm \
+  > "$tmp_dir/hello.riscv"
+diff -u "$source_root/test/codegen/hello.riscv" "$tmp_dir/hello.riscv"
+
+"$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
+  > "$tmp_dir/control.ll"
+diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
+
+"$zc_bin" "$source_root/examples/while.zc" --emit-llvm \
+  > "$tmp_dir/while.ll"
+diff -u "$source_root/test/codegen/while.ll" "$tmp_dir/while.ll"
+
 if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/hello.mlir" \
     -o "$tmp_dir/hello.opt.mlir"
@@ -36,5 +48,12 @@ fi
 if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then
   /home/zyz/mlir/build/bin/llvm-as "$tmp_dir/hello.ll" \
     -o "$tmp_dir/hello.bc"
+  /home/zyz/mlir/build/bin/llvm-as "$tmp_dir/control.ll" \
+    -o "$tmp_dir/control.bc"
+  /home/zyz/mlir/build/bin/llvm-as "$tmp_dir/while.ll" \
+    -o "$tmp_dir/while.bc"
 fi
 
+if command -v riscv64-linux-gnu-as >/dev/null; then
+  riscv64-linux-gnu-as "$tmp_dir/hello.riscv" -o "$tmp_dir/hello.o"
+fi

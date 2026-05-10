@@ -10,6 +10,14 @@ trap 'rm -rf "$tmp_dir"' EXIT
   > "$tmp_dir/hello.ast"
 diff -u "$source_root/test/parser/hello.ast" "$tmp_dir/hello.ast"
 
+"$zc_bin" "$source_root/examples/control.zc" --emit-ast \
+  > "$tmp_dir/control.ast"
+diff -u "$source_root/test/parser/control.ast" "$tmp_dir/control.ast"
+
+"$zc_bin" "$source_root/examples/while.zc" --emit-ast \
+  > "$tmp_dir/while.ast"
+diff -u "$source_root/test/parser/while.ast" "$tmp_dir/while.ast"
+
 set +e
 "$zc_bin" "$source_root/test/parser/invalid.zc" --emit-ast \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"
@@ -22,4 +30,3 @@ if [ "$status" -eq 0 ]; then
 fi
 
 diff -u "$source_root/test/parser/invalid.err" "$tmp_dir/invalid.err"
-

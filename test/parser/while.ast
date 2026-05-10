@@ -1,0 +1,10 @@
+Module
+  Function name=main return=i32
+    WhileStmt
+      Condition
+        IntegerExpr value=0
+      Body
+        ReturnStmt
+          IntegerExpr value=1
+    ReturnStmt
+      IntegerExpr value=0

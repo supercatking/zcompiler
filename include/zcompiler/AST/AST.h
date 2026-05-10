@@ -19,6 +19,8 @@ enum class ExprKind {
 enum class StmtKind {
   Let,
   Return,
+  If,
+  While,
 };
 
 class ExprAST {
@@ -98,6 +100,44 @@ public:
 
 private:
   std::unique_ptr<ExprAST> value;
+};
+
+class IfStmtAST final : public StmtAST {
+public:
+  IfStmtAST(std::unique_ptr<ExprAST> condition,
+            std::vector<std::unique_ptr<StmtAST>> thenBody,
+            std::vector<std::unique_ptr<StmtAST>> elseBody)
+      : condition(std::move(condition)), thenBody(std::move(thenBody)),
+        elseBody(std::move(elseBody)) {}
+  StmtKind getKind() const override { return StmtKind::If; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const ExprAST &getCondition() const { return *condition; }
+  const std::vector<std::unique_ptr<StmtAST>> &getThenBody() const {
+    return thenBody;
+  }
+  const std::vector<std::unique_ptr<StmtAST>> &getElseBody() const {
+    return elseBody;
+  }
+
+private:
+  std::unique_ptr<ExprAST> condition;
+  std::vector<std::unique_ptr<StmtAST>> thenBody;
+  std::vector<std::unique_ptr<StmtAST>> elseBody;
+};
+
+class WhileStmtAST final : public StmtAST {
+public:
+  WhileStmtAST(std::unique_ptr<ExprAST> condition,
+               std::vector<std::unique_ptr<StmtAST>> body)
+      : condition(std::move(condition)), body(std::move(body)) {}
+  StmtKind getKind() const override { return StmtKind::While; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const ExprAST &getCondition() const { return *condition; }
+  const std::vector<std::unique_ptr<StmtAST>> &getBody() const { return body; }
+
+private:
+  std::unique_ptr<ExprAST> condition;
+  std::vector<std::unique_ptr<StmtAST>> body;
 };
 
 class FunctionAST final {

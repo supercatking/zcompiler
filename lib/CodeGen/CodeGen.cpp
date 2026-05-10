@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 using namespace llvm;
 
@@ -15,6 +16,12 @@ enum class TextDialect {
   Standard,
   ZC,
   LLVMIR,
+  RiscVAssembly,
+};
+
+struct EmittedValue {
+  std::string name;
+  std::string type;
 };
 
 class FunctionEmitter {
@@ -29,6 +36,10 @@ public:
     if (dialect == TextDialect::LLVMIR) {
       os << "define i32 @" << function.getName() << "() {\n";
       os << "entry:\n";
+    } else if (dialect == TextDialect::RiscVAssembly) {
+      os << "  .text\n";
+      os << "  .globl " << function.getName() << "\n";
+      os << function.getName() << ":\n";
     } else {
       const char *funcOp =
           dialect == TextDialect::ZC ? "zc.func" : "func.func";
@@ -39,14 +50,22 @@ public:
     for (const auto &statement : function.getBody())
       emitStatement(*statement);
 
-    if (dialect == TextDialect::LLVMIR)
+    if (dialect == TextDialect::LLVMIR) {
+      if (!blockTerminated)
+        os << "  ret i32 0\n";
       os << "}\n";
-    else
+    } else if (dialect == TextDialect::RiscVAssembly) {
+      if (!blockTerminated) {
+        os << "  li a0, 0\n";
+        os << "  ret\n";
+      }
+    } else {
       os << "  }\n";
+    }
   }
 
 private:
-  std::string emitExpression(const ExprAST &expression) {
+  EmittedValue emitExpression(const ExprAST &expression) {
     switch (expression.getKind()) {
     case ExprKind::Integer:
       return emitInteger(static_cast<const IntegerExprAST &>(expression));
@@ -56,12 +75,18 @@ private:
       return emitBinary(static_cast<const BinaryExprAST &>(expression));
     }
     result.addDiagnostic("unknown expression kind");
-    return "";
+    return {"", ""};
   }
 
-  std::string emitInteger(const IntegerExprAST &expression) {
+  EmittedValue emitInteger(const IntegerExprAST &expression) {
     if (dialect == TextDialect::LLVMIR)
-      return expression.getValue();
+      return {expression.getValue(), "i32"};
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      std::string reg = nextTempRegister();
+      os << "  li " << reg << ", " << expression.getValue() << "\n";
+      return {reg, "i32"};
+    }
 
     std::string value = nextSSAValue();
     os << "    " << value << " = ";
@@ -70,29 +95,41 @@ private:
     else
       os << "arith.constant ";
     os << expression.getValue() << " : i32\n";
-    return value;
+    return {value, "i32"};
   }
 
-  std::string emitVariable(const VariableExprAST &expression) {
+  EmittedValue emitVariable(const VariableExprAST &expression) {
     auto found = variables.find(expression.getName());
     if (found == variables.end()) {
       result.addDiagnostic("unknown variable '" + expression.getName() + "'");
-      return "";
+      return {"", ""};
     }
-    return found->second;
+    return {found->second, "i32"};
   }
 
-  std::string emitBinary(const BinaryExprAST &expression) {
-    std::string lhs = emitExpression(expression.getLHS());
-    std::string rhs = emitExpression(expression.getRHS());
-    if (lhs.empty() || rhs.empty())
-      return "";
+  EmittedValue emitBinary(const BinaryExprAST &expression) {
+    EmittedValue lhs = emitExpression(expression.getLHS());
+    EmittedValue rhs = emitExpression(expression.getRHS());
+    if (lhs.name.empty() || rhs.name.empty())
+      return {"", ""};
 
     std::string value = nextSSAValue();
+    std::string resultType = isComparisonOp(expression.getOp()) ? "i1" : "i32";
+
     if (dialect == TextDialect::LLVMIR) {
-      os << "  " << value << " = " << getLLVMOpcode(expression.getOp())
-         << " i32 " << lhs << ", " << rhs << "\n";
-      return value;
+      if (isComparisonOp(expression.getOp()))
+        os << "  " << value << " = icmp " << getLLVMCmpPredicate(expression.getOp())
+           << " i32 " << lhs.name << ", " << rhs.name << "\n";
+      else
+        os << "  " << value << " = " << getLLVMOpcode(expression.getOp())
+           << " i32 " << lhs.name << ", " << rhs.name << "\n";
+      return {value, resultType};
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      std::string reg = nextTempRegister();
+      emitRiscVBinary(expression.getOp(), lhs.name, rhs.name, reg);
+      return {reg, resultType};
     }
 
     os << "    " << value << " = ";
@@ -100,8 +137,8 @@ private:
       os << "zc." << getZCOpcode(expression.getOp());
     else
       os << "arith." << getArithOpcode(expression.getOp());
-    os << ' ' << lhs << ", " << rhs << " : i32\n";
-    return value;
+    os << ' ' << lhs.name << ", " << rhs.name << " : i32\n";
+    return {value, resultType};
   }
 
   void emitStatement(const StmtAST &statement) {
@@ -112,33 +149,178 @@ private:
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
       return;
+    case StmtKind::If:
+      emitIf(static_cast<const IfStmtAST &>(statement));
+      return;
+    case StmtKind::While:
+      emitWhile(static_cast<const WhileStmtAST &>(statement));
+      return;
     }
     result.addDiagnostic("unknown statement kind");
   }
 
   void emitLet(const LetStmtAST &statement) {
-    std::string value = emitExpression(statement.getValue());
-    if (!value.empty())
-      variables[statement.getName()] = value;
+    EmittedValue value = emitExpression(statement.getValue());
+    if (!value.name.empty())
+      variables[statement.getName()] = value.name;
   }
 
   void emitReturn(const ReturnStmtAST &statement) {
-    std::string value = emitExpression(statement.getValue());
-    if (value.empty())
+    EmittedValue value = emitExpression(statement.getValue());
+    if (value.name.empty())
       return;
 
-    if (dialect == TextDialect::LLVMIR)
-      os << "  ret i32 " << value << "\n";
+    if (dialect == TextDialect::LLVMIR) {
+      EmittedValue i32Value = ensureI32(value);
+      os << "  ret i32 " << i32Value.name << "\n";
+      blockTerminated = true;
+    } else if (dialect == TextDialect::RiscVAssembly) {
+      os << "  mv a0, " << value.name << "\n";
+      os << "  ret\n";
+      blockTerminated = true;
+    }
     else if (dialect == TextDialect::ZC)
-      os << "    zc.return " << value << " : i32\n";
+      os << "    zc.return " << value.name << " : i32\n";
     else
-      os << "    return " << value << " : i32\n";
+      os << "    return " << value.name << " : i32\n";
+  }
+
+  void emitIf(const IfStmtAST &statement) {
+    if (dialect == TextDialect::LLVMIR) {
+      EmittedValue condition = ensureI1(emitExpression(statement.getCondition()));
+      std::string thenLabel = nextLabel("if.then");
+      std::string elseLabel = nextLabel("if.else");
+      std::string endLabel = nextLabel("if.end");
+
+      os << "  br i1 " << condition.name << ", label %" << thenLabel
+         << ", label %" << elseLabel << "\n";
+      os << thenLabel << ":\n";
+      blockTerminated = false;
+      for (const auto &bodyStatement : statement.getThenBody())
+        emitStatement(*bodyStatement);
+      if (!blockTerminated)
+        os << "  br label %" << endLabel << "\n";
+
+      os << elseLabel << ":\n";
+      blockTerminated = false;
+      for (const auto &bodyStatement : statement.getElseBody())
+        emitStatement(*bodyStatement);
+      if (!blockTerminated)
+        os << "  br label %" << endLabel << "\n";
+
+      os << endLabel << ":\n";
+      blockTerminated = false;
+      return;
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      EmittedValue condition = emitExpression(statement.getCondition());
+      std::string elseLabel = nextLabel(".Lelse");
+      std::string endLabel = nextLabel(".Lendif");
+      os << "  beqz " << condition.name << ", " << elseLabel << "\n";
+      for (const auto &bodyStatement : statement.getThenBody())
+        emitStatement(*bodyStatement);
+      os << "  j " << endLabel << "\n";
+      os << elseLabel << ":\n";
+      for (const auto &bodyStatement : statement.getElseBody())
+        emitStatement(*bodyStatement);
+      os << endLabel << ":\n";
+      return;
+    }
+
+    EmittedValue condition = emitExpression(statement.getCondition());
+    os << "    " << (dialect == TextDialect::ZC ? "zc.if " : "scf.if ")
+       << condition.name << " {\n";
+    for (const auto &bodyStatement : statement.getThenBody())
+      emitStatement(*bodyStatement);
+    if (!statement.getElseBody().empty()) {
+      os << "    } else {\n";
+      for (const auto &bodyStatement : statement.getElseBody())
+        emitStatement(*bodyStatement);
+    }
+    os << "    }\n";
+  }
+
+  void emitWhile(const WhileStmtAST &statement) {
+    if (dialect == TextDialect::LLVMIR) {
+      std::string condLabel = nextLabel("while.cond");
+      std::string bodyLabel = nextLabel("while.body");
+      std::string endLabel = nextLabel("while.end");
+      os << "  br label %" << condLabel << "\n";
+      os << condLabel << ":\n";
+      blockTerminated = false;
+      EmittedValue condition = ensureI1(emitExpression(statement.getCondition()));
+      os << "  br i1 " << condition.name << ", label %" << bodyLabel
+         << ", label %" << endLabel << "\n";
+      os << bodyLabel << ":\n";
+      blockTerminated = false;
+      for (const auto &bodyStatement : statement.getBody())
+        emitStatement(*bodyStatement);
+      if (!blockTerminated)
+        os << "  br label %" << condLabel << "\n";
+      os << endLabel << ":\n";
+      blockTerminated = false;
+      return;
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      std::string condLabel = nextLabel(".Lwhile");
+      std::string endLabel = nextLabel(".Lendwhile");
+      os << condLabel << ":\n";
+      EmittedValue condition = emitExpression(statement.getCondition());
+      os << "  beqz " << condition.name << ", " << endLabel << "\n";
+      for (const auto &bodyStatement : statement.getBody())
+        emitStatement(*bodyStatement);
+      os << "  j " << condLabel << "\n";
+      os << endLabel << ":\n";
+      return;
+    }
+
+    EmittedValue condition = emitExpression(statement.getCondition());
+    os << "    " << (dialect == TextDialect::ZC ? "zc.while " : "scf.while ")
+       << condition.name << " {\n";
+    for (const auto &bodyStatement : statement.getBody())
+      emitStatement(*bodyStatement);
+    os << "    }\n";
   }
 
   std::string nextSSAValue() {
     std::string value = "%" + std::to_string(nextValueID);
     ++nextValueID;
     return value;
+  }
+
+  std::string nextTempRegister() {
+    std::string reg = "t" + std::to_string(nextRegisterID % 7);
+    ++nextRegisterID;
+    return reg;
+  }
+
+  std::string nextLabel(StringRef prefix) {
+    std::string label = prefix.str() + "." + std::to_string(nextLabelID);
+    ++nextLabelID;
+    return label;
+  }
+
+  EmittedValue ensureI1(EmittedValue value) {
+    if (value.type == "i1")
+      return value;
+    std::string compare = nextSSAValue();
+    os << "  " << compare << " = icmp ne i32 " << value.name << ", 0\n";
+    return {compare, "i1"};
+  }
+
+  EmittedValue ensureI32(EmittedValue value) {
+    if (value.type == "i32")
+      return value;
+    std::string extended = nextSSAValue();
+    os << "  " << extended << " = zext i1 " << value.name << " to i32\n";
+    return {extended, "i32"};
+  }
+
+  bool isComparisonOp(StringRef op) const {
+    return op == "<" || op == "<=" || op == ">" || op == ">=" || op == "==" ||
+           op == "!=";
   }
 
   StringRef getArithOpcode(StringRef op) {
@@ -150,6 +332,18 @@ private:
       return "muli";
     if (op == "/")
       return "divsi";
+    if (op == "<")
+      return "cmpi slt,";
+    if (op == "<=")
+      return "cmpi sle,";
+    if (op == ">")
+      return "cmpi sgt,";
+    if (op == ">=")
+      return "cmpi sge,";
+    if (op == "==")
+      return "cmpi eq,";
+    if (op == "!=")
+      return "cmpi ne,";
     result.addDiagnostic("unsupported binary operator '" + op.str() + "'");
     return "unknown";
   }
@@ -163,8 +357,68 @@ private:
       return "mul";
     if (op == "/")
       return "div";
+    if (op == "<")
+      return "cmp_lt";
+    if (op == "<=")
+      return "cmp_le";
+    if (op == ">")
+      return "cmp_gt";
+    if (op == ">=")
+      return "cmp_ge";
+    if (op == "==")
+      return "cmp_eq";
+    if (op == "!=")
+      return "cmp_ne";
     result.addDiagnostic("unsupported binary operator '" + op.str() + "'");
     return "unknown";
+  }
+
+  StringRef getLLVMCmpPredicate(StringRef op) {
+    if (op == "<")
+      return "slt";
+    if (op == "<=")
+      return "sle";
+    if (op == ">")
+      return "sgt";
+    if (op == ">=")
+      return "sge";
+    if (op == "==")
+      return "eq";
+    if (op == "!=")
+      return "ne";
+    result.addDiagnostic("unsupported comparison operator '" + op.str() + "'");
+    return "eq";
+  }
+
+  void emitRiscVBinary(StringRef op, StringRef lhs, StringRef rhs,
+                       StringRef dest) {
+    if (op == "+")
+      os << "  add " << dest << ", " << lhs << ", " << rhs << "\n";
+    else if (op == "-")
+      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+    else if (op == "*")
+      os << "  mul " << dest << ", " << lhs << ", " << rhs << "\n";
+    else if (op == "/")
+      os << "  div " << dest << ", " << lhs << ", " << rhs << "\n";
+    else if (op == "<")
+      os << "  slt " << dest << ", " << lhs << ", " << rhs << "\n";
+    else if (op == ">")
+      os << "  slt " << dest << ", " << rhs << ", " << lhs << "\n";
+    else if (op == "<=") {
+      os << "  slt " << dest << ", " << rhs << ", " << lhs << "\n";
+      os << "  xori " << dest << ", " << dest << ", 1\n";
+    } else if (op == ">=") {
+      os << "  slt " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  xori " << dest << ", " << dest << ", 1\n";
+    } else if (op == "==") {
+      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  seqz " << dest << ", " << dest << "\n";
+    } else if (op == "!=") {
+      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  snez " << dest << ", " << dest << "\n";
+    } else {
+      result.addDiagnostic("unsupported RISC-V operator '" + op.str() + "'");
+    }
   }
 
   StringRef getLLVMOpcode(StringRef op) {
@@ -184,6 +438,9 @@ private:
   CodeGenResult &result;
   TextDialect dialect;
   unsigned nextValueID = 0;
+  unsigned nextRegisterID = 0;
+  unsigned nextLabelID = 0;
+  bool blockTerminated = false;
   std::map<std::string, std::string> variables;
 };
 
@@ -194,6 +451,8 @@ CodeGenResult emitModule(const ModuleAST &module, raw_ostream &os,
   if (dialect == TextDialect::LLVMIR) {
     os << "; ModuleID = 'zcompiler'\n";
     os << "source_filename = \"zcompiler\"\n\n";
+  } else if (dialect == TextDialect::RiscVAssembly) {
+    os << "  .option nopic\n";
   } else {
     os << "module {\n";
   }
@@ -205,7 +464,7 @@ CodeGenResult emitModule(const ModuleAST &module, raw_ostream &os,
       os << '\n';
   }
 
-  if (dialect != TextDialect::LLVMIR)
+  if (dialect != TextDialect::LLVMIR && dialect != TextDialect::RiscVAssembly)
     os << "}\n";
 
   return result;
@@ -227,6 +486,10 @@ CodeGenResult emitLoweredMLIR(const ModuleAST &module, raw_ostream &os) {
 
 CodeGenResult emitLLVMIR(const ModuleAST &module, raw_ostream &os) {
   return emitModule(module, os, TextDialect::LLVMIR);
+}
+
+CodeGenResult emitRiscVAssembly(const ModuleAST &module, raw_ostream &os) {
+  return emitModule(module, os, TextDialect::RiscVAssembly);
 }
 
 } // namespace zc

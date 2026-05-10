@@ -42,6 +42,36 @@ void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   value->dump(os, indent + 1);
 }
 
+void IfStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "IfStmt\n";
+  writeIndent(os, indent + 1);
+  os << "Condition\n";
+  condition->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Then\n";
+  for (const auto &statement : thenBody)
+    statement->dump(os, indent + 2);
+  if (!elseBody.empty()) {
+    writeIndent(os, indent + 1);
+    os << "Else\n";
+    for (const auto &statement : elseBody)
+      statement->dump(os, indent + 2);
+  }
+}
+
+void WhileStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "WhileStmt\n";
+  writeIndent(os, indent + 1);
+  os << "Condition\n";
+  condition->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Body\n";
+  for (const auto &statement : body)
+    statement->dump(os, indent + 2);
+}
+
 void FunctionAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "Function name=" << name << " return=" << returnType << '\n';
@@ -56,4 +86,3 @@ void ModuleAST::dump(raw_ostream &os) const {
 }
 
 } // namespace zc
-

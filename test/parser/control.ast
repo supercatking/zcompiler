@@ -1,0 +1,13 @@
+Module
+  Function name=main return=i32
+    IfStmt
+      Condition
+        BinaryExpr op="<"
+          IntegerExpr value=1
+          IntegerExpr value=2
+      Then
+        ReturnStmt
+          IntegerExpr value=7
+      Else
+        ReturnStmt
+          IntegerExpr value=3

@@ -1,0 +1,59 @@
+# RVV Preparation
+
+This document records the first RISC-V Vector Extension direction for
+`zcompiler`.
+
+## Source-Level Direction
+
+Initial vector syntax proposal:
+
+```zc
+func main() -> i32 {
+  let a = vector.load<i32, 8>(ptr_a);
+  let b = vector.load<i32, 8>(ptr_b);
+  let c = vector.add<i32, 8>(a, b);
+  vector.store<i32, 8>(ptr_c, c);
+  return 0;
+}
+```
+
+The toy compiler does not implement this syntax yet. It defines the direction
+for future phases.
+
+## MLIR Lowering Direction
+
+Planned lowering:
+
+```text
+zc vector source syntax
+  -> zc.vector_* operations
+  -> MLIR vector dialect
+  -> LLVM dialect / RVV intrinsics
+  -> RISC-V RVV assembly
+```
+
+## First Operation Set
+
+- `zc.vector_load`
+- `zc.vector_store`
+- `zc.vector_add`
+- `zc.vector_mul`
+- `zc.vector_reduce_add`
+
+## Initial RVV Assembly Goals
+
+Target RVV instruction families:
+
+- `vsetvli`
+- `vle32.v`
+- `vse32.v`
+- `vadd.vv`
+- `vmul.vv`
+- `vredsum.vs`
+
+## Validation Plan
+
+- Add scalar and vector reference tests.
+- Use generated LLVM IR or assembly inspection for the first RVV checks.
+- Add QEMU or Spike execution only after the scalar RISC-V path is stable.
+

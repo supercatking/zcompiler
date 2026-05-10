@@ -269,3 +269,125 @@ Validated commands:
 /home/zyz/mlir/build/bin/llvm-as /tmp/hello.ll -o /tmp/hello.bc
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+Commit:
+
+```text
+fdf4299 Implement phases 4 through 7 codegen
+d150b2e Track codegen golden outputs
+```
+
+## Phase 8: RISC-V Assembly
+
+### Execution Target
+
+Generate RISC-V assembly for the first toy program.
+
+### Execution Summary
+
+- Added `zc --emit-riscv-asm`.
+- Added RISC-V text emission for integer constants, arithmetic, comparison,
+  `if`, `while`, and `return`.
+- Added `examples/control.zc` and `examples/while.zc`.
+- Added golden tests for RISC-V assembly.
+- Added optional validation with `riscv64-linux-gnu-as` when available.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
+## Phase 9: Control Flow
+
+### Execution Target
+
+Add basic control flow and comparison operators.
+
+### Execution Summary
+
+- Added keywords:
+  - `if`
+  - `else`
+  - `while`
+- Added comparison operators:
+  - `<`
+  - `<=`
+  - `>`
+  - `>=`
+  - `==`
+  - `!=`
+- Added AST nodes:
+  - `IfStmtAST`
+  - `WhileStmtAST`
+- Added parser support for if/else blocks and while blocks.
+- Added LLVM IR control-flow emission with labels and branches.
+- Added parser and codegen tests for control-flow examples.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-llvm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
+## Phase 10: Vector and RVV Preparation
+
+### Execution Target
+
+Define a concrete path from future source-level vector operations to RISC-V RVV
+code generation.
+
+### Execution Summary
+
+- Added [docs/rvv.md](docs/rvv.md).
+- Proposed future vector source syntax.
+- Defined the planned lowering path:
+  - zc vector source syntax
+  - zc vector operations
+  - MLIR vector dialect
+  - LLVM dialect / RVV intrinsics
+  - RISC-V RVV assembly
+- Listed initial vector operation candidates.
+- Listed first RVV instruction families to target.
+
+### Execution Result
+
+Completed as a design and implementation-preparation phase.
+
+## Phase 11: AI-Assisted Compiler Direction
+
+### Execution Target
+
+Define the first AI-assisted compiler workflow for optimization experiments,
+benchmark records, prompt records, and safety rules.
+
+### Execution Summary
+
+- Added [docs/ai-workflow.md](docs/ai-workflow.md).
+- Defined experiment record format.
+- Defined prompt record format.
+- Added safety rules for AI-generated compiler changes.
+- Listed near-term AI-assisted compiler uses.
+
+### Execution Result
+
+Completed as a workflow foundation.
+
+Final validation:
+
+```bash
+cmake --build /home/zyz/zcomipler/build
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

@@ -48,7 +48,43 @@ std::vector<Token> Lexer::lexAll() {
       tokens.push_back(makeToken(TokenKind::Slash, start, tokenLine, tokenColumn));
       break;
     case '=':
-      tokens.push_back(makeToken(TokenKind::Equal, start, tokenLine, tokenColumn));
+      if (peek() == '=') {
+        advance();
+        tokens.push_back(
+            makeToken(TokenKind::EqualEqual, start, tokenLine, tokenColumn));
+      } else {
+        tokens.push_back(
+            makeToken(TokenKind::Equal, start, tokenLine, tokenColumn));
+      }
+      break;
+    case '!':
+      if (peek() == '=') {
+        advance();
+        tokens.push_back(
+            makeToken(TokenKind::BangEqual, start, tokenLine, tokenColumn));
+      } else {
+        reportInvalidCharacter(value, tokenLine, tokenColumn);
+      }
+      break;
+    case '<':
+      if (peek() == '=') {
+        advance();
+        tokens.push_back(
+            makeToken(TokenKind::LessEqual, start, tokenLine, tokenColumn));
+      } else {
+        tokens.push_back(
+            makeToken(TokenKind::Less, start, tokenLine, tokenColumn));
+      }
+      break;
+    case '>':
+      if (peek() == '=') {
+        advance();
+        tokens.push_back(
+            makeToken(TokenKind::GreaterEqual, start, tokenLine, tokenColumn));
+      } else {
+        tokens.push_back(
+            makeToken(TokenKind::Greater, start, tokenLine, tokenColumn));
+      }
       break;
     case '(':
       tokens.push_back(makeToken(TokenKind::LParen, start, tokenLine, tokenColumn));
@@ -144,6 +180,12 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwLet;
   else if (text == "return")
     kind = TokenKind::KwReturn;
+  else if (text == "if")
+    kind = TokenKind::KwIf;
+  else if (text == "else")
+    kind = TokenKind::KwElse;
+  else if (text == "while")
+    kind = TokenKind::KwWhile;
   else if (text == "i32")
     kind = TokenKind::KwI32;
 
@@ -184,4 +226,3 @@ void printTokens(ArrayRef<Token> tokens, raw_ostream &os) {
 }
 
 } // namespace zc
-

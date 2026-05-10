@@ -113,4 +113,17 @@ Phases 4-7 add MLIR and LLVM IR emission:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-zc-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-lowered-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-llvm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
 ```
+
+Later phases add control-flow examples:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
+```
+
+Planning documents for the accelerator direction:
+
+- [docs/rvv.md](docs/rvv.md)
+- [docs/ai-workflow.md](docs/ai-workflow.md)
