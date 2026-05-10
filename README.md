@@ -25,16 +25,21 @@ The final system should become a compiler stack that combines:
 ## First Milestone
 
 The first milestone is `toy-zc`, a minimal compiler inspired by MLIR's Toy
-tutorial. It should support:
+tutorial. It currently supports:
 
 - Integer literals.
 - Variables.
 - Arithmetic expressions.
-- Function definition.
+- Function definitions, parameters, and calls.
 - Return statement.
+- Straight-line assignment.
+- `ptr<i32>` buffer parameters.
+- Scalar indexed `load` / `store`.
+- Target-independent `vector_add` syntax.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
+- Direct RVV reference assembly for vector add.
 
 Example target input:
 
@@ -123,7 +128,19 @@ Later phases add control-flow examples:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
 ```
 
+Current RVV vector-add path:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+```
+
 Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
 - [docs/ai-workflow.md](docs/ai-workflow.md)
+- [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md)
+- [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)
+- [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md)

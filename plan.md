@@ -538,11 +538,12 @@ accepted or rejected.
 
 ## Immediate Next Tasks
 
-The next implementation steps after Phase 16:
+The next implementation steps after the current Phase 22A state:
 
-1. Phase 17: implement calls, assignment, and a first memory model.
-2. Phase 18: add target-independent vector syntax and vector AST nodes.
-3. Phase 19: lower vector operations to MLIR vector dialect.
-4. Phase 20: lower vector operations toward RVV output.
-5. Phase 21: add accelerator profiles and reproducible benchmarks.
-6. Phase 22: implement the AI-assisted optimization experiment loop.
+1. Phase 19B: add tail/mask handling for vector lengths that are not multiples
+   of 4.
+2. Phase 20B: add RVV objdump golden checks and investigate formal
+   MLIR/LLVM-to-RVV lowering.
+3. Phase 21B: add machine-readable benchmark metadata and scalar-vs-vector
+   comparison records.
+4. Phase 22B: add prompt records for future AI-suggested optimization changes.

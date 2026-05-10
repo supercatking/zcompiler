@@ -326,22 +326,18 @@ The final goal is:
 an AI self made compiler based on RISCV RVV accelerator
 ```
 
-The remaining roadmap is:
+The current roadmap status:
 
-- Phase 12: turn `zc` into a registered MLIR dialect.
-- Phase 13: implement real MLIR rewrite-pattern lowering.
-- Phase 14: build MLIR modules in memory with MLIR C++ APIs.
-- Phase 15: lower through MLIR LLVM dialect and emit LLVM IR through
-  infrastructure rather than hand-written text.
-- Phase 16: generate RISC-V assembly through LLVM's RISC-V backend. Completed
-  with `Target/RiscV` using MLIR-generated LLVM IR and `llc`.
-- Phase 17: add functions, calls, assignment, and memory operations.
-- Phase 18: add target-independent vector syntax and vector AST nodes.
-- Phase 19: lower vector operations to MLIR vector dialect.
-- Phase 20: lower vector operations toward RVV output.
-- Phase 21: add accelerator profiles and reproducible benchmarks.
-- Phase 22: implement the AI-assisted optimization experiment loop.
+- Phase 12-16: completed the registered dialect, lowering pass, MLIR API
+  emission, LLVM IR pipeline, and RISC-V backend path.
+- Phase 17: completed functions, calls, assignment, and scalar pointer
+  load/store.
+- Phase 18: completed target-independent `vector_add` syntax and AST.
+- Phase 19: completed first MLIR vector dialect lowering for fixed
+  `vector<4xi32>` chunks.
+- Phase 20: completed direct RVV reference assembly for vector add.
+- Phase 21: completed first reproducible vector-add artifact workflow.
+- Phase 22: completed first AI-assisted experiment record.
 
-The next implementation priority is Phase 17: extend the language with calls,
-assignment, and a first memory model while preserving the MLIR-backed target
-pipeline.
+The next implementation priority is tail/mask handling for vector lengths that
+are not multiples of 4, followed by a more formal MLIR/LLVM RVV lowering path.
