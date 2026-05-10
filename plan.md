@@ -476,7 +476,8 @@ Goal: define the target accelerator assumptions and measure scalar versus
 vector paths.
 
 Phase 21A starts with `benchmarks/vector_add/`, which generates reference C RVV
-artifacts and zcompiler RVV artifacts side by side.
+artifacts and zcompiler RVV artifacts side by side. Phase 21C adds a scalar C
+baseline and records scalar-vs-vector comparison metadata.
 
 Deliverables:
 
@@ -544,11 +545,11 @@ accepted or rejected.
 
 The next implementation steps after the current Phase 22A state:
 
-1. Phase 21C: add scalar baseline artifacts and scalar-vs-vector comparison
-   records to the benchmark workflow.
-2. Phase 20C: investigate a formal MLIR/LLVM vector-to-RVV lowering pipeline
+1. Phase 20C: investigate a formal MLIR/LLVM vector-to-RVV lowering pipeline
    for masked vector IR, then compare it with the direct reference assembly.
-3. Phase 23A: introduce an accelerator profile document/data file that records
+2. Phase 23A: introduce an accelerator profile document/data file that records
    assumed RVV width, supported element types, and target lowering policy.
-4. Phase 24A: add correctness-oriented executable tests for vector-add outputs
+3. Phase 24A: add correctness-oriented executable tests for vector-add outputs
    through an emulator or a host-side reference harness when available.
+4. Phase 25A: generalize the vector kernel surface beyond `vector_add` toward
+   copy, scale, multiply-add, and reduction kernels.

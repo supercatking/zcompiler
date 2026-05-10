@@ -370,6 +370,40 @@ Validated commands:
 python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
 ```
 
+## Phase 21C: Scalar Baseline Comparison Metadata
+
+### Execution Target
+
+Add a scalar baseline to the vector-add benchmark so future accelerator work can
+compare vector artifacts against a non-vector implementation.
+
+### Execution Summary
+
+- Added `benchmarks/vector_add/reference_scalar.c`.
+- Extended `benchmarks/vector_add/run.sh` to emit scalar assembly, object, and
+  objdump artifacts.
+- Updated `result.json` to schema version 2 with:
+  - scalar baseline artifacts
+  - RVV reference artifacts
+  - zcompiler RVV artifacts
+  - scalar instruction counts
+  - scalar RVV-instruction absence
+  - zcompiler-vs-scalar object-size delta
+  - zcompiler-vs-reference-RVV object-size delta
+- Updated [docs/benchmark-workflow.md](docs/benchmark-workflow.md) and
+  `benchmarks/vector_add/README.md`.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+```
+
 ## Phase 22B: Prompt Records
 
 ### Execution Target

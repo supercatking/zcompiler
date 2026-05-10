@@ -17,16 +17,27 @@ Benchmark scripts should emit `result.json` with:
 schema_version
 benchmark_id
 source_program
-reference_source
+reference_sources
 output_directory
 tools
 required_instructions
 artifacts
 instruction_counts
+comparisons
 status
 ```
 
 Human-readable summaries should be emitted as `result.md`.
+
+Schema version 2 adds scalar-vs-vector comparison records. For vector-add this
+means the benchmark records:
+
+- Scalar C baseline artifacts.
+- Hand-written RVV C reference artifacts.
+- zcompiler RVV artifacts.
+- Scalar RVV-instruction absence.
+- Required RVV-instruction presence for vector outputs.
+- Object-size deltas for zcompiler vs scalar and zcompiler vs reference RVV.
 
 ## Current Benchmarks
 

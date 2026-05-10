@@ -5,6 +5,7 @@ add.
 
 It compares two outputs:
 
+- `reference_scalar.c`: scalar C baseline without RVV instructions.
 - `reference_rvv.c`: hand-written C using RISC-V vector intrinsics.
 - `examples/vector_add.zc`: zcompiler source lowered to RVV reference assembly.
 
@@ -22,6 +23,9 @@ build/benchmarks/vector_add/
 
 Expected artifacts:
 
+- `reference_scalar.s`
+- `reference_scalar.o`
+- `reference_scalar.objdump`
 - `reference_rvv.s`
 - `reference_rvv.o`
 - `reference_rvv.objdump`
@@ -40,3 +44,7 @@ contain RVV instruction families.
 Phase 21B adds machine-readable `result.json` metadata and a human-readable
 `result.md` summary. These files are generated into the build directory and are
 not checked in as golden outputs.
+
+Phase 21C adds a scalar C baseline and records scalar-vs-vector comparison
+metadata, including object-size deltas and whether the scalar baseline contains
+any required RVV instruction families.

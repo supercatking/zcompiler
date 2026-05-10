@@ -41,6 +41,7 @@ tutorial. It currently supports:
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
 - Direct RVV reference assembly for vector add.
+- Scalar-vs-vector benchmark metadata for vector add.
 
 Example target input:
 
