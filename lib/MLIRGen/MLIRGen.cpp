@@ -2,6 +2,7 @@
 
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
 
@@ -21,7 +22,8 @@ public:
       : context(context), builder(&context), result(result) {}
 
   OwningOpRef<ModuleOp> generate(const ModuleAST &moduleAST) {
-    context.loadDialect<arith::ArithDialect, func::FuncDialect>();
+    context.loadDialect<arith::ArithDialect, func::FuncDialect,
+                        memref::MemRefDialect>();
 
     auto module = ModuleOp::create(builder.getUnknownLoc());
     builder.setInsertionPointToStart(module.getBody());
@@ -36,9 +38,11 @@ private:
   void emitFunction(const FunctionAST &function) {
     variables.clear();
     Location loc = builder.getUnknownLoc();
-    Type i32 = builder.getI32Type();
-    SmallVector<Type, 4> inputTypes(function.getParameters().size(), i32);
-    auto functionType = builder.getFunctionType(inputTypes, {i32});
+    SmallVector<Type, 4> inputTypes;
+    for (const ParameterAST &parameter : function.getParameters())
+      inputTypes.push_back(getType(parameter.getType()));
+    auto functionType =
+        builder.getFunctionType(inputTypes, {getType(function.getReturnType())});
     auto func = func::FuncOp::create(loc, function.getName(), functionType);
     builder.insert(func);
 
@@ -73,6 +77,8 @@ private:
       return emitBinary(static_cast<const BinaryExprAST &>(expression));
     case ExprKind::Call:
       return emitCall(static_cast<const CallExprAST &>(expression));
+    case ExprKind::Load:
+      return emitLoad(static_cast<const LoadExprAST &>(expression));
     }
 
     result.addDiagnostic("unknown expression kind");
@@ -148,6 +154,22 @@ private:
     return call.getResult(0);
   }
 
+  Value emitLoad(const LoadExprAST &expression) {
+    auto found = variables.find(expression.getBufferName());
+    if (found == variables.end()) {
+      result.addDiagnostic("unknown buffer '" + expression.getBufferName() +
+                           "'");
+      return nullptr;
+    }
+
+    Value index = ensureIndex(emitExpression(expression.getIndex()));
+    if (!index)
+      return nullptr;
+
+    return builder.create<memref::LoadOp>(builder.getUnknownLoc(),
+                                          found->second, ValueRange(index));
+  }
+
   void emitStatement(const StmtAST &statement) {
     switch (statement.getKind()) {
     case StmtKind::Let:
@@ -155,6 +177,9 @@ private:
       return;
     case StmtKind::Assign:
       emitAssign(static_cast<const AssignStmtAST &>(statement));
+      return;
+    case StmtKind::Store:
+      emitStore(static_cast<const StoreStmtAST &>(statement));
       return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
@@ -181,11 +206,46 @@ private:
       variables[statement.getName()] = value;
   }
 
+  void emitStore(const StoreStmtAST &statement) {
+    auto found = variables.find(statement.getBufferName());
+    if (found == variables.end()) {
+      result.addDiagnostic("unknown buffer '" + statement.getBufferName() +
+                           "'");
+      return;
+    }
+
+    Value index = ensureIndex(emitExpression(statement.getIndex()));
+    Value value = emitExpression(statement.getValue());
+    if (!index || !value)
+      return;
+
+    builder.create<memref::StoreOp>(builder.getUnknownLoc(), value,
+                                    found->second, ValueRange(index));
+  }
+
   void emitReturn(const ReturnStmtAST &statement) {
     Value value = emitExpression(statement.getValue());
     if (value)
       builder.create<func::ReturnOp>(builder.getUnknownLoc(),
                                      ValueRange(value));
+  }
+
+  Type getType(StringRef sourceType) {
+    if (sourceType == "ptr<i32>")
+      return MemRefType::get({ShapedType::kDynamic}, builder.getI32Type());
+    return builder.getI32Type();
+  }
+
+  Value ensureIndex(Value value) {
+    if (!value)
+      return nullptr;
+    if (value.getType().isIndex())
+      return value;
+    if (value.getType().isInteger(32))
+      return builder.create<arith::IndexCastOp>(
+          builder.getUnknownLoc(), builder.getIndexType(), value);
+    result.addDiagnostic("expected i32 or index expression for memory index");
+    return nullptr;
   }
 
   MLIRContext &context;

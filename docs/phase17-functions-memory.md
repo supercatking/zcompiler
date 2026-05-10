@@ -109,13 +109,47 @@ features.
 
 ## Memory Model Next Step
 
-After parameters, calls, and assignment are stable, add array-like syntax:
+After parameters, calls, and assignment are stable, add array-like syntax. The
+Phase 17B implementation uses source-level `ptr<i32>` as the first buffer type:
 
 ```zc
-func kernel(a: memref<i32>, i: i32) -> i32 {
-  return load a[i];
+func add_at(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, i: i32) -> i32 {
+  let x = load a[i];
+  let y = load b[i];
+  let z = x + y;
+  store c[i] = z;
+  return z;
 }
 ```
 
-That next slice should introduce explicit `LoadStmt` / `StoreStmt` or
-`LoadExpr` / `StoreStmt` nodes and lower them through MLIR memref operations.
+This slice introduces:
+
+- `ptr<i32>` parameter types.
+- `LoadExprAST` for `load buffer[index]`.
+- `StoreStmtAST` for `store buffer[index] = value;`.
+
+The source type name is intentionally `ptr<i32>` because the eventual LLVM/RVV
+backend sees this as pointer-like data. The frontend still treats it as a typed
+buffer abstraction rather than exposing pointer arithmetic to users.
+
+## Phase 17B Lowering Choice
+
+The initial implementation may lower through either of these paths:
+
+```text
+ptr<i32> source type
+  -> memref-like MLIR buffer operation
+  -> LLVM pointer representation
+```
+
+or:
+
+```text
+ptr<i32> source type
+  -> direct LLVM pointer IR in the reference backend
+  -> RISC-V scalar load/store
+```
+
+The preferred long-term path is the first one. The direct LLVM/RISC-V fallback
+is acceptable only as a temporary reference path and must stay documented in
+`progress.md`.

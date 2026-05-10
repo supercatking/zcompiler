@@ -42,6 +42,14 @@ void CallExprAST::dump(raw_ostream &os, unsigned indent) const {
     arg->dump(os, indent + 1);
 }
 
+void LoadExprAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "LoadExpr buffer=" << bufferName << '\n';
+  writeIndent(os, indent + 1);
+  os << "Index\n";
+  index->dump(os, indent + 2);
+}
+
 void LetStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "LetStmt name=" << name << '\n';
@@ -52,6 +60,17 @@ void AssignStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "AssignStmt name=" << name << '\n';
   value->dump(os, indent + 1);
+}
+
+void StoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "StoreStmt buffer=" << bufferName << '\n';
+  writeIndent(os, indent + 1);
+  os << "Index\n";
+  index->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Value\n";
+  value->dump(os, indent + 2);
 }
 
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {

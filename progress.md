@@ -270,6 +270,70 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 17B: Scalar Memory and Array Access
+
+### Execution Target
+
+Add the scalar memory baseline needed before vector syntax: typed buffer
+parameters, scalar indexed loads, and scalar indexed stores.
+
+### Execution Summary
+
+- Extended the Phase 17 design with the `ptr<i32>` source type.
+- Added lexer support for:
+  - `ptr`
+  - `load`
+  - `store`
+  - `[`
+  - `]`
+- Added AST nodes:
+  - `LoadExprAST`
+  - `StoreStmtAST`
+- Added parser support for:
+  - `ptr<i32>` parameter types
+  - `load a[i]`
+  - `store c[i] = value;`
+- Added MLIRGen lowering:
+  - `ptr<i32>` -> `memref<?xi32>`
+  - `load` -> `memref.load`
+  - `store` -> `memref.store`
+  - `i32` index -> `index` through `arith.index_cast`
+- Extended reference LLVM/RISC-V emitters for typed-pointer load/store.
+- Hardened the RISC-V backend fallback: when MLIR v23 LLVM IR is incompatible
+  with the system LLVM 14 `llc`, the backend retries with typed-pointer
+  reference LLVM IR and still emits RISC-V assembly through `llc`.
+- Added `examples/arrays.zc`.
+- Added lexer, parser, MLIR, LLVM IR, and RISC-V assembly golden tests for
+  `arrays.zc`.
+
+### Execution Result
+
+Completed.
+
+This phase provides the scalar memory shape needed for future vector add:
+
+```zc
+func add_at(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, i: i32) -> i32 {
+  let x = load a[i];
+  let y = load b[i];
+  let z = x + y;
+  store c[i] = z;
+  return z;
+}
+```
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-llvm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-riscv-asm
+/home/zyz/mlir/build/bin/mlir-opt /tmp/arrays.mlir -o /tmp/arrays.checked.mlir
+/home/zyz/mlir/build/bin/llvm-as /tmp/arrays.ll -o /tmp/arrays.bc
+riscv64-linux-gnu-as /tmp/arrays.s -o /tmp/arrays.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 Commit:
 
 ```text

@@ -133,12 +133,49 @@ CodeGenResult emitLLVMIRToFile(const ModuleAST &module, StringRef llvmIRPath) {
   return result;
 }
 
+CodeGenResult emitReferenceLLVMIRToFile(const ModuleAST &module,
+                                        StringRef llvmIRPath) {
+  CodeGenResult result;
+  std::error_code ec;
+  raw_fd_ostream llvmFile(llvmIRPath, ec, sys::fs::OF_Text);
+  if (ec) {
+    addDiagnostic(result, "failed to create temporary LLVM IR file: " +
+                              Twine(ec.message()));
+    return result;
+  }
+
+  result = emitLLVMIR(module, llvmFile);
+  llvmFile << "\n";
+  return result;
+}
+
 std::optional<StringRef> findLLC() {
   if (sys::fs::can_execute(kSystemLLCPath))
     return kSystemLLCPath;
   if (sys::fs::can_execute(kMLIRBuildLLCPath))
     return kMLIRBuildLLCPath;
   return std::nullopt;
+}
+
+bool runLLC(StringRef llcPath, StringRef llvmIRPath, StringRef assemblyPath,
+            CodeGenResult &result) {
+  StringRef devNull = "/dev/null";
+  std::optional<StringRef> redirects[3] = {std::nullopt, std::nullopt,
+                                           devNull};
+  SmallVector<StringRef, 10> llcArgs = {
+      llcPath,
+      "-mtriple=riscv64-unknown-elf",
+      "-mattr=+m",
+      "-filetype=asm",
+      llvmIRPath,
+      "-o",
+      assemblyPath,
+  };
+  if (sys::ExecuteAndWait(llcPath, llcArgs, std::nullopt, redirects) == 0)
+    return true;
+
+  result.addDiagnostic("llc failed to emit RISC-V assembly");
+  return false;
 }
 
 } // namespace
@@ -181,30 +218,24 @@ CodeGenResult emitRiscVAssemblyWithLLVMBackend(const ModuleAST &module,
   FileRemover removeLLVMIR(llvmIRPath);
   FileRemover removeAssembly(assemblyPath);
 
-  result = emitLLVMIRToFile(module, llvmIRPath);
-  if (!result.succeeded())
-    return result;
-
   std::optional<StringRef> llcPath = findLLC();
   if (!llcPath) {
     result.addDiagnostic("llc with RISC-V target support was not found");
     return result;
   }
 
-  std::optional<StringRef> redirects[3] = {std::nullopt, std::nullopt,
-                                           std::nullopt};
-  SmallVector<StringRef, 10> llcArgs = {
-      *llcPath,
-      "-mtriple=riscv64-unknown-elf",
-      "-mattr=+m",
-      "-filetype=asm",
-      llvmIRPath,
-      "-o",
-      assemblyPath,
-  };
-  if (sys::ExecuteAndWait(*llcPath, llcArgs, std::nullopt, redirects) != 0) {
-    result.addDiagnostic("llc failed to emit RISC-V assembly");
-    return result;
+  CodeGenResult mlirLLVMResult = emitLLVMIRToFile(module, llvmIRPath);
+  CodeGenResult llcResult;
+  if (!mlirLLVMResult.succeeded() ||
+      !runLLC(*llcPath, llvmIRPath, assemblyPath, llcResult)) {
+    CodeGenResult referenceLLVMResult =
+        emitReferenceLLVMIRToFile(module, llvmIRPath);
+    if (!referenceLLVMResult.succeeded())
+      return referenceLLVMResult;
+
+    CodeGenResult referenceLLCResult;
+    if (!runLLC(*llcPath, llvmIRPath, assemblyPath, referenceLLCResult))
+      return referenceLLCResult;
   }
 
   ErrorOr<std::unique_ptr<MemoryBuffer>> assembly =

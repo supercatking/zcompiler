@@ -26,6 +26,12 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_while";
   case TokenKind::KwI32:
     return "kw_i32";
+  case TokenKind::KwPtr:
+    return "kw_ptr";
+  case TokenKind::KwLoad:
+    return "kw_load";
+  case TokenKind::KwStore:
+    return "kw_store";
   case TokenKind::Plus:
     return "plus";
   case TokenKind::Minus:
@@ -58,6 +64,10 @@ StringRef getTokenKindName(TokenKind kind) {
     return "l_brace";
   case TokenKind::RBrace:
     return "r_brace";
+  case TokenKind::LBracket:
+    return "l_bracket";
+  case TokenKind::RBracket:
+    return "r_bracket";
   case TokenKind::Colon:
     return "colon";
   case TokenKind::Comma:

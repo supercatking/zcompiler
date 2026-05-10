@@ -15,11 +15,13 @@ enum class ExprKind {
   Variable,
   Binary,
   Call,
+  Load,
 };
 
 enum class StmtKind {
   Let,
   Assign,
+  Store,
   Return,
   If,
   While,
@@ -98,6 +100,20 @@ private:
   std::vector<std::unique_ptr<ExprAST>> args;
 };
 
+class LoadExprAST final : public ExprAST {
+public:
+  LoadExprAST(std::string bufferName, std::unique_ptr<ExprAST> index)
+      : bufferName(std::move(bufferName)), index(std::move(index)) {}
+  ExprKind getKind() const override { return ExprKind::Load; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBufferName() const { return bufferName; }
+  const ExprAST &getIndex() const { return *index; }
+
+private:
+  std::string bufferName;
+  std::unique_ptr<ExprAST> index;
+};
+
 class StmtAST {
 public:
   virtual ~StmtAST() = default;
@@ -130,6 +146,24 @@ public:
 
 private:
   std::string name;
+  std::unique_ptr<ExprAST> value;
+};
+
+class StoreStmtAST final : public StmtAST {
+public:
+  StoreStmtAST(std::string bufferName, std::unique_ptr<ExprAST> index,
+               std::unique_ptr<ExprAST> value)
+      : bufferName(std::move(bufferName)), index(std::move(index)),
+        value(std::move(value)) {}
+  StmtKind getKind() const override { return StmtKind::Store; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBufferName() const { return bufferName; }
+  const ExprAST &getIndex() const { return *index; }
+  const ExprAST &getValue() const { return *value; }
+
+private:
+  std::string bufferName;
+  std::unique_ptr<ExprAST> index;
   std::unique_ptr<ExprAST> value;
 };
 

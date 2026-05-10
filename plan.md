@@ -362,6 +362,9 @@ Design note: the first implementation slice is documented in
 straight-line assignment first, then extends into explicit array/memref
 load/store syntax.
 
+Phase 17B extends that design with `ptr<i32>` parameters plus `load a[i]` and
+`store c[i] = value;` so vector work has a real scalar memory baseline.
+
 Deliverables:
 
 - Function parameters.

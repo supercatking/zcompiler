@@ -24,6 +24,18 @@ struct EmittedValue {
   std::string type;
 };
 
+StringRef getLLVMType(StringRef sourceType) {
+  if (sourceType == "ptr<i32>")
+    return "i32*";
+  return "i32";
+}
+
+StringRef getMLIRType(StringRef sourceType) {
+  if (sourceType == "ptr<i32>")
+    return "memref<?xi32>";
+  return "i32";
+}
+
 class FunctionEmitter {
 public:
   FunctionEmitter(raw_ostream &os, CodeGenResult &result, TextDialect dialect)
@@ -39,12 +51,14 @@ public:
            ++index) {
         if (index != 0)
           os << ", ";
-        os << "i32 %" << function.getParameters()[index].getName();
+        const ParameterAST &parameter = function.getParameters()[index];
+        os << getLLVMType(parameter.getType()) << " %" << parameter.getName();
       }
       os << ") {\n";
       os << "entry:\n";
       for (const auto &parameter : function.getParameters())
-        variables[parameter.getName()] = "%" + parameter.getName();
+        variables[parameter.getName()] = {"%" + parameter.getName(),
+                                          parameter.getType()};
     } else if (dialect == TextDialect::RiscVAssembly) {
       os << "  .text\n";
       os << "  .globl " << function.getName() << "\n";
@@ -52,7 +66,8 @@ public:
       for (size_t index = 0; index < function.getParameters().size();
            ++index)
         variables[function.getParameters()[index].getName()] =
-            "a" + std::to_string(index);
+            {"a" + std::to_string(index),
+             function.getParameters()[index].getType()};
     } else {
       const char *funcOp =
           dialect == TextDialect::ZC ? "zc.func" : "func.func";
@@ -63,8 +78,8 @@ public:
           os << ", ";
         const ParameterAST &parameter = function.getParameters()[index];
         std::string value = nextSSAValue();
-        variables[parameter.getName()] = value;
-        os << value << ": " << parameter.getType();
+        variables[parameter.getName()] = {value, parameter.getType()};
+        os << value << ": " << getMLIRType(parameter.getType());
       }
       os << ") -> " << function.getReturnType() << " {\n";
     }
@@ -97,6 +112,8 @@ private:
       return emitBinary(static_cast<const BinaryExprAST &>(expression));
     case ExprKind::Call:
       return emitCall(static_cast<const CallExprAST &>(expression));
+    case ExprKind::Load:
+      return emitLoad(static_cast<const LoadExprAST &>(expression));
     }
     result.addDiagnostic("unknown expression kind");
     return {"", ""};
@@ -128,7 +145,7 @@ private:
       result.addDiagnostic("unknown variable '" + expression.getName() + "'");
       return {"", ""};
     }
-    return {found->second, "i32"};
+    return found->second;
   }
 
   EmittedValue emitBinary(const BinaryExprAST &expression) {
@@ -180,7 +197,7 @@ private:
       for (size_t index = 0; index < args.size(); ++index) {
         if (index != 0)
           os << ", ";
-        os << "i32 " << args[index].name;
+        os << getLLVMType(args[index].type) << " " << args[index].name;
       }
       os << ")\n";
       return {value, "i32"};
@@ -209,9 +226,55 @@ private:
     for (size_t index = 0; index < args.size(); ++index) {
       if (index != 0)
         os << ", ";
-      os << "i32";
+      os << getMLIRType(args[index].type);
     }
     os << ") -> i32\n";
+    return {value, "i32"};
+  }
+
+  EmittedValue emitLoad(const LoadExprAST &expression) {
+    auto found = variables.find(expression.getBufferName());
+    if (found == variables.end()) {
+      result.addDiagnostic("unknown buffer '" + expression.getBufferName() +
+                           "'");
+      return {"", ""};
+    }
+
+    EmittedValue index = emitExpression(expression.getIndex());
+    if (index.name.empty())
+      return {"", ""};
+
+    std::string value = nextSSAValue();
+    if (dialect == TextDialect::LLVMIR) {
+      std::string address = nextSSAValue();
+      os << "  " << address << " = getelementptr inbounds i32, i32* "
+         << found->second.name << ", i32 " << index.name << "\n";
+      os << "  " << value << " = load i32, i32* " << address << ", align 4\n";
+      return {value, "i32"};
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      std::string offset = nextTempRegister();
+      std::string address = nextTempRegister();
+      os << "  slli " << offset << ", " << index.name << ", 2\n";
+      os << "  add " << address << ", " << found->second.name << ", "
+         << offset << "\n";
+      std::string reg = nextTempRegister();
+      os << "  lw " << reg << ", 0(" << address << ")\n";
+      return {reg, "i32"};
+    }
+
+    if (dialect == TextDialect::ZC) {
+      os << "    " << value << " = zc.load " << found->second.name << "["
+         << index.name << "] : i32\n";
+      return {value, "i32"};
+    }
+
+    std::string indexValue = nextSSAValue();
+    os << "    " << indexValue << " = arith.index_cast " << index.name
+       << " : i32 to index\n";
+    os << "    " << value << " = memref.load " << found->second.name << "["
+       << indexValue << "] : memref<?xi32>\n";
     return {value, "i32"};
   }
 
@@ -222,6 +285,9 @@ private:
       return;
     case StmtKind::Assign:
       emitAssign(static_cast<const AssignStmtAST &>(statement));
+      return;
+    case StmtKind::Store:
+      emitStore(static_cast<const StoreStmtAST &>(statement));
       return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
@@ -239,13 +305,58 @@ private:
   void emitLet(const LetStmtAST &statement) {
     EmittedValue value = emitExpression(statement.getValue());
     if (!value.name.empty())
-      variables[statement.getName()] = value.name;
+      variables[statement.getName()] = value;
   }
 
   void emitAssign(const AssignStmtAST &statement) {
     EmittedValue value = emitExpression(statement.getValue());
     if (!value.name.empty())
-      variables[statement.getName()] = value.name;
+      variables[statement.getName()] = value;
+  }
+
+  void emitStore(const StoreStmtAST &statement) {
+    auto found = variables.find(statement.getBufferName());
+    if (found == variables.end()) {
+      result.addDiagnostic("unknown buffer '" + statement.getBufferName() +
+                           "'");
+      return;
+    }
+
+    EmittedValue index = emitExpression(statement.getIndex());
+    EmittedValue value = emitExpression(statement.getValue());
+    if (index.name.empty() || value.name.empty())
+      return;
+
+    if (dialect == TextDialect::LLVMIR) {
+      std::string address = nextSSAValue();
+      os << "  " << address << " = getelementptr inbounds i32, i32* "
+         << found->second.name << ", i32 " << index.name << "\n";
+      os << "  store i32 " << value.name << ", i32* " << address
+         << ", align 4\n";
+      return;
+    }
+
+    if (dialect == TextDialect::RiscVAssembly) {
+      std::string offset = nextTempRegister();
+      std::string address = nextTempRegister();
+      os << "  slli " << offset << ", " << index.name << ", 2\n";
+      os << "  add " << address << ", " << found->second.name << ", "
+         << offset << "\n";
+      os << "  sw " << value.name << ", 0(" << address << ")\n";
+      return;
+    }
+
+    if (dialect == TextDialect::ZC) {
+      os << "    zc.store " << value.name << ", " << found->second.name
+         << "[" << index.name << "] : i32\n";
+      return;
+    }
+
+    std::string indexValue = nextSSAValue();
+    os << "    " << indexValue << " = arith.index_cast " << index.name
+       << " : i32 to index\n";
+    os << "    memref.store " << value.name << ", " << found->second.name
+       << "[" << indexValue << "] : memref<?xi32>\n";
   }
 
   void emitReturn(const ReturnStmtAST &statement) {
@@ -524,7 +635,7 @@ private:
   unsigned nextRegisterID = 0;
   unsigned nextLabelID = 0;
   bool blockTerminated = false;
-  std::map<std::string, std::string> variables;
+  std::map<std::string, EmittedValue> variables;
 };
 
 CodeGenResult emitModule(const ModuleAST &module, raw_ostream &os,

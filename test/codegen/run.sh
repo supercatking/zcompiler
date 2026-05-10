@@ -44,6 +44,18 @@ diff -u "$source_root/test/codegen/calls.ll" "$tmp_dir/calls.ll"
   > "$tmp_dir/calls.riscv"
 diff -u "$source_root/test/codegen/calls.riscv" "$tmp_dir/calls.riscv"
 
+"$zc_bin" "$source_root/examples/arrays.zc" --emit-mlir \
+  > "$tmp_dir/arrays.mlir"
+diff -u -B "$source_root/test/codegen/arrays.mlir" "$tmp_dir/arrays.mlir"
+
+"$zc_bin" "$source_root/examples/arrays.zc" --emit-llvm \
+  > "$tmp_dir/arrays.ll"
+diff -u "$source_root/test/codegen/arrays.ll" "$tmp_dir/arrays.ll"
+
+"$zc_bin" "$source_root/examples/arrays.zc" --emit-riscv-asm \
+  > "$tmp_dir/arrays.riscv"
+diff -u "$source_root/test/codegen/arrays.riscv" "$tmp_dir/arrays.riscv"
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -57,6 +69,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/hello.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/calls.mlir" \
     -o "$tmp_dir/calls.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/arrays.mlir" \
+    -o "$tmp_dir/arrays.opt.mlir"
 fi
 
 if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then
@@ -68,9 +82,12 @@ if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then
     -o "$tmp_dir/while.bc"
   /home/zyz/mlir/build/bin/llvm-as "$tmp_dir/calls.ll" \
     -o "$tmp_dir/calls.bc"
+  /home/zyz/mlir/build/bin/llvm-as "$tmp_dir/arrays.ll" \
+    -o "$tmp_dir/arrays.bc"
 fi
 
 if command -v riscv64-linux-gnu-as >/dev/null; then
   riscv64-linux-gnu-as "$tmp_dir/hello.riscv" -o "$tmp_dir/hello.o"
   riscv64-linux-gnu-as "$tmp_dir/calls.riscv" -o "$tmp_dir/calls.o"
+  riscv64-linux-gnu-as "$tmp_dir/arrays.riscv" -o "$tmp_dir/arrays.o"
 fi

@@ -19,6 +19,9 @@ enum class TokenKind {
   KwElse,
   KwWhile,
   KwI32,
+  KwPtr,
+  KwLoad,
+  KwStore,
 
   Plus,
   Minus,
@@ -37,6 +40,8 @@ enum class TokenKind {
   RParen,
   LBrace,
   RBrace,
+  LBracket,
+  RBracket,
   Colon,
   Comma,
   Semicolon,

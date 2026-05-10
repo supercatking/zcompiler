@@ -98,6 +98,14 @@ std::vector<Token> Lexer::lexAll() {
     case '}':
       tokens.push_back(makeToken(TokenKind::RBrace, start, tokenLine, tokenColumn));
       break;
+    case '[':
+      tokens.push_back(
+          makeToken(TokenKind::LBracket, start, tokenLine, tokenColumn));
+      break;
+    case ']':
+      tokens.push_back(
+          makeToken(TokenKind::RBracket, start, tokenLine, tokenColumn));
+      break;
     case ':':
       tokens.push_back(makeToken(TokenKind::Colon, start, tokenLine, tokenColumn));
       break;
@@ -194,6 +202,12 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwWhile;
   else if (text == "i32")
     kind = TokenKind::KwI32;
+  else if (text == "ptr")
+    kind = TokenKind::KwPtr;
+  else if (text == "load")
+    kind = TokenKind::KwLoad;
+  else if (text == "store")
+    kind = TokenKind::KwStore;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

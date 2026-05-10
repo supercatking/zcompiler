@@ -75,11 +75,11 @@ std::unique_ptr<FunctionAST> Parser::parseFunction() {
       !expect(TokenKind::Arrow, "expected '->' before return type"))
     return nullptr;
 
-  if (!check(TokenKind::KwI32)) {
+  std::string returnType;
+  if (!parseType(returnType)) {
     reportAtCurrent("expected return type 'i32'");
     return nullptr;
   }
-  std::string returnType = advance().lexeme;
 
   if (!expect(TokenKind::LBrace, "expected '{' before function body"))
     return nullptr;
@@ -90,6 +90,24 @@ std::unique_ptr<FunctionAST> Parser::parseFunction() {
 
   return std::make_unique<FunctionAST>(std::move(name), std::move(parameters),
                                        std::move(returnType), std::move(body));
+}
+
+bool Parser::parseType(std::string &type) {
+  if (match(TokenKind::KwI32)) {
+    type = "i32";
+    return true;
+  }
+
+  if (match(TokenKind::KwPtr)) {
+    if (!expect(TokenKind::Less, "expected '<' after 'ptr'") ||
+        !expect(TokenKind::KwI32, "expected pointee type 'i32'") ||
+        !expect(TokenKind::Greater, "expected '>' after pointer type"))
+      return false;
+    type = "ptr<i32>";
+    return true;
+  }
+
+  return false;
 }
 
 bool Parser::parseParameters(std::vector<ParameterAST> &parameters) {
@@ -106,11 +124,11 @@ bool Parser::parseParameters(std::vector<ParameterAST> &parameters) {
     if (!expect(TokenKind::Colon, "expected ':' after parameter name"))
       return false;
 
-    if (!check(TokenKind::KwI32)) {
-      reportAtCurrent("expected parameter type 'i32'");
+    std::string type;
+    if (!parseType(type)) {
+      reportAtCurrent("expected parameter type");
       return false;
     }
-    std::string type = advance().lexeme;
     parameters.emplace_back(std::move(name), std::move(type));
 
     if (match(TokenKind::RParen))
@@ -123,6 +141,8 @@ bool Parser::parseParameters(std::vector<ParameterAST> &parameters) {
 std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwLet))
     return parseLetStatement();
+  if (check(TokenKind::KwStore))
+    return parseStoreStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -134,6 +154,37 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
 
   reportAtCurrent("expected statement");
   return nullptr;
+}
+
+std::unique_ptr<StmtAST> Parser::parseStoreStatement() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected buffer name after 'store'");
+    return nullptr;
+  }
+  std::string bufferName = advance().lexeme;
+
+  if (!expect(TokenKind::LBracket, "expected '[' before store index"))
+    return nullptr;
+
+  auto index = parseExpression();
+  if (!index)
+    return nullptr;
+
+  if (!expect(TokenKind::RBracket, "expected ']' after store index") ||
+      !expect(TokenKind::Equal, "expected '=' before store value"))
+    return nullptr;
+
+  auto value = parseExpression();
+  if (!value)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon, "expected ';' after store statement"))
+    return nullptr;
+
+  return std::make_unique<StoreStmtAST>(std::move(bufferName),
+                                        std::move(index), std::move(value));
 }
 
 std::unique_ptr<StmtAST> Parser::parseAssignStatement() {
@@ -276,6 +327,9 @@ std::unique_ptr<ExprAST> Parser::parsePrimary() {
   if (check(TokenKind::Integer))
     return std::make_unique<IntegerExprAST>(advance().lexeme);
 
+  if (check(TokenKind::KwLoad))
+    return parseLoadExpression();
+
   if (check(TokenKind::Identifier))
     return parseIdentifierExpression();
 
@@ -290,6 +344,29 @@ std::unique_ptr<ExprAST> Parser::parsePrimary() {
 
   reportAtCurrent("expected expression");
   return nullptr;
+}
+
+std::unique_ptr<ExprAST> Parser::parseLoadExpression() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected buffer name after 'load'");
+    return nullptr;
+  }
+  std::string bufferName = advance().lexeme;
+
+  if (!expect(TokenKind::LBracket, "expected '[' before load index"))
+    return nullptr;
+
+  auto index = parseExpression();
+  if (!index)
+    return nullptr;
+
+  if (!expect(TokenKind::RBracket, "expected ']' after load index"))
+    return nullptr;
+
+  return std::make_unique<LoadExprAST>(std::move(bufferName),
+                                       std::move(index));
 }
 
 std::unique_ptr<ExprAST> Parser::parseIdentifierExpression() {

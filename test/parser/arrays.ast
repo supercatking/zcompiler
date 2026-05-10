@@ -1,0 +1,26 @@
+Module
+  Function name=add_at return=i32
+    Params
+      Param name=a type=ptr<i32>
+      Param name=b type=ptr<i32>
+      Param name=c type=ptr<i32>
+      Param name=i type=i32
+    LetStmt name=x
+      LoadExpr buffer=a
+        Index
+          VariableExpr name=i
+    LetStmt name=y
+      LoadExpr buffer=b
+        Index
+          VariableExpr name=i
+    LetStmt name=z
+      BinaryExpr op="+"
+        VariableExpr name=x
+        VariableExpr name=y
+    StoreStmt buffer=c
+      Index
+        VariableExpr name=i
+      Value
+        VariableExpr name=z
+    ReturnStmt
+      VariableExpr name=z

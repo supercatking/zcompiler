@@ -30,10 +30,12 @@ private:
   void reportAtCurrent(llvm::StringRef message);
 
   std::unique_ptr<FunctionAST> parseFunction();
+  bool parseType(std::string &type);
   bool parseParameters(std::vector<ParameterAST> &parameters);
   std::unique_ptr<StmtAST> parseStatement();
   std::unique_ptr<StmtAST> parseLetStatement();
   std::unique_ptr<StmtAST> parseAssignStatement();
+  std::unique_ptr<StmtAST> parseStoreStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();
@@ -44,6 +46,7 @@ private:
                                           std::unique_ptr<ExprAST> lhs);
   std::unique_ptr<ExprAST> parsePrimary();
   std::unique_ptr<ExprAST> parseIdentifierExpression();
+  std::unique_ptr<ExprAST> parseLoadExpression();
   bool parseArguments(std::vector<std::unique_ptr<ExprAST>> &args);
   int getTokenPrecedence() const;
 

@@ -1,0 +1,7 @@
+func add_at(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, i: i32) -> i32 {
+  let x = load a[i];
+  let y = load b[i];
+  let z = x + y;
+  store c[i] = z;
+  return z;
+}
