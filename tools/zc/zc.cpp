@@ -1,6 +1,9 @@
 #include "zcompiler/CodeGen/CodeGen.h"
 #include "zcompiler/Lexer/Lexer.h"
+#include "zcompiler/MLIRGen/MLIRGen.h"
 #include "zcompiler/Parser/Parser.h"
+
+#include "mlir/IR/MLIRContext.h"
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
@@ -226,7 +229,20 @@ int main(int argc, char **argv) {
   zc::CodeGenResult codeGenResult;
   switch (Emit) {
   case EmitAction::MLIR:
-    codeGenResult = zc::emitStandardMLIR(*module, output);
+    {
+      mlir::MLIRContext context;
+      zc::MLIRGenResult mlirGenResult;
+      mlir::OwningOpRef<mlir::ModuleOp> mlirModule =
+          zc::generateMLIRModule(context, *module, mlirGenResult);
+      if (!mlirGenResult.succeeded()) {
+        for (const std::string &diagnostic : mlirGenResult.getDiagnostics())
+          WithColor::error(errs(), "zc") << diagnostic << "\n";
+        return 1;
+      }
+      mlirModule->print(output);
+      output << "\n";
+      return 0;
+    }
     break;
   case EmitAction::ZCMLIR:
     codeGenResult = zc::emitZCMLIR(*module, output);

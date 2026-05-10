@@ -8,7 +8,7 @@ trap 'rm -rf "$tmp_dir"' EXIT
 
 "$zc_bin" "$source_root/examples/hello.zc" --emit-mlir \
   > "$tmp_dir/hello.mlir"
-diff -u "$source_root/test/codegen/hello.mlir" "$tmp_dir/hello.mlir"
+diff -u -B "$source_root/test/codegen/hello.mlir" "$tmp_dir/hello.mlir"
 
 "$zc_bin" "$source_root/examples/hello.zc" --emit-zc-mlir \
   > "$tmp_dir/hello.zc.mlir"

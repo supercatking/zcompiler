@@ -457,3 +457,36 @@ Validated commands:
 /home/zyz/zcomipler/build/tools/zc-opt/zc-opt /home/zyz/zcomipler/test/dialect/registered.mlir --lower-zc-to-standard -o /tmp/lowered.mlir
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 14: AST to In-Memory MLIR
+
+### Execution Target
+
+Move the primary `--emit-mlir` path from hand-written MLIR text to MLIR C++ API
+construction.
+
+### Execution Summary
+
+- Added `MLIRGen` module.
+- Kept AST independent from MLIR headers.
+- Built `mlir::ModuleOp` with `MLIRContext` and `OpBuilder`.
+- Emitted `func.func`, `arith.constant`, arithmetic operations, comparisons,
+  and `func.return` through MLIR operation builders.
+- Updated `zc --emit-mlir` to print `ModuleOp`.
+- Updated MLIR golden tests for MLIR printer-owned SSA names.
+
+### Execution Result
+
+Completed for straight-line arithmetic programs.
+
+Note: `if` and `while` in-memory MLIR generation are intentionally deferred to
+the vector/control-flow hardening path. Textual LLVM/RISC-V paths still support
+the current control-flow examples.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/hello.mlir -o /tmp/hello.checked.mlir
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
