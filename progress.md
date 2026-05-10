@@ -490,3 +490,39 @@ Validated commands:
 /home/zyz/mlir/build/bin/mlir-opt /tmp/hello.mlir -o /tmp/hello.checked.mlir
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 15: MLIR to LLVM IR Pipeline
+
+### Execution Target
+
+Move the straight-line `--emit-llvm` path onto the official MLIR lowering and
+translation tools instead of relying only on hand-written LLVM IR text.
+
+### Execution Summary
+
+- Added an MLIR-backed LLVM IR emission path in the `zc` driver.
+- The driver now builds an in-memory MLIR module, writes it to a temporary MLIR
+  file, invokes:
+  - `/home/zyz/mlir/build/bin/mlir-opt --convert-to-llvm`
+  - `/home/zyz/mlir/build/bin/mlir-translate --mlir-to-llvmir`
+- Kept the existing text LLVM IR emitter as a fallback for language features
+  that are not yet covered by in-memory MLIR generation, such as current
+  `if`/`while` examples.
+- Updated the `hello.zc` LLVM IR golden output to match MLIR's LLVM dialect
+  translation result.
+
+### Execution Result
+
+Completed for straight-line arithmetic programs.
+
+Note: full control-flow lowering through in-memory MLIR is intentionally kept as
+a later hardening phase. The existing control-flow LLVM tests continue to pass
+through the fallback path.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-llvm
+/home/zyz/mlir/build/bin/llvm-as /tmp/new-hello.ll -o /tmp/new-hello.bc
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

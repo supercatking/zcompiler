@@ -7,9 +7,11 @@
 
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
+#include "llvm/Support/FileUtilities.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/Program.h"
 #include "llvm/Support/WithColor.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -19,6 +21,73 @@
 using namespace llvm;
 
 namespace {
+
+bool emitLLVMViaMLIRPipeline(const zc::ModuleAST &module, raw_ostream &output) {
+  mlir::MLIRContext context;
+  zc::MLIRGenResult mlirGenResult;
+  mlir::OwningOpRef<mlir::ModuleOp> mlirModule =
+      zc::generateMLIRModule(context, module, mlirGenResult);
+  if (!mlirGenResult.succeeded())
+    return false;
+
+  SmallString<128> mlirInputPath;
+  SmallString<128> llvmDialectPath;
+  SmallString<128> llvmIRPath;
+  if (sys::fs::createTemporaryFile("zcompiler-input", "mlir", mlirInputPath) ||
+      sys::fs::createTemporaryFile("zcompiler-llvm-dialect", "mlir",
+                                   llvmDialectPath) ||
+      sys::fs::createTemporaryFile("zcompiler-output", "ll", llvmIRPath))
+    return false;
+
+  FileRemover removeMLIRInput(mlirInputPath);
+  FileRemover removeLLVMDialect(llvmDialectPath);
+  FileRemover removeLLVMIR(llvmIRPath);
+
+  std::error_code ec;
+  raw_fd_ostream mlirFile(mlirInputPath, ec, sys::fs::OF_Text);
+  if (ec)
+    return false;
+  mlirModule->print(mlirFile);
+  mlirFile << "\n";
+  mlirFile.close();
+
+  std::string mlirOpt = "/home/zyz/mlir/build/bin/mlir-opt";
+  std::string mlirTranslate = "/home/zyz/mlir/build/bin/mlir-translate";
+  if (!sys::fs::can_execute(mlirOpt) || !sys::fs::can_execute(mlirTranslate))
+    return false;
+
+  std::optional<StringRef> redirects[3] = {std::nullopt, std::nullopt,
+                                           std::nullopt};
+  SmallVector<StringRef, 8> mlirOptArgs = {
+      mlirOpt,
+      mlirInputPath,
+      "--convert-to-llvm",
+      "--reconcile-unrealized-casts",
+      "-o",
+      llvmDialectPath,
+  };
+  if (sys::ExecuteAndWait(mlirOpt, mlirOptArgs, std::nullopt, redirects) != 0)
+    return false;
+
+  SmallVector<StringRef, 6> translateArgs = {
+      mlirTranslate,
+      "--mlir-to-llvmir",
+      llvmDialectPath,
+      "-o",
+      llvmIRPath,
+  };
+  if (sys::ExecuteAndWait(mlirTranslate, translateArgs, std::nullopt,
+                          redirects) != 0)
+    return false;
+
+  ErrorOr<std::unique_ptr<MemoryBuffer>> llvmIR =
+      MemoryBuffer::getFile(llvmIRPath);
+  if (!llvmIR)
+    return false;
+
+  output << llvmIR.get()->getBuffer();
+  return true;
+}
 
 enum class EmitAction {
   None,
@@ -251,6 +320,8 @@ int main(int argc, char **argv) {
     codeGenResult = zc::emitLoweredMLIR(*module, output);
     break;
   case EmitAction::LLVMIR:
+    if (emitLLVMViaMLIRPipeline(*module, output))
+      return 0;
     codeGenResult = zc::emitLLVMIR(*module, output);
     break;
   case EmitAction::RiscVAssembly:
