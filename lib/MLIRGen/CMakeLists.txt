@@ -22,5 +22,7 @@ target_link_libraries(ZCompilerMLIRGen
     MLIRArithDialect
     MLIRFuncDialect
     MLIRMemRefDialect
+    MLIRSCFDialect
+    MLIRVectorDialect
     MLIRIR
 )

@@ -3,6 +3,8 @@
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
+#include "mlir/Dialect/SCF/IR/SCF.h"
+#include "mlir/Dialect/Vector/IR/VectorOps.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
 
@@ -23,7 +25,8 @@ public:
 
   OwningOpRef<ModuleOp> generate(const ModuleAST &moduleAST) {
     context.loadDialect<arith::ArithDialect, func::FuncDialect,
-                        memref::MemRefDialect>();
+                        memref::MemRefDialect, scf::SCFDialect,
+                        vector::VectorDialect>();
 
     auto module = ModuleOp::create(builder.getUnknownLoc());
     builder.setInsertionPointToStart(module.getBody());
@@ -192,7 +195,7 @@ private:
           "MLIR API generation for while is planned for Phase 19");
       return;
     case StmtKind::VectorAdd:
-      result.addDiagnostic("vector_add MLIR lowering is planned for Phase 19");
+      emitVectorAdd(static_cast<const VectorAddStmtAST &>(statement));
       return;
     }
   }
@@ -224,6 +227,42 @@ private:
 
     builder.create<memref::StoreOp>(builder.getUnknownLoc(), value,
                                     found->second, ValueRange(index));
+  }
+
+  void emitVectorAdd(const VectorAddStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_add statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Location loc = builder.getUnknownLoc();
+    Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
+    Value step = builder.create<arith::ConstantIndexOp>(loc, 4);
+    auto forOp = builder.create<scf::ForOp>(loc, lowerBound, upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+
+    auto vectorType = VectorType::get({4}, builder.getI32Type());
+    Value zero = builder.create<arith::ConstantIntOp>(loc, 0, 32);
+    Value index = forOp.getInductionVar();
+    SmallVector<Value, 1> indices{index};
+
+    Value lhsVector = builder.create<vector::TransferReadOp>(
+        loc, vectorType, lhs->second, ValueRange(indices), zero);
+    Value rhsVector = builder.create<vector::TransferReadOp>(
+        loc, vectorType, rhs->second, ValueRange(indices), zero);
+    Value sum = builder.create<arith::AddIOp>(loc, lhsVector, rhsVector);
+    builder.create<vector::TransferWriteOp>(loc, sum, output->second,
+                                            ValueRange(indices));
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

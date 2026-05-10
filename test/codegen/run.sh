@@ -56,19 +56,10 @@ diff -u "$source_root/test/codegen/arrays.ll" "$tmp_dir/arrays.ll"
   > "$tmp_dir/arrays.riscv"
 diff -u "$source_root/test/codegen/arrays.riscv" "$tmp_dir/arrays.riscv"
 
-set +e
 "$zc_bin" "$source_root/examples/vector_add.zc" --emit-mlir \
-  > "$tmp_dir/vector_add.out" 2> "$tmp_dir/vector_add.err"
-status="$?"
-set -e
-
-if [ "$status" -eq 0 ]; then
-  echo "expected vector_add MLIR lowering to fail before Phase 19" >&2
-  exit 1
-fi
-
-diff -u "$source_root/test/codegen/vector_add.err" \
-  "$tmp_dir/vector_add.err"
+  > "$tmp_dir/vector_add.mlir"
+diff -u -B "$source_root/test/codegen/vector_add.mlir" \
+  "$tmp_dir/vector_add.mlir"
 
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
@@ -85,6 +76,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/calls.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/arrays.mlir" \
     -o "$tmp_dir/arrays.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_add.mlir" \
+    -o "$tmp_dir/vector_add.opt.mlir"
 fi
 
 if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then

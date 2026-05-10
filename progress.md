@@ -270,6 +270,53 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 19A: Vector Add to MLIR Vector Dialect
+
+### Execution Target
+
+Lower the target-independent `vector_add` source operation to MLIR vector
+dialect without introducing RVV-specific source constructs.
+
+### Execution Summary
+
+- Added [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md).
+- Added MLIRGen support for `VectorAddStmtAST`.
+- Lowered:
+
+```zc
+vector_add c, a, b, n;
+```
+
+to:
+
+```text
+scf.for i = 0 to n step 4
+  vector.transfer_read a[i] : vector<4xi32>
+  vector.transfer_read b[i] : vector<4xi32>
+  arith.addi ... : vector<4xi32>
+  vector.transfer_write ... c[i]
+```
+
+- Added `scf` and `vector` dialect dependencies to `MLIRGen`.
+- Replaced the temporary vector codegen rejection test with a positive MLIR
+  golden test.
+- Validated the generated vector MLIR with `mlir-opt`.
+
+### Execution Result
+
+Completed for fixed-width `vector<4xi32>` chunks.
+
+Temporary constraint: Phase 19A assumes the length is a multiple of 4. Tail and
+mask handling are deferred to Phase 19B.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/vector_add.mlir -o /tmp/vector_add.checked.mlir
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 ## Phase 18A: Target-Independent Vector Add Syntax
 
 ### Execution Target

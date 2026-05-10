@@ -54,5 +54,5 @@ vector_add c, a, b, n
 
 - Lexer golden test for `vector_add`.
 - Parser AST golden test for `VectorAddStmt`.
-- Keep code generation rejecting vector operations until Phase 19 lowering is
-  implemented.
+- Phase 19 should replace the temporary rejection with MLIR vector dialect
+  lowering.

@@ -422,6 +422,10 @@ The compiler can parse and dump vector AST.
 
 Goal: lower target-independent vector source operations to MLIR vector dialect.
 
+Design note: Phase 19A is documented in
+`docs/phase19-vector-mlir.md`. It lowers `vector_add` to a fixed
+`vector<4xi32>` MLIR loop and defers tail/mask handling.
+
 Deliverables:
 
 - `zc.vector_*` operation design.
