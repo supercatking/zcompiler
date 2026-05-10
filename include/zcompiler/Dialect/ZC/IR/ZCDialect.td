@@ -11,8 +11,7 @@ def ZC_Dialect : Dialect {
     the tiny source language before lowering into standard MLIR func and arith
     dialect operations.
   }];
-  let cppNamespace = "::zc";
+  let cppNamespace = "::mlir::zc";
 }
 
 #endif // ZCOMPILER_DIALECT_ZC_IR_ZCDIALECT_TD
-

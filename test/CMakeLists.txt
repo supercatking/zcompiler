@@ -23,3 +23,11 @@ add_test(
           $<TARGET_FILE:zc>
           ${CMAKE_SOURCE_DIR}
 )
+
+add_test(
+  NAME dialect
+  COMMAND ${BASH_PROGRAM}
+          ${CMAKE_CURRENT_SOURCE_DIR}/dialect/run.sh
+          $<TARGET_FILE:zc-opt>
+          ${CMAKE_SOURCE_DIR}
+)

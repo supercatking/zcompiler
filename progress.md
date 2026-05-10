@@ -391,3 +391,69 @@ Final validation:
 cmake --build /home/zyz/zcomipler/build
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 12: Registered zc MLIR Dialect
+
+### Execution Target
+
+Turn the initial textual `zc` dialect surface into a registered MLIR dialect.
+
+### Execution Summary
+
+- Added TableGen-backed `ZCDialect`.
+- Added registered `zc` operations:
+  - `zc.constant`
+  - `zc.add`
+  - `zc.sub`
+  - `zc.mul`
+  - `zc.div`
+- Added generated dialect/op headers and implementation files.
+- Added `zc-opt`, a small MLIR optimizer driver that registers the `zc`,
+  `arith`, and `func` dialects.
+- Added dialect parser/printer test input.
+
+### Execution Result
+
+Completed for core arithmetic operations.
+
+Note: this phase intentionally keeps functions in standard `func.func` while
+`zc` owns computation operations. This keeps the first registered dialect small
+and makes Phase 13 lowering clearer.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc-opt/zc-opt /home/zyz/zcomipler/test/dialect/registered.mlir -o /tmp/registered.checked.mlir
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
+## Phase 13: Real MLIR Lowering Pass
+
+### Execution Target
+
+Lower registered `zc` arithmetic operations to standard MLIR `arith`
+operations using an MLIR pass.
+
+### Execution Summary
+
+- Added `ZCToStandard` conversion library.
+- Added `--lower-zc-to-standard` pass registration.
+- Lowered:
+  - `zc.constant` -> `arith.constant`
+  - `zc.add` -> `arith.addi`
+  - `zc.sub` -> `arith.subi`
+  - `zc.mul` -> `arith.muli`
+  - `zc.div` -> `arith.divsi`
+- Extended dialect tests to assert lowered output contains no `zc.`
+  operations.
+
+### Execution Result
+
+Completed for core arithmetic operations.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc-opt/zc-opt /home/zyz/zcomipler/test/dialect/registered.mlir --lower-zc-to-standard -o /tmp/lowered.mlir
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

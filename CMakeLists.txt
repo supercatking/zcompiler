@@ -19,9 +19,14 @@ include(AddLLVM)
 include(AddMLIR)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
+include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${MLIR_INCLUDE_DIRS})
 
+add_subdirectory(include)
 add_subdirectory(lib)
 add_subdirectory(tools/zc)
+add_subdirectory(tools/zc-opt)
 
 enable_testing()
 add_subdirectory(test)
