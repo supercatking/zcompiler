@@ -62,3 +62,28 @@ source.zc
 - [arch.md](arch.md): architecture design for the first toy compiler.
 - [plan.md](plan.md): phased implementation plan and milestones.
 
+## Build Phase 1
+
+This project uses the existing local LLVM/MLIR checkout and build:
+
+```text
+/home/zyz/mlir/llvm-project/
+/home/zyz/mlir/build/
+```
+
+Configure and build:
+
+```bash
+cmake -G Ninja -S /home/zyz/zcomipler -B /home/zyz/zcomipler/build \
+  -DMLIR_DIR=/home/zyz/mlir/build/lib/cmake/mlir \
+  -DLLVM_DIR=/home/zyz/mlir/build/lib/cmake/llvm
+
+cmake --build /home/zyz/zcomipler/build
+```
+
+Run the Phase 1 driver:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc --help
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+```
