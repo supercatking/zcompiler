@@ -224,13 +224,301 @@ Exit criteria:
 - The project can record optimization experiments and compare generated code or
   runtime results.
 
+## Phase 12: Registered zc MLIR Dialect
+
+Goal: turn the current textual `zc` dialect surface into a real registered MLIR
+dialect.
+
+Deliverables:
+
+- TableGen-backed `ZCDialect`.
+- TableGen-backed operation definitions.
+- CMake integration for MLIR TableGen.
+- Dialect registration in project tools.
+- A small `zc-opt` style tool or equivalent parser path in `zc`.
+- Dialect parsing and printing tests.
+
+Architecture constraints:
+
+- Keep dialect IR code separate from frontend parser and AST code.
+- Do not let source-language parser logic depend on MLIR operation classes.
+- Treat dialect registration as an infrastructure layer under `lib/Dialect`.
+
+Exit criteria:
+
+```bash
+zc examples/hello.zc --emit-zc-mlir > /tmp/hello.zc.mlir
+zc-opt /tmp/hello.zc.mlir
+```
+
+## Phase 13: Real MLIR Lowering Pass
+
+Goal: lower registered `zc` dialect operations with MLIR rewrite patterns.
+
+Deliverables:
+
+- `ZCToStandard` conversion pass.
+- Rewrite patterns for constants, arithmetic, compare, return, and function ops.
+- Pass registration.
+- Pass pipeline option.
+- Lowering tests with `zc` input IR and expected standard MLIR output.
+
+Architecture constraints:
+
+- Keep lowering code under `lib/Conversion`.
+- Keep lowering independent from source parser and AST.
+- Prefer small patterns with one clear operation responsibility each.
+
+Exit criteria:
+
+```text
+input: zc dialect MLIR
+output: func / arith / scf MLIR
+assertion: output contains no zc. operations
+```
+
+## Phase 14: AST to In-Memory MLIR
+
+Goal: replace the main text-only MLIR emission path with real MLIR C++ API
+construction.
+
+Deliverables:
+
+- `MLIRContext` setup.
+- Dialect loading.
+- `OpBuilder`-based module construction.
+- AST-to-MLIR codegen that returns `mlir::ModuleOp`.
+- Diagnostic handling.
+- Tests proving printed MLIR comes from `ModuleOp::print`.
+
+Architecture constraints:
+
+- Keep AST as frontend-owned data.
+- Keep MLIR construction in `lib/CodeGen` or a dedicated `lib/MLIRGen`.
+- Do not make AST nodes include MLIR headers.
+
+Exit criteria:
+
+```bash
+zc examples/hello.zc --emit-mlir > /tmp/hello.mlir
+mlir-opt /tmp/hello.mlir -o /tmp/hello.checked.mlir
+```
+
+## Phase 15: MLIR to LLVM Dialect and LLVM IR
+
+Goal: use the MLIR lowering pipeline instead of hand-written LLVM IR text for
+the main LLVM path.
+
+Deliverables:
+
+- Standard MLIR to LLVM dialect lowering pipeline.
+- LLVM dialect to LLVM IR translation path.
+- `--emit-llvm` backed by MLIR/LLVM infrastructure.
+- Tests with `llvm-as`.
+
+Architecture constraints:
+
+- Keep textual LLVM IR fallback only for debugging if needed.
+- Prefer official MLIR conversion passes over custom string generation.
+
+Exit criteria:
+
+```bash
+zc examples/hello.zc --emit-llvm > /tmp/hello.ll
+llvm-as /tmp/hello.ll -o /tmp/hello.bc
+```
+
+## Phase 16: LLVM RISC-V Backend Integration
+
+Goal: generate RISC-V assembly through LLVM's RISC-V backend.
+
+Deliverables:
+
+- RISC-V target initialization.
+- Target triple configuration.
+- LLVM IR to RISC-V assembly path.
+- Optional object file emission.
+- Tests with `riscv64-linux-gnu-as`.
+
+Architecture constraints:
+
+- Keep the current hand-written RISC-V emitter as a debug/reference backend
+  until the LLVM backend path is stable.
+- Put backend-specific code behind a clear target interface.
+
+Exit criteria:
+
+```bash
+zc examples/hello.zc --emit-riscv-asm > /tmp/hello.s
+riscv64-linux-gnu-as /tmp/hello.s -o /tmp/hello.o
+```
+
+## Phase 17: Functions and Memory
+
+Goal: extend the source language enough to express simple kernels.
+
+Deliverables:
+
+- Function parameters.
+- Function calls.
+- Mutable variables or assignment.
+- Basic pointer/memory model.
+- Array or memref-like load/store syntax.
+- Parser, AST, MLIR, LLVM IR, and RISC-V tests.
+
+Architecture constraints:
+
+- Keep type representation explicit and reusable.
+- Separate semantic checks from parsing where practical.
+
+Exit criteria:
+
+```text
+The compiler can represent and compile a simple array-style kernel skeleton.
+```
+
+## Phase 18: Vector Syntax and AST
+
+Goal: add source-level vector concepts.
+
+Deliverables:
+
+- Vector type syntax.
+- Vector literal or vector value representation.
+- Vector load/store syntax.
+- Vector arithmetic syntax.
+- Vector AST nodes.
+- Parser and AST dump tests.
+
+Architecture constraints:
+
+- Do not tie source vector syntax directly to RVV instruction names.
+- Keep vector operations target-independent at the source and AST layers.
+
+Exit criteria:
+
+```zc
+func main() -> i32 {
+  let c = vector.add(a, b);
+  return 0;
+}
+```
+
+The compiler can parse and dump vector AST.
+
+## Phase 19: Lower Vector Ops to MLIR Vector Dialect
+
+Goal: lower target-independent vector source operations to MLIR vector dialect.
+
+Deliverables:
+
+- `zc.vector_*` operation design.
+- Lowering to MLIR vector dialect.
+- Tests that inspect generated vector dialect MLIR.
+
+Architecture constraints:
+
+- Use MLIR vector dialect as the main abstraction before RVV-specific lowering.
+- Keep RVV-specific choices out of source parsing.
+
+Exit criteria:
+
+```text
+Generated MLIR contains vector dialect operations for vector examples.
+```
+
+## Phase 20: RVV Lowering
+
+Goal: generate RVV-oriented LLVM IR or assembly.
+
+Deliverables:
+
+- RVV target feature configuration.
+- Lowering path toward RVV intrinsics or RVV assembly.
+- Tests for `vsetvli`, vector load/store, vector arithmetic, and reduction.
+
+Architecture constraints:
+
+- Prefer backend-supported lowering when available.
+- Use direct RVV assembly only when it is clearly documented as a temporary
+  reference path.
+
+Exit criteria:
+
+```text
+Generated output contains expected RVV instruction families.
+```
+
+## Phase 21: Benchmark and Accelerator Profile
+
+Goal: define the target accelerator assumptions and measure scalar versus
+vector paths.
+
+Deliverables:
+
+- Accelerator profile file.
+- Benchmark runner.
+- Scalar baseline outputs.
+- Vector candidate outputs.
+- Correctness comparison.
+- Performance record format.
+
+Architecture constraints:
+
+- Benchmarks must be reproducible.
+- Benchmark metadata should be machine-readable.
+
+Exit criteria:
+
+```text
+At least one scalar-vs-vector experiment can be recorded and reproduced.
+```
+
+## Phase 22: AI-Assisted Optimization Loop
+
+Goal: implement the workflow for AI-suggested compiler changes.
+
+Deliverables:
+
+- Experiment schema.
+- Prompt schema.
+- Result parser.
+- Candidate optimization proposal format.
+- Human review checklist.
+- Regression test integration.
+
+Architecture constraints:
+
+- AI suggestions must not bypass tests.
+- Every accepted AI-generated compiler change needs an experiment record or a
+  clear test record.
+
+Exit criteria:
+
+```text
+One AI-assisted compiler proposal can be recorded, tested, compared, and marked
+accepted or rejected.
+```
+
+## Engineering Rules For All Future Phases
+
+- Think through the core architecture first and document it before coding.
+- Keep code structured, modular, readable, and extensible.
+- Reduce coupling between lexer, parser, AST, MLIR dialect, lowering, target
+  backend, benchmark, and AI workflow layers.
+- Add useful comments for non-obvious logic, but avoid noisy comments.
+- Update architecture diagrams, UML diagrams, and workflow diagrams whenever the
+  architecture changes meaningfully.
+- Add test cases with each phase.
+- Prefer complete validation. If a difficult bug cannot be fixed immediately,
+  document it in `known_issue.md` with impact, reproduction, and next action.
+
 ## Immediate Next Tasks
 
-The next implementation step after these documents:
+The next implementation steps after this roadmap:
 
-1. Add `.gitignore`.
-2. Add CMake skeleton.
-3. Add `tools/zc/zc.cpp`.
-4. Implement `zc --help`.
-5. Add the first example program in `examples/hello.zc`.
-
+1. Phase 12: implement a registered `zc` MLIR dialect.
+2. Phase 13: implement real MLIR lowering patterns.
+3. Phase 14: move MLIR generation to in-memory MLIR API.
+4. Phase 15: use MLIR/LLVM infrastructure for LLVM IR emission.
+5. Phase 16: integrate LLVM RISC-V backend.

@@ -52,3 +52,53 @@ accepted:
 - Summarize benchmark differences.
 - Create new tests for parser, lowering, LLVM IR, and RISC-V assembly.
 
+## Phase Roadmap
+
+AI-assisted compiler work is planned in Phase 22 after the compiler has a more
+real MLIR and backend foundation.
+
+Before Phase 22, each phase should still keep enough records for future AI
+experiments:
+
+- source program
+- compiler command
+- generated MLIR / LLVM IR / assembly
+- test result
+- important design decision
+
+## Workflow Diagram
+
+```text
+developer goal
+  -> architecture note
+  -> AI suggestion or manual design
+  -> implementation patch
+  -> tests and generated IR inspection
+  -> benchmark or correctness record
+  -> accept / reject decision
+```
+
+## Review Checklist
+
+Before accepting an AI-assisted compiler change:
+
+- Is the module boundary still clean?
+- Are parser, AST, dialect, lowering, and backend responsibilities separated?
+- Are tests added or updated?
+- Is generated IR or assembly inspected when relevant?
+- Is the result reproducible from one command?
+- Does the change need a benchmark record?
+
+## Record Storage
+
+Future experiment records should live under:
+
+```text
+experiments/
+  README.md
+  prompts/
+  results/
+  benchmarks/
+```
+
+This directory is not created yet; it should be added when Phase 22 begins.

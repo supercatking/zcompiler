@@ -33,6 +33,12 @@ Core principles:
 - Keep every stage visible and testable from the command line.
 - Design the first custom dialect so it can later grow toward tensor, vector,
   and RVV-specific optimization.
+- Document architecture before implementation when a phase changes module
+  boundaries.
+- Keep parser, AST, MLIR dialect, lowering, backend, benchmark, and AI workflow
+  layers decoupled.
+- Add tests with every phase and record difficult unresolved bugs in
+  `known_issue.md`.
 
 ## 2. High-Level Pipeline
 
@@ -295,3 +301,29 @@ Potential future optimizations:
 - Memory access analysis.
 - RVV intrinsic selection.
 - AI-assisted pass exploration and performance tuning.
+
+## 10. Roadmap To The Final Goal
+
+The final goal is:
+
+```text
+an AI self made compiler based on RISCV RVV accelerator
+```
+
+The remaining roadmap is:
+
+- Phase 12: turn `zc` into a registered MLIR dialect.
+- Phase 13: implement real MLIR rewrite-pattern lowering.
+- Phase 14: build MLIR modules in memory with MLIR C++ APIs.
+- Phase 15: lower through MLIR LLVM dialect and emit LLVM IR through
+  infrastructure rather than hand-written text.
+- Phase 16: generate RISC-V assembly through LLVM's RISC-V backend.
+- Phase 17: add functions, calls, assignment, and memory operations.
+- Phase 18: add target-independent vector syntax and vector AST nodes.
+- Phase 19: lower vector operations to MLIR vector dialect.
+- Phase 20: lower vector operations toward RVV output.
+- Phase 21: add accelerator profiles and reproducible benchmarks.
+- Phase 22: implement the AI-assisted optimization experiment loop.
+
+The next implementation priority is Phase 12 because it upgrades the project
+from a text-emitting toy compiler toward a real MLIR compiler.

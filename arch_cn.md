@@ -338,3 +338,37 @@ docs/ai-workflow.md
 - 将 RISC-V assembly 路径接到 LLVM backend 或更正式的 target pipeline。
 - 开始实现 RVV vector operation。
 
+## 9. 后续 Phase 规划
+
+对照最终目标：
+
+```text
+an AI self made compiler based on RISCV RVV accelerator
+```
+
+后续阶段规划如下：
+
+- Phase 12：真正注册 `zc` MLIR dialect。
+- Phase 13：使用 MLIR rewrite pattern 实现真实 lowering pass。
+- Phase 14：使用 MLIR C++ API 从 AST 构造 in-memory MLIR module。
+- Phase 15：通过 MLIR LLVM dialect 和 MLIR/LLVM 基础设施生成 LLVM IR。
+- Phase 16：接入 LLVM RISC-V backend 生成 RISC-V assembly/object。
+- Phase 17：扩展函数、函数调用、赋值和内存模型。
+- Phase 18：添加 target-independent vector syntax 和 vector AST。
+- Phase 19：把 vector operations lowering 到 MLIR vector dialect。
+- Phase 20：把 vector operations lowering 到 RVV intrinsics 或 RVV assembly。
+- Phase 21：添加 accelerator profile 和 benchmark runner。
+- Phase 22：实现 AI-assisted optimization experiment loop。
+
+## 10. 工程规则
+
+后续开发必须遵守：
+
+- 先考虑核心架构并更新文档，再动手写代码。
+- 代码尽量结构化、可扩展、低耦合、容易读懂。
+- Lexer、Parser、AST、Dialect、Lowering、Backend、Benchmark、AI workflow 要保持清晰边界。
+- 架构变化时及时更新 UML、架构图或 workflow 图。
+- 每个 phase 都要补充 testcase。
+- 尽量完整验证；如果有难以立即修复的问题，记录到 `known_issue.md`。
+
+下一步建议优先做 Phase 12。原因是它会把当前 `zc` dialect 从“文本表面形式”升级为真正 MLIR registered dialect，这是后续真实 lowering、LLVM pipeline 和 RVV lowering 的基础。

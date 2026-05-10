@@ -57,3 +57,49 @@ Target RVV instruction families:
 - Use generated LLVM IR or assembly inspection for the first RVV checks.
 - Add QEMU or Spike execution only after the scalar RISC-V path is stable.
 
+## Phase Roadmap
+
+RVV work is planned across several phases:
+
+- Phase 18: add source-level vector syntax and vector AST nodes.
+- Phase 19: lower vector operations to MLIR vector dialect.
+- Phase 20: lower vector operations toward RVV intrinsics or RVV assembly.
+- Phase 21: benchmark scalar and vector paths with a documented accelerator
+  profile.
+
+## Accelerator Profile Draft
+
+Future accelerator profile files should describe:
+
+```yaml
+name: rvv-generic
+xlen: 64
+vlen_bits: unknown
+elen_bits: 32
+supports:
+  - i32_vector_add
+  - i32_vector_mul
+  - i32_vector_reduce_add
+memory:
+  alignment_bytes: 16
+validation:
+  assembler: riscv64-linux-gnu-as
+  emulator: qemu-riscv64
+```
+
+The profile should stay separate from parser and AST code. Source programs
+should express vector intent; the target profile should guide lowering and
+validation choices.
+
+## Architecture Boundary
+
+RVV-specific logic should live in target/lowering layers, not in lexer or parser
+logic. The intended separation is:
+
+```text
+Source vector syntax
+  -> target-independent AST
+  -> target-independent zc/vector MLIR
+  -> MLIR vector dialect
+  -> RVV-specific lowering
+```
