@@ -5,6 +5,7 @@
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Dialect/SCF/IR/SCF.h"
 #include "mlir/Dialect/Vector/IR/VectorOps.h"
+#include "mlir/IR/AffineMap.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinTypes.h"
 
@@ -252,17 +253,28 @@ private:
     builder.setInsertionPointToStart(forOp.getBody());
 
     auto vectorType = VectorType::get({4}, builder.getI32Type());
+    auto maskType = VectorType::get({4}, builder.getI1Type());
+    auto permutationMap =
+        AffineMapAttr::get(AffineMap::getMinorIdentityMap(1, 1, &context));
+    auto inBounds = builder.getBoolArrayAttr({false});
     Value zero = builder.create<arith::ConstantIntOp>(loc, 0, 32);
     Value index = forOp.getInductionVar();
     SmallVector<Value, 1> indices{index};
+    Value remaining = builder.create<arith::SubIOp>(loc, upperBound, index);
+    Value activeLanes = builder.create<arith::MinUIOp>(loc, remaining, step);
+    Value mask = builder.create<vector::CreateMaskOp>(
+        loc, maskType, ValueRange(activeLanes));
 
     Value lhsVector = builder.create<vector::TransferReadOp>(
-        loc, vectorType, lhs->second, ValueRange(indices), zero);
+        loc, vectorType, lhs->second, ValueRange(indices), permutationMap, zero,
+        mask, inBounds);
     Value rhsVector = builder.create<vector::TransferReadOp>(
-        loc, vectorType, rhs->second, ValueRange(indices), zero);
+        loc, vectorType, rhs->second, ValueRange(indices), permutationMap, zero,
+        mask, inBounds);
     Value sum = builder.create<arith::AddIOp>(loc, lhsVector, rhsVector);
     builder.create<vector::TransferWriteOp>(loc, sum, output->second,
-                                            ValueRange(indices));
+                                            ValueRange(indices), permutationMap,
+                                            mask, inBounds);
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

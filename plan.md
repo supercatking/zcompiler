@@ -422,9 +422,10 @@ The compiler can parse and dump vector AST.
 
 Goal: lower target-independent vector source operations to MLIR vector dialect.
 
-Design note: Phase 19A is documented in
+Design note: Phase 19A/19B is documented in
 `docs/phase19-vector-mlir.md`. It lowers `vector_add` to a fixed
-`vector<4xi32>` MLIR loop and defers tail/mask handling.
+`vector<4xi32>` MLIR loop and uses `vector.create_mask` plus masked transfer
+operations for tail-safe memory access.
 
 Deliverables:
 
@@ -543,10 +544,11 @@ accepted or rejected.
 
 The next implementation steps after the current Phase 22A state:
 
-1. Phase 19B: add tail/mask handling for vector lengths that are not multiples
-   of 4.
-2. Phase 20B: add RVV objdump golden checks and investigate formal
-   MLIR/LLVM-to-RVV lowering.
-3. Phase 21B: add machine-readable benchmark metadata and scalar-vs-vector
-   comparison records.
-4. Phase 22B: add prompt records for future AI-suggested optimization changes.
+1. Phase 21C: add scalar baseline artifacts and scalar-vs-vector comparison
+   records to the benchmark workflow.
+2. Phase 20C: investigate a formal MLIR/LLVM vector-to-RVV lowering pipeline
+   for masked vector IR, then compare it with the direct reference assembly.
+3. Phase 23A: introduce an accelerator profile document/data file that records
+   assumed RVV width, supported element types, and target lowering policy.
+4. Phase 24A: add correctness-oriented executable tests for vector-add outputs
+   through an emulator or a host-side reference harness when available.

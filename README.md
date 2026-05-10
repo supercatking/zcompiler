@@ -36,6 +36,7 @@ tutorial. It currently supports:
 - `ptr<i32>` buffer parameters.
 - Scalar indexed `load` / `store`.
 - Target-independent `vector_add` syntax.
+- Masked MLIR vector lowering for `vector_add` tails.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.

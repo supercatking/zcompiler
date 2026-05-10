@@ -530,6 +530,37 @@ Validated commands:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 19B: Masked Vector Tail Handling
+
+### Execution Target
+
+Make MLIR vector lowering safe when `vector_add` length is not a multiple of
+the fixed intermediate vector width.
+
+### Execution Summary
+
+- Updated [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md).
+- Extended `MLIRGen` vector lowering to compute:
+  - `remaining = n - i`
+  - `active = min(remaining, 4)`
+  - `mask = vector.create_mask active : vector<4xi1>`
+- Passed the mask into both `vector.transfer_read` operations and the final
+  `vector.transfer_write`.
+- Updated the `vector_add` MLIR golden output to check the mask-producing IR.
+
+### Execution Result
+
+Completed for `vector<4xi32>` masked transfer lowering. This removes the Phase
+19A `n % 4 == 0` assumption at the MLIR vector dialect level.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/vector_add.mlir -o /tmp/vector_add.checked.mlir
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 ## Phase 18A: Target-Independent Vector Add Syntax
 
 ### Execution Target
