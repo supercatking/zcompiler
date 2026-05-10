@@ -65,6 +65,9 @@ diff -u -B "$source_root/test/codegen/vector_add.mlir" \
   > "$tmp_dir/vector_add.riscv"
 diff -u "$source_root/test/codegen/vector_add.riscv" \
   "$tmp_dir/vector_add.riscv"
+for instruction in vsetvli vle32.v vadd.vv vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_add.riscv"
+done
 
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
@@ -104,4 +107,9 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   riscv64-linux-gnu-as "$tmp_dir/arrays.riscv" -o "$tmp_dir/arrays.o"
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/vector_add.riscv" -o "$tmp_dir/vector_add.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_add.o" \
+    > "$tmp_dir/vector_add.objdump"
+  for instruction in vsetvli vle32.v vadd.vv vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_add.objdump"
+  done
 fi

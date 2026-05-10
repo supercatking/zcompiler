@@ -306,6 +306,34 @@ Validated command:
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 ```
 
+## Phase 20B: RVV Instruction Regression Checks
+
+### Execution Target
+
+Make RVV instruction validation part of the normal codegen test suite.
+
+### Execution Summary
+
+- Extended `test/codegen/run.sh`.
+- The test now checks generated `vector_add.riscv` for:
+  - `vsetvli`
+  - `vle32.v`
+  - `vadd.vv`
+  - `vse32.v`
+- When `riscv64-linux-gnu-as` is available, the test assembles the RVV output
+  with `-march=rv64gcv -mabi=lp64d`, runs `objdump`, and checks the same RVV
+  instruction families in the disassembly.
+
+### Execution Result
+
+Completed.
+
+Validated command:
+
+```bash
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 Generated artifacts:
 
 ```text
