@@ -3,6 +3,21 @@
 This document defines the first architecture of `zcompiler`, a small
 MLIR-based toy compiler that will grow toward an AI-assisted RISC-V RVV compiler.
 
+## Architecture Diagram
+
+![zcompiler architecture](arch.svg)
+
+The diagram shows the current project shape after the toy compiler phases:
+
+- The frontend owns `.zc` source parsing: lexer, parser, and AST.
+- The AST is the central in-memory program model used by later compiler stages.
+- The `CodeGen` module emits several textual targets from the AST:
+  standard MLIR, `zc` dialect MLIR surface, lowered MLIR, LLVM IR, and RISC-V
+  assembly.
+- The RVV and AI-assisted blocks are deliberate future-facing architecture
+  areas. They are documented now so the toy compiler can grow toward the final
+  accelerator-oriented goal without changing direction later.
+
 ## 1. Design Principles
 
 The first compiler must be small, testable, and easy to change. The goal is not
@@ -280,4 +295,3 @@ Potential future optimizations:
 - Memory access analysis.
 - RVV intrinsic selection.
 - AI-assisted pass exploration and performance tuning.
-

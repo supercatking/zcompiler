@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" role="img" aria-labelledby="title desc">
+  <title id="title">zcompiler architecture</title>
+  <desc id="desc">This file intentionally contains SVG content. The canonical renderable file is arch.svg; arch.avg is kept because the requested filename was arch.avg.</desc>
+  <rect width="1280" height="900" fill="#f8fafc"/>
+  <text x="56" y="70" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#0f172a">zcompiler Architecture</text>
+  <text x="56" y="112" font-family="Arial, sans-serif" font-size="18" fill="#475569">See arch.svg for the full architecture diagram. This arch.avg file is SVG content kept for the requested filename.</text>
+  <g font-family="Arial, sans-serif" font-size="18" fill="#0f172a">
+    <rect x="80" y="180" width="220" height="80" rx="10" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="112" y="228">Source .zc</text>
+    <rect x="380" y="180" width="220" height="80" rx="10" fill="#e0f2fe" stroke="#0284c7"/>
+    <text x="430" y="228">Lexer</text>
+    <rect x="680" y="180" width="220" height="80" rx="10" fill="#ecfccb" stroke="#65a30d"/>
+    <text x="735" y="228">Parser / AST</text>
+    <rect x="980" y="180" width="220" height="80" rx="10" fill="#fef3c7" stroke="#d97706"/>
+    <text x="1040" y="228">CodeGen</text>
+    <rect x="230" y="390" width="220" height="80" rx="10" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="280" y="438">MLIR</text>
+    <rect x="530" y="390" width="220" height="80" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="595" y="438">LLVM IR</text>
+    <rect x="830" y="390" width="220" height="80" rx="10" fill="#fee2e2" stroke="#dc2626"/>
+    <text x="875" y="438">RISC-V ASM</text>
+  </g>
+</svg>
+
