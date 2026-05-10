@@ -450,7 +450,9 @@ Goal: generate RVV-oriented LLVM IR or assembly.
 
 Design note: Phase 20A is documented in
 `docs/phase20-rvv-lowering.md`. It starts with a direct RVV reference assembly
-path for `vector_add`.
+path for `vector_add`. Phase 20C probes the formal MLIR/LLVM lowering route
+and records the current RISC-V `llc` toolchain blocker in
+`docs/phase20c-formal-rvv-lowering.md`.
 
 Deliverables:
 
@@ -545,11 +547,11 @@ accepted or rejected.
 
 The next implementation steps after the current Phase 22A state:
 
-1. Phase 20C: investigate a formal MLIR/LLVM vector-to-RVV lowering pipeline
-   for masked vector IR, then compare it with the direct reference assembly.
-2. Phase 23A: introduce an accelerator profile document/data file that records
+1. Phase 23A: introduce an accelerator profile document/data file that records
    assumed RVV width, supported element types, and target lowering policy.
-3. Phase 24A: add correctness-oriented executable tests for vector-add outputs
+2. Phase 24A: add correctness-oriented executable tests for vector-add outputs
    through an emulator or a host-side reference harness when available.
-4. Phase 25A: generalize the vector kernel surface beyond `vector_add` toward
+3. Phase 25A: generalize the vector kernel surface beyond `vector_add` toward
    copy, scale, multiply-add, and reduction kernels.
+4. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
+   vector-to-RVV lowering path can reach RISC-V assembly.

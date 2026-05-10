@@ -42,5 +42,5 @@ while index < n:
 ## Follow-Up
 
 - Phase 20B: add object/disassembly golden checks for RVV.
-- Phase 20C: replace direct RVV emission with MLIR/LLVM lowering when the tool
-  pipeline is stable enough.
+- Phase 20C: probe the formal MLIR/LLVM lowering path and document the current
+  toolchain blockers in [phase20c-formal-rvv-lowering.md](phase20c-formal-rvv-lowering.md).

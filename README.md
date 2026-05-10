@@ -137,6 +137,7 @@ Current RVV vector-add path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
+/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```
 
 Planning documents for the accelerator direction:
@@ -146,3 +147,4 @@ Planning documents for the accelerator direction:
 - [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md)
 - [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)
 - [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md)
+- [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md)

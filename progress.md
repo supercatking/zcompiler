@@ -334,6 +334,37 @@ Validated command:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 20C: Formal MLIR/LLVM RVV Lowering Probe
+
+### Execution Target
+
+Investigate whether the masked MLIR vector IR can lower through MLIR and LLVM
+to RISC-V RVV assembly without using the direct RVV reference backend.
+
+### Execution Summary
+
+- Added [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md).
+- Added `scripts/probe-formal-rvv-lowering.sh`.
+- Verified that masked vector MLIR lowers to LLVM dialect.
+- Verified that LLVM dialect translates to LLVM IR and bitcode.
+- Confirmed that the LLVM IR contains `llvm.masked.load` and
+  `llvm.masked.store`.
+- Recorded the current backend blocker:
+  - local LLVM 23 `llc` has no RISC-V target registered
+  - system LLVM 14 `llc` has RISC-V but cannot consume LLVM 23 IR/bitcode
+
+### Execution Result
+
+Completed as a reproducible probe. The formal path is ready through LLVM IR and
+blocked at RISC-V `llc` by toolchain mismatch.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
+python3 -m json.tool /home/zyz/zcomipler/build/experiments/mlir-rvv/formal-rvv-lowering-result.json
+```
+
 ## Phase 21B: Machine-Readable Benchmark Metadata
 
 ### Execution Target
