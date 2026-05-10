@@ -526,3 +526,46 @@ Validated commands:
 /home/zyz/mlir/build/bin/llvm-as /tmp/new-hello.ll -o /tmp/new-hello.bc
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 16: LLVM RISC-V Backend Integration
+
+### Execution Target
+
+Generate RISC-V assembly through LLVM's RISC-V backend while keeping the
+hand-written RISC-V emitter available as a reference fallback.
+
+### Execution Summary
+
+- Added a new `Target/RiscV` backend module.
+- Moved the MLIR-backed LLVM IR emission helper behind a reusable target-layer
+  API.
+- Implemented the backend path:
+  - AST
+  - in-memory MLIR
+  - `mlir-opt --convert-to-llvm`
+  - `mlir-translate --mlir-to-llvmir`
+  - `llc -mtriple=riscv64-unknown-elf -mattr=+m`
+  - RISC-V assembly
+- Updated `zc --emit-riscv-asm` to prefer the LLVM backend path and fall back
+  to the hand-written reference emitter if the backend path is unavailable.
+- Updated architecture documents and the architecture diagram to show the
+  `Target/RiscV` module.
+- Updated the `hello.zc` RISC-V assembly golden output to match LLVM backend
+  output.
+
+### Execution Result
+
+Completed for straight-line arithmetic programs.
+
+Environment note: `/home/zyz/mlir/build/bin/llc` currently does not include a
+registered RISC-V target, so this phase uses `/usr/bin/llc`, which does include
+`riscv64`. The MLIR conversion and LLVM IR translation still use the local MLIR
+build under `/home/zyz/mlir/build/bin`.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
+riscv64-linux-gnu-as /tmp/new-hello.riscv -o /tmp/new-hello.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

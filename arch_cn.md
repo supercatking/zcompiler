@@ -10,7 +10,7 @@
 
 - 前端负责理解 `.zc` 源码，包括 lexer、parser 和 AST。
 - AST 是当前最核心的中间数据结构，后续 codegen 都从 AST 读取程序结构。
-- `CodeGen` 模块从 AST 生成多种输出：标准 MLIR、`zc` dialect MLIR 表面形式、lowered MLIR、LLVM IR 和 RISC-V assembly。
+- `CodeGen` 模块保留早期文本 reference emitter；`MLIRGen` 和 `Target/RiscV` 模块负责更正式的基础设施路径：AST -> in-memory MLIR -> LLVM IR -> LLVM RISC-V backend assembly。
 - RVV 和 AI workflow 目前是设计方向，已经有文档记录，为后续 accelerator compiler 做准备。
 
 ## 1. 总体流水线
@@ -23,7 +23,7 @@ source .zc
   -> Token stream
   -> Parser
   -> AST
-  -> CodeGen
+  -> MLIRGen / Target backend
   -> MLIR / LLVM IR / RISC-V assembly
 ```
 
@@ -35,7 +35,7 @@ examples/hello.zc
   -> std::vector<Token>
   -> zc::Parser
   -> ModuleAST
-  -> CodeGen
+  -> CodeGen / MLIRGen / Target/RiscV
   -> --emit-ast
   -> --emit-mlir
   -> --emit-zc-mlir
@@ -239,21 +239,29 @@ entry:
 
 ### RISC-V Assembly
 
-`--emit-riscv-asm` 输出 RISC-V assembly：
+`--emit-riscv-asm` 优先通过 `Target/RiscV` 路径输出 RISC-V assembly：
 
 ```asm
-  .option nopic
   .text
+  .attribute 5, "rv64i2p0_m2p0"
   .globl main
 main:
-  li t0, 1
-  li t1, 2
-  add t2, t0, t1
-  mv a0, t2
+  li a0, 7
   ret
 ```
 
-测试里会在可用时使用 `riscv64-linux-gnu-as` 验证 assembly。
+当前路径是：
+
+```text
+AST
+  -> MLIRGen
+  -> mlir-opt --convert-to-llvm
+  -> mlir-translate --mlir-to-llvmir
+  -> llc -mtriple=riscv64-unknown-elf -mattr=+m
+  -> RISC-V assembly
+```
+
+测试里会在可用时使用 `riscv64-linux-gnu-as` 验证 assembly。当前本地 `/home/zyz/mlir/build/bin/llc` 没有注册 RISC-V target，因此 Phase 16 使用系统 `/usr/bin/llc` 的 RISC-V backend。
 
 ## 5. 测试体系
 
@@ -326,17 +334,17 @@ docs/ai-workflow.md
 .zc source
   -> tokens
   -> AST
-  -> MLIR
+  -> in-memory MLIR
+  -> MLIR LLVM dialect
   -> LLVM IR
-  -> RISC-V assembly
+  -> LLVM RISC-V backend assembly
 ```
 
 下一步最有价值的工程方向是：
 
-- 把 `zc` dialect 从文本 surface 升级为真正 MLIR registered dialect。
-- 使用 MLIR rewrite pattern 实现真正 lowering。
-- 将 RISC-V assembly 路径接到 LLVM backend 或更正式的 target pipeline。
-- 开始实现 RVV vector operation。
+- 扩展函数调用、赋值和第一版内存模型。
+- 保持 `Target/RiscV` 后端接口稳定，继续减少 driver 与目标细节的耦合。
+- 开始实现 target-independent vector operation，为 RVV lowering 做准备。
 
 ## 9. 后续 Phase 规划
 
@@ -352,7 +360,7 @@ an AI self made compiler based on RISCV RVV accelerator
 - Phase 13：使用 MLIR rewrite pattern 实现真实 lowering pass。
 - Phase 14：使用 MLIR C++ API 从 AST 构造 in-memory MLIR module。
 - Phase 15：通过 MLIR LLVM dialect 和 MLIR/LLVM 基础设施生成 LLVM IR。
-- Phase 16：接入 LLVM RISC-V backend 生成 RISC-V assembly/object。
+- Phase 16：接入 LLVM RISC-V backend 生成 RISC-V assembly/object。已完成第一版 assembly 路径。
 - Phase 17：扩展函数、函数调用、赋值和内存模型。
 - Phase 18：添加 target-independent vector syntax 和 vector AST。
 - Phase 19：把 vector operations lowering 到 MLIR vector dialect。
@@ -371,4 +379,4 @@ an AI self made compiler based on RISCV RVV accelerator
 - 每个 phase 都要补充 testcase。
 - 尽量完整验证；如果有难以立即修复的问题，记录到 `known_issue.md`。
 
-下一步建议优先做 Phase 12。原因是它会把当前 `zc` dialect 从“文本表面形式”升级为真正 MLIR registered dialect，这是后续真实 lowering、LLVM pipeline 和 RVV lowering 的基础。
+下一步建议优先做 Phase 17：扩展函数调用、赋值和第一版内存模型。原因是 RVV lowering 之前需要更完整的程序表达能力，尤其是调用边界、局部状态和后续 vector load/store 的基础。

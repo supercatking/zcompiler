@@ -25,5 +25,6 @@ target_link_libraries(zc
     ZCompilerMLIRGen
     ZCompilerParser
     ZCompilerLexer
+    ZCompilerRiscVBackend
     ${LLVM_LIBS}
 )

@@ -515,10 +515,11 @@ accepted or rejected.
 
 ## Immediate Next Tasks
 
-The next implementation steps after this roadmap:
+The next implementation steps after Phase 16:
 
-1. Phase 12: implement a registered `zc` MLIR dialect.
-2. Phase 13: implement real MLIR lowering patterns.
-3. Phase 14: move MLIR generation to in-memory MLIR API.
-4. Phase 15: use MLIR/LLVM infrastructure for LLVM IR emission.
-5. Phase 16: integrate LLVM RISC-V backend.
+1. Phase 17: implement calls, assignment, and a first memory model.
+2. Phase 18: add target-independent vector syntax and vector AST nodes.
+3. Phase 19: lower vector operations to MLIR vector dialect.
+4. Phase 20: lower vector operations toward RVV output.
+5. Phase 21: add accelerator profiles and reproducible benchmarks.
+6. Phase 22: implement the AI-assisted optimization experiment loop.

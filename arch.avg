@@ -18,7 +18,6 @@
     <rect x="530" y="390" width="220" height="80" rx="10" fill="#fee2e2" stroke="#dc2626"/>
     <text x="595" y="438">LLVM IR</text>
     <rect x="830" y="390" width="220" height="80" rx="10" fill="#fee2e2" stroke="#dc2626"/>
-    <text x="875" y="438">RISC-V ASM</text>
+    <text x="855" y="438">RISC-V LLVM Backend</text>
   </g>
 </svg>
-

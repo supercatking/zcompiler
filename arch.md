@@ -11,9 +11,9 @@ The diagram shows the current project shape after the toy compiler phases:
 
 - The frontend owns `.zc` source parsing: lexer, parser, and AST.
 - The AST is the central in-memory program model used by later compiler stages.
-- The `CodeGen` module emits several textual targets from the AST:
-  standard MLIR, `zc` dialect MLIR surface, lowered MLIR, LLVM IR, and RISC-V
-  assembly.
+- The `CodeGen` module keeps the early textual reference emitters.
+- The `MLIRGen` and `Target/RiscV` modules own the infrastructure-backed path:
+  AST -> in-memory MLIR -> LLVM IR -> LLVM RISC-V backend assembly.
 - The RVV and AI-assisted blocks are deliberate future-facing architecture
   areas. They are documented now so the toy compiler can grow toward the final
   accelerator-oriented goal without changing direction later.
@@ -80,6 +80,12 @@ Core principles:
                       v
           +------------------------+
           | LLVM IR                |
+          +-----------+------------+
+                      |
+                      v
+          +------------------------+
+          | Target/RiscV backend   |
+          | llc, riscv64 triple    |
           +-----------+------------+
                       |
                       v
@@ -248,11 +254,15 @@ zcompiler/
     zcompiler/
       AST/
       Parser/
+      MLIRGen/
+      Target/RiscV/
       Dialect/ZC/
       Conversion/
   lib/
     AST/
     Parser/
+    MLIRGen/
+    Target/RiscV/
     Dialect/ZC/
     Conversion/
   tools/
@@ -275,7 +285,8 @@ Every stage should have small tests.
 - Parser tests: source text to AST.
 - MLIR emission tests: AST to `zc` dialect.
 - Lowering tests: `zc` dialect to standard MLIR / LLVM dialect.
-- RISC-V tests: generated assembly contains expected instructions.
+- RISC-V tests: generated assembly diff plus assembler validation when
+  `riscv64-linux-gnu-as` is available.
 - End-to-end tests: compile `main` and run with QEMU when possible.
 
 ## 9. RVV Direction
@@ -317,7 +328,8 @@ The remaining roadmap is:
 - Phase 14: build MLIR modules in memory with MLIR C++ APIs.
 - Phase 15: lower through MLIR LLVM dialect and emit LLVM IR through
   infrastructure rather than hand-written text.
-- Phase 16: generate RISC-V assembly through LLVM's RISC-V backend.
+- Phase 16: generate RISC-V assembly through LLVM's RISC-V backend. Completed
+  with `Target/RiscV` using MLIR-generated LLVM IR and `llc`.
 - Phase 17: add functions, calls, assignment, and memory operations.
 - Phase 18: add target-independent vector syntax and vector AST nodes.
 - Phase 19: lower vector operations to MLIR vector dialect.
@@ -325,5 +337,6 @@ The remaining roadmap is:
 - Phase 21: add accelerator profiles and reproducible benchmarks.
 - Phase 22: implement the AI-assisted optimization experiment loop.
 
-The next implementation priority is Phase 12 because it upgrades the project
-from a text-emitting toy compiler toward a real MLIR compiler.
+The next implementation priority is Phase 17: extend the language with calls,
+assignment, and a first memory model while preserving the MLIR-backed target
+pipeline.

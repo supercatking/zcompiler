@@ -86,8 +86,8 @@
 
   <rect class="box target" x="920" y="390" width="240" height="104"/>
   <text class="box-title" x="945" y="422">RISC-V Assembly</text>
-  <text class="box-text" x="945" y="446">li / add / mul / ret</text>
-  <text class="box-text" x="945" y="466">basic branches</text>
+  <text class="box-text" x="945" y="446">Target/RiscV backend</text>
+  <text class="box-text" x="945" y="466">llc + riscv64 triple</text>
   <text class="small" x="945" y="486">--emit-riscv-asm</text>
 
   <rect class="box future" x="920" y="555" width="240" height="118"/>
@@ -118,4 +118,3 @@
   <text class="label" x="845" y="428">validated by assembler when available</text>
   <text class="label" x="845" y="600">future accelerator path</text>
 </svg>
-
