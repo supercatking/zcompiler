@@ -334,6 +334,69 @@ Validated command:
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 21B: Machine-Readable Benchmark Metadata
+
+### Execution Target
+
+Extend the vector-add benchmark workflow so generated artifacts can be consumed
+by tools and future AI-assisted analysis.
+
+### Execution Summary
+
+- Added [docs/benchmark-workflow.md](docs/benchmark-workflow.md).
+- Extended `benchmarks/vector_add/run.sh`.
+- The benchmark now emits:
+  - `build/benchmarks/vector_add/result.json`
+  - `build/benchmarks/vector_add/result.md`
+- `result.json` records:
+  - benchmark id
+  - source program
+  - reference source
+  - tools
+  - output artifacts
+  - object sizes
+  - required RVV instruction counts
+  - status
+- Updated `benchmarks/vector_add/README.md`.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+```
+
+## Phase 22B: Prompt Records
+
+### Execution Target
+
+Add prompt records so AI-assisted compiler changes can be traced from request
+to generated changes and validation.
+
+### Execution Summary
+
+- Added `experiments/prompts/README.md`.
+- Added `experiments/prompts/TEMPLATE.md`.
+- Added the first prompt record:
+  - `experiments/prompts/vector_add_rvv_001.md`
+- Updated [docs/ai-workflow.md](docs/ai-workflow.md).
+- Linked the prompt record from:
+  - `experiments/results/vector_add_rvv_001.md`
+
+### Execution Result
+
+Completed.
+
+The first prompt record is:
+
+```text
+experiments/prompts/vector_add_rvv_001.md
+```
+
 Generated artifacts:
 
 ```text

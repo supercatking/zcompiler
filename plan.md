@@ -501,6 +501,9 @@ At least one scalar-vs-vector experiment can be recorded and reproduced.
 
 Goal: implement the workflow for AI-suggested compiler changes.
 
+Phase 22B adds prompt records under `experiments/prompts/`, including a template
+and the first accepted vector-add/RVV prompt record.
+
 Deliverables:
 
 - Experiment schema.

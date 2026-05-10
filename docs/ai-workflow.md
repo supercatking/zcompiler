@@ -106,3 +106,16 @@ The directory now exists. The first accepted experiment is:
 ```text
 experiments/results/vector_add_rvv_001.md
 ```
+
+Prompt records live under:
+
+```text
+experiments/prompts/
+```
+
+Use `experiments/prompts/TEMPLATE.md` for future AI-assisted compiler changes.
+The first prompt record is:
+
+```text
+experiments/prompts/vector_add_rvv_001.md
+```

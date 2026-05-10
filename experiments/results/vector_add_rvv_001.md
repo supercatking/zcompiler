@@ -43,6 +43,7 @@ f77808e Add vector add benchmark artifacts
 ```bash
 ctest --test-dir build --output-on-failure
 ./benchmarks/vector_add/run.sh
+python3 -m json.tool build/benchmarks/vector_add/result.json
 ```
 
 ## Expected RVV Instructions
@@ -69,3 +70,9 @@ The path is intentionally split:
 The local MLIR build and system RISC-V `llc` are not from the same LLVM target
 configuration. The direct RVV reference backend avoids blocking progress while
 the formal lowering pipeline is still being stabilized.
+
+Related prompt record:
+
+```text
+experiments/prompts/vector_add_rvv_001.md
+```
