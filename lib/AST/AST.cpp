@@ -82,6 +82,14 @@ void VectorAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorCopyStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorCopyStmt output=" << output << " input=" << input << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "ReturnStmt\n";

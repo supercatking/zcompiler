@@ -405,4 +405,6 @@ profiles/rvv-default.json
 
 Phase 24A 已经补充 host-side correctness harness，用来验证 masked `vector_add` 在 `n=0/1/3/4/5/7/16/17` 等长度下的语义和 tail lane 行为。
 
-下一步建议优先做 Phase 25：把 vector kernel surface 从 `vector_add` 扩展到 copy、scale、multiply-add、reduction。原因是现在单一 kernel 的语法、MLIR lowering、RVV artifact、benchmark metadata、profile、correctness harness 都已经形成闭环，可以开始扩展 kernel 覆盖面。
+Phase 25A 已经新增 `vector_copy c, a, n;`，并复用 masked MLIR vector lowering、RVV load/store reference assembly、golden tests 和 host-side correctness harness。
+
+下一步建议继续 Phase 25B/25C：增加 vector scale、multiply-add 或 reduction。原因是现在 copy/add 两类 kernel 已经验证了“纯 load/store”和“load/compute/store”两种基本形态，可以继续覆盖更接近真实 workload 的算子。

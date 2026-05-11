@@ -1,0 +1,11 @@
+Module
+  Function name=vcopy return=i32
+    Params
+      Param name=a type=ptr<i32>
+      Param name=c type=ptr<i32>
+      Param name=n type=i32
+    VectorCopyStmt output=c input=a
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

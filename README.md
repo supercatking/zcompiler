@@ -36,7 +36,8 @@ tutorial. It currently supports:
 - `ptr<i32>` buffer parameters.
 - Scalar indexed `load` / `store`.
 - Target-independent `vector_add` syntax.
-- Masked MLIR vector lowering for `vector_add` tails.
+- Target-independent `vector_copy` syntax.
+- Masked MLIR vector lowering for vector tails.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
@@ -138,6 +139,8 @@ Current RVV vector-add path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```
@@ -152,3 +155,4 @@ Planning documents for the accelerator direction:
 - [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)
 - [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md)
 - [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md)
+- [docs/phase25-vector-kernels.md](docs/phase25-vector-kernels.md)

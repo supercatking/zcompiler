@@ -30,6 +30,7 @@ For the current RVV work, the important assumptions include:
 - `rv64gcv`
 - `lp64d`
 - default vector element type: `i32`
+- current source operations: `vector_add`, `vector_copy`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly

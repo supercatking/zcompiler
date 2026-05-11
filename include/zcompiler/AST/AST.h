@@ -26,6 +26,7 @@ enum class StmtKind {
   If,
   While,
   VectorAdd,
+  VectorCopy,
 };
 
 class ParameterAST final {
@@ -185,6 +186,24 @@ private:
   std::string output;
   std::string lhs;
   std::string rhs;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorCopyStmtAST final : public StmtAST {
+public:
+  VectorCopyStmtAST(std::string output, std::string input,
+                    std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorCopy; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
   std::unique_ptr<ExprAST> length;
 };
 

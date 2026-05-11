@@ -69,6 +69,23 @@ for instruction in vsetvli vle32.v vadd.vv vse32.v; do
   grep -q "$instruction" "$tmp_dir/vector_add.riscv"
 done
 
+"$zc_bin" "$source_root/examples/vector_copy.zc" --emit-mlir \
+  > "$tmp_dir/vector_copy.mlir"
+diff -u -B "$source_root/test/codegen/vector_copy.mlir" \
+  "$tmp_dir/vector_copy.mlir"
+
+"$zc_bin" "$source_root/examples/vector_copy.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_copy.riscv"
+diff -u "$source_root/test/codegen/vector_copy.riscv" \
+  "$tmp_dir/vector_copy.riscv"
+for instruction in vsetvli vle32.v vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_copy.riscv"
+done
+if grep -q "vadd.vv" "$tmp_dir/vector_copy.riscv"; then
+  echo "vector_copy unexpectedly contains vadd.vv" >&2
+  exit 1
+fi
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -86,6 +103,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/arrays.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_add.mlir" \
     -o "$tmp_dir/vector_add.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_copy.mlir" \
+    -o "$tmp_dir/vector_copy.opt.mlir"
 fi
 
 if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then
@@ -112,4 +131,15 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   for instruction in vsetvli vle32.v vadd.vv vse32.v; do
     grep -q "$instruction" "$tmp_dir/vector_add.objdump"
   done
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_copy.riscv" -o "$tmp_dir/vector_copy.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_copy.o" \
+    > "$tmp_dir/vector_copy.objdump"
+  for instruction in vsetvli vle32.v vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_copy.objdump"
+  done
+  if grep -q "vadd.vv" "$tmp_dir/vector_copy.objdump"; then
+    echo "vector_copy objdump unexpectedly contains vadd.vv" >&2
+    exit 1
+  fi
 fi

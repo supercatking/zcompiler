@@ -37,6 +37,26 @@ The test writes a generated record to:
 build/correctness/vector_add_host.json
 ```
 
+## Phase 25A Vector Copy Host Harness
+
+The second host harness is:
+
+```text
+test/correctness/vector_copy_host.py
+```
+
+It validates the same masked chunk and inactive-tail behavior for:
+
+```zc
+vector_copy c, a, n;
+```
+
+The test writes:
+
+```text
+build/correctness/vector_copy_host.json
+```
+
 ## Why Host-Side First
 
 The current WSL environment does not provide `qemu-riscv64`, so Phase 24A starts
@@ -49,4 +69,5 @@ code into a runnable program.
 ```bash
 ctest --test-dir build --output-on-failure
 python3 -m json.tool build/correctness/vector_add_host.json
+python3 -m json.tool build/correctness/vector_copy_host.json
 ```

@@ -198,6 +198,9 @@ private:
     case StmtKind::VectorAdd:
       emitVectorAdd(static_cast<const VectorAddStmtAST &>(statement));
       return;
+    case StmtKind::VectorCopy:
+      emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));
+      return;
     }
   }
 
@@ -230,6 +233,57 @@ private:
                                     found->second, ValueRange(index));
   }
 
+  scf::ForOp createMaskedVectorLoop(Value upperBound, Value &step) {
+    Location loc = builder.getUnknownLoc();
+    Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
+    step = builder.create<arith::ConstantIndexOp>(loc, 4);
+    return builder.create<scf::ForOp>(loc, lowerBound, upperBound, step);
+  }
+
+  struct MaskedVectorAccess {
+    Location loc;
+    VectorType vectorType;
+    Value zero;
+    SmallVector<Value, 1> indices;
+    Value mask;
+    AffineMapAttr permutationMap;
+    ArrayAttr inBounds;
+  };
+
+  MaskedVectorAccess createMaskedVectorAccess(Value upperBound, Value step,
+                                              Value index) {
+    Location loc = builder.getUnknownLoc();
+    MaskedVectorAccess access{
+        loc,
+        VectorType::get({4}, builder.getI32Type()),
+        builder.create<arith::ConstantIntOp>(loc, 0, 32),
+        SmallVector<Value, 1>{index},
+        nullptr,
+        AffineMapAttr::get(AffineMap::getMinorIdentityMap(1, 1, &context)),
+        builder.getBoolArrayAttr({false}),
+    };
+
+    auto maskType = VectorType::get({4}, builder.getI1Type());
+    Value remaining = builder.create<arith::SubIOp>(loc, upperBound, index);
+    Value activeLanes = builder.create<arith::MinUIOp>(loc, remaining, step);
+    access.mask = builder.create<vector::CreateMaskOp>(
+        loc, maskType, ValueRange(activeLanes));
+    return access;
+  }
+
+  Value emitVectorRead(Value buffer, const MaskedVectorAccess &access) {
+    return builder.create<vector::TransferReadOp>(
+        access.loc, access.vectorType, buffer, ValueRange(access.indices),
+        access.permutationMap, access.zero, access.mask, access.inBounds);
+  }
+
+  void emitVectorWrite(Value vector, Value buffer,
+                       const MaskedVectorAccess &access) {
+    builder.create<vector::TransferWriteOp>(
+        access.loc, vector, buffer, ValueRange(access.indices),
+        access.permutationMap, access.mask, access.inBounds);
+  }
+
   void emitVectorAdd(const VectorAddStmtAST &statement) {
     auto output = variables.find(statement.getOutput());
     auto lhs = variables.find(statement.getLHS());
@@ -244,37 +298,42 @@ private:
     if (!upperBound)
       return;
 
-    Location loc = builder.getUnknownLoc();
-    Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
-    Value step = builder.create<arith::ConstantIndexOp>(loc, 4);
-    auto forOp = builder.create<scf::ForOp>(loc, lowerBound, upperBound, step);
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
 
     OpBuilder::InsertionGuard guard(builder);
     builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
 
-    auto vectorType = VectorType::get({4}, builder.getI32Type());
-    auto maskType = VectorType::get({4}, builder.getI1Type());
-    auto permutationMap =
-        AffineMapAttr::get(AffineMap::getMinorIdentityMap(1, 1, &context));
-    auto inBounds = builder.getBoolArrayAttr({false});
-    Value zero = builder.create<arith::ConstantIntOp>(loc, 0, 32);
-    Value index = forOp.getInductionVar();
-    SmallVector<Value, 1> indices{index};
-    Value remaining = builder.create<arith::SubIOp>(loc, upperBound, index);
-    Value activeLanes = builder.create<arith::MinUIOp>(loc, remaining, step);
-    Value mask = builder.create<vector::CreateMaskOp>(
-        loc, maskType, ValueRange(activeLanes));
+    Value lhsVector = emitVectorRead(lhs->second, access);
+    Value rhsVector = emitVectorRead(rhs->second, access);
+    Value sum = builder.create<arith::AddIOp>(access.loc, lhsVector, rhsVector);
+    emitVectorWrite(sum, output->second, access);
+  }
 
-    Value lhsVector = builder.create<vector::TransferReadOp>(
-        loc, vectorType, lhs->second, ValueRange(indices), permutationMap, zero,
-        mask, inBounds);
-    Value rhsVector = builder.create<vector::TransferReadOp>(
-        loc, vectorType, rhs->second, ValueRange(indices), permutationMap, zero,
-        mask, inBounds);
-    Value sum = builder.create<arith::AddIOp>(loc, lhsVector, rhsVector);
-    builder.create<vector::TransferWriteOp>(loc, sum, output->second,
-                                            ValueRange(indices), permutationMap,
-                                            mask, inBounds);
+  void emitVectorCopy(const VectorCopyStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    if (output == variables.end() || input == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_copy statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value inputVector = emitVectorRead(input->second, access);
+    emitVectorWrite(inputVector, output->second, access);
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

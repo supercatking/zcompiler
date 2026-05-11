@@ -538,6 +538,46 @@ ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_add_host.json
 ```
 
+## Phase 25A: Vector Copy Kernel Surface
+
+### Execution Target
+
+Expand the vector kernel surface beyond `vector_add` with a copy kernel that
+reuses the same target-independent syntax, masked MLIR lowering, RVV reference
+assembly, and correctness-test structure.
+
+### Execution Summary
+
+- Added `vector_copy c, a, n;` source syntax.
+- Added lexer keyword support for `vector_copy`.
+- Added `VectorCopyStmtAST`.
+- Added parser support and AST dump output.
+- Refactored `MLIRGen` masked vector loop/read/write helpers so `vector_add`
+  and `vector_copy` share the same tail-safe lowering path.
+- Added direct RVV reference assembly for `vector_copy` with:
+  - `vsetvli`
+  - `vle32.v`
+  - `vse32.v`
+- Added `examples/vector_copy.zc`.
+- Added lexer, parser, MLIR, RISC-V assembly, assembler/objdump, and host-side
+  correctness coverage for `vector_copy`.
+- Updated `profiles/rvv-default.json` to list both `vector_add` and
+  `vector_copy`.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j2
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/mlir/build/bin/mlir-opt /tmp/vector_copy.mlir -o /tmp/vector_copy.checked.mlir
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_copy.s -o /tmp/vector_copy.o
+python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_copy_host.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

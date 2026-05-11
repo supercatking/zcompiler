@@ -11,8 +11,9 @@ build-*/
 *.bc
 *.s
 *.mlir
+!test/**/*.ll
+!test/**/*.mlir
 .cache/
 .vscode/
 .idea/
 compile_commands.json
-

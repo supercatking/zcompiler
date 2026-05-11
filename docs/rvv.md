@@ -36,6 +36,7 @@ zc vector source syntax
 
 - `zc.vector_load`
 - `zc.vector_store`
+- `zc.vector_copy`
 - `zc.vector_add`
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
