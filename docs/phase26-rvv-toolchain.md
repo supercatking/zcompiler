@@ -58,6 +58,13 @@ LLVM_TARGETS_TO_BUILD: host
 
 ## Recommended Next Build
 
+Use `scripts/prepare-riscv-llvm-build.sh` to generate or run the separate build
+plan. The detailed Phase 26B plan is in:
+
+```text
+docs/phase26b-riscv-llvm-build.md
+```
+
 Use a separate build directory so the current `/home/zyz/mlir/build` remains
 untouched:
 

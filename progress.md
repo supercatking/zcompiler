@@ -751,6 +751,42 @@ ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
 ```
 
+## Phase 26B: RISCV LLVM Build Plan Script
+
+### Execution Target
+
+Make the same-version RISC-V-capable LLVM/MLIR build step reproducible while
+keeping the existing `/home/zyz/mlir/build` directory untouched.
+
+### Execution Summary
+
+- Added `scripts/prepare-riscv-llvm-build.sh`.
+- Added `docs/phase26b-riscv-llvm-build.md`.
+- The script supports:
+  - `--dry-run`
+  - `--configure`
+  - `--build`
+- The default build plan uses:
+  - source: `/home/zyz/mlir/llvm-project/llvm`
+  - build: `/home/zyz/mlir/build-riscv`
+  - projects: `mlir`
+  - targets: `X86;RISCV`
+  - required tools: `llc`, `mlir-opt`, `mlir-translate`, `llvm-as`
+- The script writes reproducible plan artifacts under
+  `build/experiments/rvv-toolchain/`.
+
+### Execution Result
+
+Completed as a dry-run build-plan phase. No external LLVM build was started by
+default.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
+python3 -m json.tool /home/zyz/zcomipler/build/experiments/rvv-toolchain/riscv-llvm-build-plan.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

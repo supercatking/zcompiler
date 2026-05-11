@@ -606,6 +606,7 @@ Deliverables:
 
 - Toolchain alignment plan for local LLVM 23 MLIR and RISC-V-enabled `llc`.
 - Repeatable RVV toolchain diagnostic script.
+- Dry-run/configure/build script for a separate RISCV-enabled LLVM build.
 - Re-run of `scripts/probe-formal-rvv-lowering.sh`.
 - Updated formal lowering notes and tests if the blocker is removed.
 
@@ -652,9 +653,9 @@ generated IR/assembly, and accept/reject result.
 
 ## Immediate Next Tasks
 
-The next implementation steps after Phase 27A records:
+The next implementation steps after Phase 26B build-plan scripting:
 
-1. Build a same-version MLIR/LLVM toolchain with `RISCV` enabled in a separate
-   directory such as `/home/zyz/mlir/build-riscv`.
+1. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
+   ready for a larger local LLVM build.
 2. Re-run the Phase26 diagnostic and formal RVV lowering probe against that
    toolchain.
