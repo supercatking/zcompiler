@@ -127,6 +127,7 @@ vector_scale c, a, factor, n;
 vector_mul c, a, b, n;
 vector_reduce_add sum, a, n;
 vector_select_gt out, lhs, rhs, true_values, false_values, n;
+vector_select_eq out, lhs, rhs, true_values, false_values, n;
 ```
 
 Current direct RVV reference mappings:
@@ -137,6 +138,7 @@ Current direct RVV reference mappings:
 - `vector_mul`: `vle32.v`, `vmul.vv`, `vse32.v`
 - `vector_reduce_add`: `vle32.v`, `vmv.s.x`, `vredsum.vs`, `vmv.x.s`
 - `vector_select_gt`: `vle32.v`, `vmslt.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_select_eq`: `vle32.v`, `vmseq.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -148,10 +150,11 @@ Phase 30J implements the first predicate-oriented source operation:
 
 ```zc
 vector_select_gt out, lhs, rhs, true_values, false_values, n;
+vector_select_eq out, lhs, rhs, true_values, false_values, n;
 ```
 
 It lowers to a signed vector compare plus select. The direct RVV reference path
-uses `vmslt.vv v0, rhs, lhs` to form the greater-than mask and
+uses `vmslt.vv v0, rhs, lhs` for greater-than, `vmseq.vv` for equality, and
 `vmerge.vvm` to choose between the true and false vectors.
 
 ## RVV 1.0 Compliance Status

@@ -14,6 +14,8 @@ extern int copy_then_sum(int *a, int *out, int n);
 extern int vmul(int *a, int *b, int *c, int n);
 extern int select_gt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
+extern int select_eq(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
 
 static uint32_t bits_i32(int value) {{ return (uint32_t)(int32_t)value; }}
 
@@ -36,6 +38,8 @@ static int run_case(int n, int factor) {{
   int true_values[{capacity}];
   int false_values[{capacity}];
   int selected[{capacity}];
+  int eq_rhs[{capacity}];
+  int selected_eq[{capacity}];
 
   for (int i = 0; i < {capacity}; ++i) {{
     a[i] = seed_a(i);
@@ -47,12 +51,15 @@ static int run_case(int n, int factor) {{
     true_values[i] = 100000 + i * 13;
     false_values[i] = -100000 - i * 17;
     selected[i] = 0;
+    eq_rhs[i] = (i % 3 == 0) ? a[i] : b[i];
+    selected_eq[i] = 0;
   }}
 
 {pipeline_check}
 {copy_check}
 {mul_check}
 {select_check}
+{select_eq_check}
   return 0;
 }}
 
@@ -191,6 +198,10 @@ for (int i = 0; i < n; ++i) {
 ''')
 
 
+def render_select_eq_check():
+    return indent('int select_eq_status = select_eq(a, eq_rhs, true_values, false_values, selected_eq, n);\nif (select_eq_status != 0)\n  return 5;\nfor (int i = 0; i < n; ++i) {\n  int expected = a[i] == eq_rhs[i] ? true_values[i] : false_values[i];\n  if (bits_i32(selected_eq[i]) != bits_i32(expected))\n    return 110 + i;\n}\n\n')
+
+
 def render_harness(data):
     rvv = data["rvv_execution"]
     lengths = rvv["lengths"]
@@ -202,6 +213,7 @@ def render_harness(data):
         copy_check=render_copy_check(),
         mul_check=render_mul_check(),
         select_check=render_select_check(),
+        select_eq_check=render_select_eq_check(),
         capacity=capacity,
         lengths=", ".join(str(length) for length in lengths),
     )

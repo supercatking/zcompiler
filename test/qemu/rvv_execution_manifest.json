@@ -10,7 +10,8 @@
     "sources": [
       "examples/complex_vector_pipeline.zc",
       "examples/vector_mul.zc",
-      "examples/vector_select_gt.zc"
+      "examples/vector_select_gt.zc",
+      "examples/vector_select_eq.zc"
     ],
     "validated_kernels": [
       "vector_add",
@@ -18,7 +19,8 @@
       "vector_copy",
       "vector_reduce_add",
       "vector_mul",
-      "vector_select_gt"
+      "vector_select_gt",
+      "vector_select_eq"
     ],
     "lengths": [
       0,
@@ -63,6 +65,11 @@
         "kernel": "vector_select_gt",
         "function": "select_gt",
         "check": "selected[i] == a[i] > b[i] ? true_values[i] : false_values[i]"
+      },
+      {
+        "kernel": "vector_select_eq",
+        "function": "select_eq",
+        "check": "selected_eq[i] == (a[i] == eq_rhs[i] ? true_values[i] : false_values[i])"
       }
     ],
     "integer_semantics": {

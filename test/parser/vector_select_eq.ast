@@ -1,5 +1,5 @@
 Module
-  Function name=select_gt return=i32
+  Function name=select_eq return=i32
     Params
       Param name=a type=ptr<i32>
       Param name=b type=ptr<i32>
@@ -7,7 +7,7 @@ Module
       Param name=false_values type=ptr<i32>
       Param name=out type=ptr<i32>
       Param name=n type=i32
-    VectorSelectStmt predicate=gt output=out lhs=a rhs=b true=true_values false=false_values
+    VectorSelectStmt predicate=eq output=out lhs=a rhs=b true=true_values false=false_values
       Length
         VariableExpr name=n
     ReturnStmt

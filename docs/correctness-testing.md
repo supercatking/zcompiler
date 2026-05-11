@@ -175,6 +175,13 @@ The test writes:
 build/correctness/vector_select_gt_host.json
 ```
 
+Phase 30K adds the equality variant harness:
+
+```text
+test/correctness/vector_select_eq_host.py
+build/correctness/vector_select_eq_host.json
+```
+
 ## Why Host-Side First
 
 The current WSL environment does not provide `qemu-riscv64`, so Phase 24A starts
@@ -192,4 +199,12 @@ python3 -m json.tool build/correctness/vector_scale_host.json
 python3 -m json.tool build/correctness/vector_mul_host.json
 python3 -m json.tool build/correctness/vector_reduce_add_host.json
 python3 -m json.tool build/correctness/vector_select_gt_host.json
+python3 -m json.tool build/correctness/vector_select_eq_host.json
+```
+
+Phase 30K adds the equality variant harness:
+
+```text
+test/correctness/vector_select_eq_host.py
+build/correctness/vector_select_eq_host.json
 ```

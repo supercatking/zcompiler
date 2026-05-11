@@ -31,8 +31,15 @@ enum class StmtKind {
   VectorScale,
   VectorMul,
   VectorReduceAdd,
-  VectorSelectGT,
+  VectorSelect,
 };
+
+enum class VectorSelectPredicate {
+  GT,
+  EQ,
+};
+
+const char *getVectorSelectPredicateName(VectorSelectPredicate predicate);
 
 class ParameterAST final {
 public:
@@ -283,16 +290,18 @@ private:
   std::unique_ptr<ExprAST> length;
 };
 
-class VectorSelectGTStmtAST final : public StmtAST {
+class VectorSelectStmtAST final : public StmtAST {
 public:
-  VectorSelectGTStmtAST(std::string output, std::string lhs, std::string rhs,
-                        std::string trueValues, std::string falseValues,
-                        std::unique_ptr<ExprAST> length)
-      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
-        trueValues(std::move(trueValues)), falseValues(std::move(falseValues)),
-        length(std::move(length)) {}
-  StmtKind getKind() const override { return StmtKind::VectorSelectGT; }
+  VectorSelectStmtAST(VectorSelectPredicate predicate, std::string output,
+                      std::string lhs, std::string rhs,
+                      std::string trueValues, std::string falseValues,
+                      std::unique_ptr<ExprAST> length)
+      : predicate(predicate), output(std::move(output)), lhs(std::move(lhs)),
+        rhs(std::move(rhs)), trueValues(std::move(trueValues)),
+        falseValues(std::move(falseValues)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorSelect; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  VectorSelectPredicate getPredicate() const { return predicate; }
   const std::string &getOutput() const { return output; }
   const std::string &getLHS() const { return lhs; }
   const std::string &getRHS() const { return rhs; }
@@ -301,6 +310,7 @@ public:
   const ExprAST &getLength() const { return *length; }
 
 private:
+  VectorSelectPredicate predicate;
   std::string output;
   std::string lhs;
   std::string rhs;

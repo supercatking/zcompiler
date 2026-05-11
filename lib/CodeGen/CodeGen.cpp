@@ -317,9 +317,8 @@ private:
       emitVectorReduceAdd(
           static_cast<const VectorReduceAddStmtAST &>(statement));
       return;
-    case StmtKind::VectorSelectGT:
-      emitVectorSelectGT(
-          static_cast<const VectorSelectGTStmtAST &>(statement));
+    case StmtKind::VectorSelect:
+      emitVectorSelect(static_cast<const VectorSelectStmtAST &>(statement));
       return;
     }
     result.addDiagnostic("unknown statement kind");
@@ -588,10 +587,31 @@ private:
     os << endLabel << ":\n";
   }
 
-  void emitVectorSelectGT(const VectorSelectGTStmtAST &statement) {
+  StringRef getVectorSelectSourceName(VectorSelectPredicate predicate) {
+    switch (predicate) {
+    case VectorSelectPredicate::GT:
+      return "vector_select_gt";
+    case VectorSelectPredicate::EQ:
+      return "vector_select_eq";
+    }
+    return "vector_select_unknown";
+  }
+
+  void emitVectorSelectCompare(VectorSelectPredicate predicate) {
+    switch (predicate) {
+    case VectorSelectPredicate::GT:
+      os << "  vmslt.vv v0, v2, v1\n";
+      return;
+    case VectorSelectPredicate::EQ:
+      os << "  vmseq.vv v0, v1, v2\n";
+      return;
+    }
+  }
+
+  void emitVectorSelect(const VectorSelectStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
       result.addDiagnostic(
-          "vector_select_gt text lowering is only available for RISC-V assembly");
+          "vector_select text lowering is only available for RISC-V assembly");
       return;
     }
 
@@ -603,7 +623,7 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || trueValues == variables.end() ||
         falseValues == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_select_gt statement");
+      result.addDiagnostic("unknown buffer in vector_select statement");
       return;
     }
 
@@ -618,8 +638,10 @@ private:
     std::string rhsAddress = nextTempRegister();
     std::string trueAddress = nextTempRegister();
     std::string falseAddress = nextTempRegister();
-    std::string loopLabel = nextLabel(".Lvector_select_gt");
-    std::string endLabel = nextLabel(".Lvector_select_gt_end");
+    std::string labelBase = ".L" + getVectorSelectSourceName(
+                                      statement.getPredicate()).str();
+    std::string loopLabel = nextLabel(labelBase);
+    std::string endLabel = nextLabel(labelBase + "_end");
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
@@ -640,7 +662,7 @@ private:
     os << "  vle32.v v2, 0(" << rhsAddress << ")\n";
     os << "  vle32.v v3, 0(" << trueAddress << ")\n";
     os << "  vle32.v v4, 0(" << falseAddress << ")\n";
-    os << "  vmslt.vv v0, v2, v1\n";
+    emitVectorSelectCompare(statement.getPredicate());
     os << "  vmerge.vvm v5, v4, v3, v0\n";
     os << "  add " << lhsAddress << ", " << output->second.name << ", "
        << offset << "\n";

@@ -1870,3 +1870,29 @@ Validated commands:
 python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json >/dev/null
 git diff --check
 ```
+
+
+## Phase 30K: Vector Select Predicate Variants
+
+### Execution Target
+
+Broaden compare/select beyond signed greater-than and make the AST/lowering path
+ready for additional predicates.
+
+### Execution Summary
+
+- Refactored vector select into `VectorSelectStmtAST` with a predicate enum.
+- Kept `vector_select_gt` and added `vector_select_eq`.
+- Added MLIR lowering for `arith.cmpi eq` and direct RVV `vmseq.vv`.
+- Added lexer/parser/codegen goldens, host correctness, objdump checks, QEMU checks, profile updates, and docs.
+
+### Execution Result
+
+Completed for signed greater-than and equality vector select predicates.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

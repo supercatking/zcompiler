@@ -156,7 +156,11 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorReduceAdd))
     return parseVectorReduceAddStatement();
   if (check(TokenKind::KwVectorSelectGT))
-    return parseVectorSelectGTStatement();
+    return parseVectorSelectStatement(VectorSelectPredicate::GT,
+                                      "vector_select_gt");
+  if (check(TokenKind::KwVectorSelectEQ))
+    return parseVectorSelectStatement(VectorSelectPredicate::EQ,
+                                      "vector_select_eq");
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -357,7 +361,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
       std::move(result), std::move(input), std::move(length));
 }
 
-std::unique_ptr<StmtAST> Parser::parseVectorSelectGTStatement() {
+std::unique_ptr<StmtAST> Parser::parseVectorSelectStatement(
+    VectorSelectPredicate predicate, StringRef keyword) {
   advance();
 
   auto parseBuffer = [this](StringRef diagnostic) -> std::string {
@@ -368,41 +373,48 @@ std::unique_ptr<StmtAST> Parser::parseVectorSelectGTStatement() {
     return advance().lexeme;
   };
 
-  std::string output = parseBuffer("expected output buffer after 'vector_select_gt'");
+  std::string output = parseBuffer("expected output buffer after vector_select");
   if (output.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after vector_select_gt output"))
+      !expect(TokenKind::Comma, "expected ',' after vector_select output"))
     return nullptr;
 
-  std::string lhs = parseBuffer("expected left compare buffer in vector_select_gt");
+  std::string lhs = parseBuffer("expected left compare buffer in vector_select");
   if (lhs.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after vector_select_gt left compare input"))
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_select left compare input"))
     return nullptr;
 
-  std::string rhs = parseBuffer("expected right compare buffer in vector_select_gt");
+  std::string rhs = parseBuffer("expected right compare buffer in vector_select");
   if (rhs.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after vector_select_gt right compare input"))
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_select right compare input"))
     return nullptr;
 
-  std::string trueValues = parseBuffer("expected true-value buffer in vector_select_gt");
+  std::string trueValues =
+      parseBuffer("expected true-value buffer in vector_select");
   if (trueValues.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after vector_select_gt true-value input"))
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_select true-value input"))
     return nullptr;
 
-  std::string falseValues = parseBuffer("expected false-value buffer in vector_select_gt");
+  std::string falseValues =
+      parseBuffer("expected false-value buffer in vector_select");
   if (falseValues.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after vector_select_gt false-value input"))
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_select false-value input"))
     return nullptr;
 
   auto length = parseExpression();
   if (!length)
     return nullptr;
 
-  if (!expect(TokenKind::Semicolon,
-              "expected ';' after vector_select_gt statement"))
+  std::string terminatorMessage =
+      "expected ';' after " + keyword.str() + " statement";
+  if (!expect(TokenKind::Semicolon, terminatorMessage))
     return nullptr;
 
-  return std::make_unique<VectorSelectGTStmtAST>(
-      std::move(output), std::move(lhs), std::move(rhs),
+  return std::make_unique<VectorSelectStmtAST>(
+      predicate, std::move(output), std::move(lhs), std::move(rhs),
       std::move(trueValues), std::move(falseValues), std::move(length));
 }
 

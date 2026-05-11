@@ -216,9 +216,8 @@ private:
       emitVectorReduceAdd(
           static_cast<const VectorReduceAddStmtAST &>(statement));
       return;
-    case StmtKind::VectorSelectGT:
-      emitVectorSelectGT(
-          static_cast<const VectorSelectGTStmtAST &>(statement));
+    case StmtKind::VectorSelect:
+      emitVectorSelect(static_cast<const VectorSelectStmtAST &>(statement));
       return;
     }
   }
@@ -413,7 +412,17 @@ private:
     emitVectorWrite(product, output->second, access);
   }
 
-  void emitVectorSelectGT(const VectorSelectGTStmtAST &statement) {
+  arith::CmpIPredicate getMLIRPredicate(VectorSelectPredicate predicate) {
+    switch (predicate) {
+    case VectorSelectPredicate::GT:
+      return arith::CmpIPredicate::sgt;
+    case VectorSelectPredicate::EQ:
+      return arith::CmpIPredicate::eq;
+    }
+    return arith::CmpIPredicate::eq;
+  }
+
+  void emitVectorSelect(const VectorSelectStmtAST &statement) {
     auto output = variables.find(statement.getOutput());
     auto lhs = variables.find(statement.getLHS());
     auto rhs = variables.find(statement.getRHS());
@@ -443,7 +452,8 @@ private:
     Value trueVector = emitVectorRead(trueValues->second, access);
     Value falseVector = emitVectorRead(falseValues->second, access);
     Value mask = builder.create<arith::CmpIOp>(
-        access.loc, arith::CmpIPredicate::sgt, lhsVector, rhsVector);
+        access.loc, getMLIRPredicate(statement.getPredicate()), lhsVector,
+        rhsVector);
     Value selected =
         builder.create<arith::SelectOp>(access.loc, mask, trueVector, falseVector);
     emitVectorWrite(selected, output->second, access);

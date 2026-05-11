@@ -222,6 +222,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorReduceAdd;
   else if (text == "vector_select_gt")
     kind = TokenKind::KwVectorSelectGT;
+  else if (text == "vector_select_eq")
+    kind = TokenKind::KwVectorSelectEQ;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

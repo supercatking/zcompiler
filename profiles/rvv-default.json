@@ -28,7 +28,8 @@
       "vector_scale",
       "vector_mul",
       "vector_reduce_add",
-      "vector_select_gt"
+      "vector_select_gt",
+      "vector_select_eq"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [32],
@@ -45,6 +46,11 @@
       "planned_width_bits": [8, 16, 32, 64],
       "length_unit": "elements",
       "mixed_width_kernel_policy": "reject unless a future operation explicitly documents widening or narrowing"
+    },
+    "select_predicates": {
+      "signed": ["gt", "eq"],
+      "unsigned": [],
+      "first_class_masks": false
     }
   },
   "current_execution_validation": {
@@ -58,7 +64,8 @@
       "vector_scale",
       "vector_mul",
       "vector_reduce_add",
-      "vector_select_gt"
+      "vector_select_gt",
+      "vector_select_eq"
     ]
   },
   "toolchain": {

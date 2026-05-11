@@ -27,3 +27,7 @@ python3 "$source_root/test/correctness/vector_reduce_add_host.py" \
 python3 "$source_root/test/correctness/vector_select_gt_host.py" \
   "$zc_bin" \
   "$source_root"
+
+python3 "$source_root/test/correctness/vector_select_eq_host.py" \
+  "$zc_bin" \
+  "$source_root"

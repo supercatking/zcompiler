@@ -146,6 +146,19 @@ for instruction in vsetvli vle32.v vmslt.vv vmerge.vvm vse32.v; do
   grep -q "$instruction" "$tmp_dir/vector_select_gt.riscv"
 done
 
+"$zc_bin" "$source_root/examples/vector_select_eq.zc" --emit-mlir \
+  > "$tmp_dir/vector_select_eq.mlir"
+diff -u -B "$source_root/test/codegen/vector_select_eq.mlir" \
+  "$tmp_dir/vector_select_eq.mlir"
+
+"$zc_bin" "$source_root/examples/vector_select_eq.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_select_eq.riscv"
+diff -u "$source_root/test/codegen/vector_select_eq.riscv" \
+  "$tmp_dir/vector_select_eq.riscv"
+for instruction in vsetvli vle32.v vmseq.vv vmerge.vvm vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_select_eq.riscv"
+done
+
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" --emit-ast \
   > "$tmp_dir/complex_vector_pipeline.ast"
 for node in VectorAddStmt VectorScaleStmt VectorReduceAddStmt VectorCopyStmt; do
@@ -208,6 +221,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/vector_reduce_add.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_select_gt.mlir" \
     -o "$tmp_dir/vector_select_gt.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_select_eq.mlir" \
+    -o "$tmp_dir/vector_select_eq.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/complex_vector_pipeline.mlir" \
     -o "$tmp_dir/complex_vector_pipeline.opt.mlir"
 fi
@@ -282,6 +297,13 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
     > "$tmp_dir/vector_select_gt.objdump"
   for instruction in vsetvli vle32.v vmslt.vv vmerge.vvm vse32.v; do
     grep -q "$instruction" "$tmp_dir/vector_select_gt.objdump"
+  done
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_select_eq.riscv" -o "$tmp_dir/vector_select_eq.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_select_eq.o" \
+    > "$tmp_dir/vector_select_eq.objdump"
+  for instruction in vsetvli vle32.v vmseq.vv vmerge.vvm vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_select_eq.objdump"
   done
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/complex_vector_pipeline.riscv" \

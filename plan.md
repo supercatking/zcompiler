@@ -697,10 +697,11 @@ Completed slices:
 - Phase 30H: split QEMU check rendering into per-family generator units.
 - Phase 30I: compare/select source syntax and RVV predicate lowering design.
 - Phase 30J: `vector_select_gt` through lexer, parser, MLIR, RVV assembly, host correctness, and QEMU.
+- Phase 30K: generic select predicate AST plus `vector_select_eq`.
 
 Planned slices:
 
-- Phase 30K: broaden compare/select predicates beyond signed greater-than.
+- Phase 30L: complete signed compare/select predicates and plan first-class masks.
 - Phase 29E: implement the first non-`i32` typed-buffer vector path.
 
 Exit criteria:
@@ -728,7 +729,7 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 30K by adding compare/select predicate variants or first-class mask syntax.
+1. Start Phase 30L by completing signed compare/select predicates or first-class mask syntax.
 2. Start Phase 29E with one non-`i32` typed-buffer vector path.
 3. Continue toward LMUL and memory-form coverage after the source type contract is stable.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
