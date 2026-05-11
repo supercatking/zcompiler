@@ -307,6 +307,10 @@ private:
     case StmtKind::VectorScale:
       emitVectorScale(static_cast<const VectorScaleStmtAST &>(statement));
       return;
+    case StmtKind::VectorReduceAdd:
+      emitVectorReduceAdd(
+          static_cast<const VectorReduceAddStmtAST &>(statement));
+      return;
     }
     result.addDiagnostic("unknown statement kind");
   }
@@ -507,6 +511,56 @@ private:
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
+  }
+
+  void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic(
+          "vector_reduce_add text lowering is only available for RISC-V "
+          "assembly");
+      return;
+    }
+
+    auto resultVariable = variables.find(statement.getResult());
+    auto input = variables.find(statement.getInput());
+    if (resultVariable == variables.end() || input == variables.end()) {
+      result.addDiagnostic(
+          "unknown variable or buffer in vector_reduce_add statement");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string accumulator = nextTempRegister();
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string inputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_reduce_add");
+    std::string endLabel = nextLabel(".Lvector_reduce_add_end");
+
+    os << "  mv " << accumulator << ", " << resultVariable->second.name
+       << "\n";
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
+       << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << inputAddress << ", " << input->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v0, 0(" << inputAddress << ")\n";
+    os << "  vmv.s.x v1, " << accumulator << "\n";
+    os << "  vredsum.vs v2, v0, v1\n";
+    os << "  vmv.x.s " << accumulator << ", v2\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+
+    variables[statement.getResult()] = {accumulator, "i32"};
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

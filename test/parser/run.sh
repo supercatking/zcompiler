@@ -41,6 +41,11 @@ diff -u "$source_root/test/parser/vector_copy.ast" \
 diff -u "$source_root/test/parser/vector_scale.ast" \
   "$tmp_dir/vector_scale.ast"
 
+"$zc_bin" "$source_root/examples/vector_reduce_add.zc" --emit-ast \
+  > "$tmp_dir/vector_reduce_add.ast"
+diff -u "$source_root/test/parser/vector_reduce_add.ast" \
+  "$tmp_dir/vector_reduce_add.ast"
+
 set +e
 "$zc_bin" "$source_root/test/parser/invalid.zc" --emit-ast \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"

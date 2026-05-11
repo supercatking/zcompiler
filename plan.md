@@ -574,6 +574,7 @@ Completed slices:
 
 - Phase 25A: `vector_copy c, a, n;`
 - Phase 25B: `vector_scale c, a, factor, n;`
+- Phase 25C: `vector_reduce_add sum, a, n;`
 
 Deliverables:
 
@@ -649,8 +650,7 @@ generated IR/assembly, and accept/reject result.
 
 The next implementation steps after Phase 25B:
 
-1. Phase 25C: add a first reduction kernel and document the lowering strategy.
-2. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
+1. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
    vector-to-RVV lowering path can reach RISC-V assembly.
-3. Phase 27A: start using accelerator profiles in AI experiment records and
+2. Phase 27A: start using accelerator profiles in AI experiment records and
    optimization proposal comparisons.

@@ -204,6 +204,10 @@ private:
     case StmtKind::VectorScale:
       emitVectorScale(static_cast<const VectorScaleStmtAST &>(statement));
       return;
+    case StmtKind::VectorReduceAdd:
+      emitVectorReduceAdd(
+          static_cast<const VectorReduceAddStmtAST &>(statement));
+      return;
     }
   }
 
@@ -366,6 +370,40 @@ private:
     Value scaled =
         builder.create<arith::MulIOp>(access.loc, inputVector, factorVector);
     emitVectorWrite(scaled, output->second, access);
+  }
+
+  void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
+    auto resultVariable = variables.find(statement.getResult());
+    auto input = variables.find(statement.getInput());
+    if (resultVariable == variables.end() || input == variables.end()) {
+      result.addDiagnostic(
+          "unknown variable or buffer in vector_reduce_add statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Location loc = builder.getUnknownLoc();
+    Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
+    Value step = builder.create<arith::ConstantIndexOp>(loc, 4);
+    auto forOp = builder.create<scf::ForOp>(
+        loc, lowerBound, upperBound, step, ValueRange(resultVariable->second));
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value inputVector = emitVectorRead(input->second, access);
+    Value loopAccumulator = forOp.getRegionIterArg(0);
+    Value reduced = builder.create<vector::ReductionOp>(
+        access.loc, builder.getI32Type(), vector::CombiningKind::ADD,
+        inputVector, loopAccumulator, arith::FastMathFlags::none);
+    builder.create<scf::YieldOp>(access.loc, ValueRange(reduced));
+
+    variables[statement.getResult()] = forOp.getResult(0);
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

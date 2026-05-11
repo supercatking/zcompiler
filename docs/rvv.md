@@ -107,6 +107,7 @@ The implemented target-independent source operations are:
 vector_add c, a, b, n;
 vector_copy c, a, n;
 vector_scale c, a, factor, n;
+vector_reduce_add sum, a, n;
 ```
 
 Current direct RVV reference mappings:
@@ -114,6 +115,7 @@ Current direct RVV reference mappings:
 - `vector_add`: `vle32.v`, `vadd.vv`, `vse32.v`
 - `vector_copy`: `vle32.v`, `vse32.v`
 - `vector_scale`: `vle32.v`, `vmul.vx`, `vse32.v`
+- `vector_reduce_add`: `vle32.v`, `vmv.s.x`, `vredsum.vs`, `vmv.x.s`
 
-All three use a `vsetvli` loop and keep source-level syntax independent from
-RVV instruction names.
+All current vector kernels use a `vsetvli` loop and keep source-level syntax
+independent from RVV instruction names.

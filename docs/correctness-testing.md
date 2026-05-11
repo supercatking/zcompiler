@@ -86,6 +86,38 @@ The test writes:
 build/correctness/vector_scale_host.json
 ```
 
+## Phase 25C Vector Reduce Add Host Harness
+
+The fourth host harness is:
+
+```text
+test/correctness/vector_reduce_add_host.py
+```
+
+It validates scalar reduction behavior for:
+
+```zc
+let sum = 0;
+vector_reduce_add sum, a, n;
+return sum;
+```
+
+The MLIR check requires:
+
+- `scf.for`
+- `iter_args`
+- `vector.create_mask`
+- `vector.transfer_read`
+- `vector.reduction <add>`
+- `scf.yield`
+- `arith.minui`
+
+The test writes:
+
+```text
+build/correctness/vector_reduce_add_host.json
+```
+
 ## Why Host-Side First
 
 The current WSL environment does not provide `qemu-riscv64`, so Phase 24A starts
@@ -100,4 +132,5 @@ ctest --test-dir build --output-on-failure
 python3 -m json.tool build/correctness/vector_add_host.json
 python3 -m json.tool build/correctness/vector_copy_host.json
 python3 -m json.tool build/correctness/vector_scale_host.json
+python3 -m json.tool build/correctness/vector_reduce_add_host.json
 ```

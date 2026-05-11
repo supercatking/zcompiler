@@ -136,4 +136,5 @@ include:
 - Host-side correctness record or a documented executable test.
 - Accelerator profile update when the supported operation set changes.
 
-This standard was applied to `vector_add`, `vector_copy`, and `vector_scale`.
+This standard was applied to `vector_add`, `vector_copy`, `vector_scale`, and
+`vector_reduce_add`.

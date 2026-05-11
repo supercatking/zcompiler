@@ -1,0 +1,12 @@
+Module
+  Function name=vreduce return=i32
+    Params
+      Param name=a type=ptr<i32>
+      Param name=n type=i32
+    LetStmt name=sum
+      IntegerExpr value=0
+    VectorReduceAddStmt result=sum input=a
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      VariableExpr name=sum

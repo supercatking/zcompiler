@@ -18,7 +18,12 @@
     "preferred_vector_length_strategy": "vsetvli from remaining element count"
   },
   "current_compiler_policy": {
-    "source_operations": ["vector_add", "vector_copy", "vector_scale"],
+    "source_operations": [
+      "vector_add",
+      "vector_copy",
+      "vector_scale",
+      "vector_reduce_add"
+    ],
     "source_element_type": "i32",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",

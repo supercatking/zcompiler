@@ -38,12 +38,14 @@ tutorial. It currently supports:
 - Target-independent `vector_add` syntax.
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
+- Target-independent `vector_reduce_add` syntax.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
 - Direct RVV reference assembly for vector add.
 - Direct RVV reference assembly for vector copy and vector scale.
+- Direct RVV reference assembly for vector reduce add.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -135,7 +137,7 @@ Later phases add control-flow examples:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
 ```
 
-Current RVV vector-add path:
+Current RVV vector-kernel path:
 
 ```bash
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
@@ -145,6 +147,8 @@ Current RVV vector-add path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```
@@ -160,3 +164,4 @@ Planning documents for the accelerator direction:
 - [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md)
 - [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md)
 - [docs/phase25-vector-kernels.md](docs/phase25-vector-kernels.md)
+- [docs/phase25c-vector-reduction.md](docs/phase25c-vector-reduction.md)

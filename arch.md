@@ -347,9 +347,9 @@ The current roadmap status:
 - Phase 22: completed first AI-assisted experiment record.
 - Phase 23: completed the first machine-readable RVV accelerator profile.
 - Phase 24: completed host-side correctness tests for masked vector-add tails.
-- Phase 25: expanded the vector kernel surface with `vector_copy` and
-  `vector_scale`.
+- Phase 25: expanded the vector kernel surface with `vector_copy`,
+  `vector_scale`, and `vector_reduce_add`.
 
-The next implementation priority is adding a reduction kernel and then moving
-toward emulator-backed correctness tests when a suitable RISC-V environment is
+The next implementation priority is moving toward formal MLIR-to-RVV lowering
+and emulator-backed correctness tests when a suitable RISC-V environment is
 available.

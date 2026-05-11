@@ -629,6 +629,56 @@ python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_scale_host.jso
 python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
 ```
 
+## Phase 25C: Vector Reduce Add Kernel Surface
+
+### Execution Target
+
+Add the first scalar-result vector kernel so the compiler can represent and
+lower memory-to-scalar reductions.
+
+### Execution Summary
+
+- Added `vector_reduce_add sum, a, n;` source syntax.
+- Added lexer keyword support for `vector_reduce_add`.
+- Added `VectorReduceAddStmtAST`.
+- Added parser support and AST dump output for `VectorReduceAddStmt`.
+- Documented the reduction design in
+  `docs/phase25c-vector-reduction.md` before implementation.
+- Added MLIR lowering with:
+  - `scf.for iter_args`
+  - `vector.create_mask`
+  - `vector.transfer_read`
+  - `vector.reduction <add>`
+  - `scf.yield`
+- Added direct RVV reference assembly with:
+  - `vsetvli`
+  - `vle32.v`
+  - `vmv.s.x`
+  - `vredsum.vs`
+  - `vmv.x.s`
+- Added `examples/vector_reduce_add.zc`.
+- Added lexer, parser, MLIR, RISC-V assembly, assembler/objdump, and host-side
+  correctness coverage for `vector_reduce_add`.
+- Updated `profiles/rvv-default.json`, architecture docs, RVV docs,
+  correctness docs, AI workflow docs, README, and roadmap.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j2
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir > /tmp/vector_reduce_add.mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/vector_reduce_add.mlir -o /tmp/vector_reduce_add.checked.mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm > /tmp/vector_reduce_add.s
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_reduce_add.s -o /tmp/vector_reduce_add.o
+riscv64-linux-gnu-objdump -d /tmp/vector_reduce_add.o
+python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_reduce_add_host.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

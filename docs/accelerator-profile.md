@@ -30,7 +30,8 @@ For the current RVV work, the important assumptions include:
 - `rv64gcv`
 - `lp64d`
 - default vector element type: `i32`
-- current source operations: `vector_add`, `vector_copy`, `vector_scale`
+- current source operations: `vector_add`, `vector_copy`, `vector_scale`,
+  `vector_reduce_add`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly
@@ -60,3 +61,16 @@ vector_scale c, a, factor, n;
 
 The direct RVV reference backend maps this to `vle32.v`, `vmul.vx`, and
 `vse32.v` inside the same `vsetvli` loop policy.
+
+## Phase 25C Update
+
+`vector_reduce_add` is now part of the default profile. It is the first
+memory-to-scalar vector kernel:
+
+```text
+vector_reduce_add sum, a, n;
+```
+
+The MLIR path uses a loop-carried scalar accumulator and `vector.reduction
+<add>`. The direct RVV reference backend maps each chunk to `vle32.v`,
+`vmv.s.x`, `vredsum.vs`, and `vmv.x.s`.

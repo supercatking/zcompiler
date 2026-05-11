@@ -425,7 +425,13 @@ vector_scale c, a, factor, n;
 Vector*StmtAST
   -> masked MLIR vector loop
   -> direct RVV reference assembly
+  -> scalar reduction via vector_reduce_add
 ```
+
+Phase 25C adds `vector_reduce_add sum, a, n;` as the first memory-to-scalar
+vector kernel. MLIR uses `scf.for iter_args` and `vector.reduction <add>`;
+the direct RVV reference backend uses `vredsum.vs` plus `vmv.s.x` / `vmv.x.s`
+for the scalar accumulator.
 
 `vector_scale` 复用 Phase 25A 提取出的 masked vector loop/read/write helper，
 只在计算部分增加 `vector.broadcast` 和 `arith.muli`。这保持了扩展新 kernel

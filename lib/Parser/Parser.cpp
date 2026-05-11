@@ -149,6 +149,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorCopyStatement();
   if (check(TokenKind::KwVectorScale))
     return parseVectorScaleStatement();
+  if (check(TokenKind::KwVectorReduceAdd))
+    return parseVectorReduceAddStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -273,6 +275,39 @@ std::unique_ptr<StmtAST> Parser::parseVectorScaleStatement() {
   return std::make_unique<VectorScaleStmtAST>(
       std::move(output), std::move(input), std::move(factor),
       std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected result variable after 'vector_reduce_add'");
+    return nullptr;
+  }
+  std::string result = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_reduce_add result"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected input buffer in vector_reduce_add");
+    return nullptr;
+  }
+  std::string input = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_reduce_add input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_reduce_add statement"))
+    return nullptr;
+
+  return std::make_unique<VectorReduceAddStmtAST>(
+      std::move(result), std::move(input), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseStoreStatement() {

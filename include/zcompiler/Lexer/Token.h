@@ -25,6 +25,7 @@ enum class TokenKind {
   KwVectorAdd,
   KwVectorCopy,
   KwVectorScale,
+  KwVectorReduceAdd,
 
   Plus,
   Minus,

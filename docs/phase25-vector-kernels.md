@@ -110,3 +110,22 @@ vse32.v v1, 0(output)
 - RISC-V assembly golden test with `vmul.vx`.
 - Assembler and objdump checks for RVV load/multiply/store instructions.
 - Host-side correctness harness for tail lengths and scalar factors.
+
+## Phase 25C Scope
+
+Phase 25C adds the first scalar-result vector kernel:
+
+```zc
+let sum = 0;
+vector_reduce_add sum, a, n;
+return sum;
+```
+
+The detailed design is recorded in:
+
+```text
+docs/phase25c-vector-reduction.md
+```
+
+The implementation lowers to `scf.for iter_args` plus `vector.reduction <add>`
+in MLIR, and to `vredsum.vs` in the direct RVV reference backend.
