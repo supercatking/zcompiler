@@ -53,6 +53,11 @@ diff -u "$source_root/test/lexer/vector_select_gt.tokens" \
 diff -u "$source_root/test/lexer/vector_select_eq.tokens" \
   "$tmp_dir/vector_select_eq.tokens"
 
+for predicate in lt le ge ne; do
+  "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" --emit-tokens     > "$tmp_dir/vector_select_${predicate}.tokens"
+  diff -u "$source_root/test/lexer/vector_select_${predicate}.tokens"     "$tmp_dir/vector_select_${predicate}.tokens"
+done
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-tokens \
   > "$tmp_dir/print_i32.tokens"
 diff -u "$source_root/test/lexer/print_i32.tokens" \

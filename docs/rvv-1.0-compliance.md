@@ -50,8 +50,12 @@ Required profile fields for RVV 1.0 tracking:
 | Scale | `vector_scale` -> `vmul.vx` | objdump and QEMU |
 | Multiply | `vector_mul` -> `vmul.vv` | objdump and QEMU |
 | Reduction | `vector_reduce_add` -> `vredsum.vs` | objdump and QEMU |
-| Compare/select greater-than | `vector_select_gt` -> `vmslt.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select less-than | `vector_select_lt` -> `vmslt.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select less-or-equal | `vector_select_le` -> `vmsle.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select greater-than | `vector_select_gt` -> swapped `vmslt.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select greater-or-equal | `vector_select_ge` -> swapped `vmsle.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select equality | `vector_select_eq` -> `vmseq.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select not-equal | `vector_select_ne` -> `vmsne.vv` + `vmerge.vvm` | objdump and QEMU |
 
 ## Current Gaps
 
@@ -61,7 +65,7 @@ Required profile fields for RVV 1.0 tracking:
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
 | Masked arithmetic | no explicit masked source operations | Phase 30B |
-| Compare/select | only signed greater-than and equality select are supported; no first-class mask values, unsigned predicates, or full compare set yet | Phase 30L |
+| Compare/select | signed i32 select predicates are supported; no unsigned predicates or first-class mask values yet | Phase 30M |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
@@ -91,8 +95,12 @@ The current QEMU test covers the length set above for:
 - `vector_scale`
 - `vector_mul`
 - `vector_reduce_add`
+- `vector_select_lt`
+- `vector_select_le`
 - `vector_select_gt`
+- `vector_select_ge`
 - `vector_select_eq`
+- `vector_select_ne`
 
 ## Acceptance Rule
 

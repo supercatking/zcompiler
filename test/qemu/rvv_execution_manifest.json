@@ -11,16 +11,24 @@
       "examples/complex_vector_pipeline.zc",
       "examples/vector_mul.zc",
       "examples/vector_select_gt.zc",
-      "examples/vector_select_eq.zc"
+      "examples/vector_select_eq.zc",
+      "examples/vector_select_lt.zc",
+      "examples/vector_select_le.zc",
+      "examples/vector_select_ge.zc",
+      "examples/vector_select_ne.zc"
     ],
     "validated_kernels": [
       "vector_add",
       "vector_scale",
-      "vector_copy",
       "vector_reduce_add",
+      "vector_copy",
       "vector_mul",
+      "vector_select_lt",
+      "vector_select_le",
       "vector_select_gt",
-      "vector_select_eq"
+      "vector_select_ge",
+      "vector_select_eq",
+      "vector_select_ne"
     ],
     "lengths": [
       0,
@@ -62,14 +70,34 @@
         "check": "multiplied[i] == a[i] * b[i]"
       },
       {
+        "kernel": "vector_select_lt",
+        "function": "select_lt",
+        "check": "selected_lt[i] == (a[i] < b[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_le",
+        "function": "select_le",
+        "check": "selected_le[i] == (a[i] <= b[i] ? true_values[i] : false_values[i])"
+      },
+      {
         "kernel": "vector_select_gt",
         "function": "select_gt",
         "check": "selected[i] == a[i] > b[i] ? true_values[i] : false_values[i]"
       },
       {
+        "kernel": "vector_select_ge",
+        "function": "select_ge",
+        "check": "selected_ge[i] == (a[i] >= b[i] ? true_values[i] : false_values[i])"
+      },
+      {
         "kernel": "vector_select_eq",
         "function": "select_eq",
         "check": "selected_eq[i] == (a[i] == eq_rhs[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_ne",
+        "function": "select_ne",
+        "check": "selected_ne[i] == (a[i] != eq_rhs[i] ? true_values[i] : false_values[i])"
       }
     ],
     "integer_semantics": {

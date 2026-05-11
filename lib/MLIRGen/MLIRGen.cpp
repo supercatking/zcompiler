@@ -414,10 +414,18 @@ private:
 
   arith::CmpIPredicate getMLIRPredicate(VectorSelectPredicate predicate) {
     switch (predicate) {
+    case VectorSelectPredicate::LT:
+      return arith::CmpIPredicate::slt;
+    case VectorSelectPredicate::LE:
+      return arith::CmpIPredicate::sle;
     case VectorSelectPredicate::GT:
       return arith::CmpIPredicate::sgt;
+    case VectorSelectPredicate::GE:
+      return arith::CmpIPredicate::sge;
     case VectorSelectPredicate::EQ:
       return arith::CmpIPredicate::eq;
+    case VectorSelectPredicate::NE:
+      return arith::CmpIPredicate::ne;
     }
     return arith::CmpIPredicate::eq;
   }
@@ -431,7 +439,7 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || trueValues == variables.end() ||
         falseValues == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_select_gt statement");
+      result.addDiagnostic("unknown buffer in vector_select statement");
       return;
     }
 

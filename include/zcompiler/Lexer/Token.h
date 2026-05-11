@@ -28,8 +28,12 @@ enum class TokenKind {
   KwVectorScale,
   KwVectorMul,
   KwVectorReduceAdd,
+  KwVectorSelectLT,
+  KwVectorSelectLE,
   KwVectorSelectGT,
+  KwVectorSelectGE,
   KwVectorSelectEQ,
+  KwVectorSelectNE,
 
   Plus,
   Minus,

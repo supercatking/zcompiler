@@ -220,10 +220,18 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorMul;
   else if (text == "vector_reduce_add")
     kind = TokenKind::KwVectorReduceAdd;
+  else if (text == "vector_select_lt")
+    kind = TokenKind::KwVectorSelectLT;
+  else if (text == "vector_select_le")
+    kind = TokenKind::KwVectorSelectLE;
   else if (text == "vector_select_gt")
     kind = TokenKind::KwVectorSelectGT;
+  else if (text == "vector_select_ge")
+    kind = TokenKind::KwVectorSelectGE;
   else if (text == "vector_select_eq")
     kind = TokenKind::KwVectorSelectEQ;
+  else if (text == "vector_select_ne")
+    kind = TokenKind::KwVectorSelectNE;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

@@ -12,9 +12,17 @@ extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
 extern int vmul(int *a, int *b, int *c, int n);
+extern int select_lt(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
+extern int select_le(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
 extern int select_gt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
+extern int select_ge(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
 extern int select_eq(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
+extern int select_ne(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 
 static uint32_t bits_i32(int value) {{ return (uint32_t)(int32_t)value; }}
@@ -37,9 +45,13 @@ static int run_case(int n, int factor) {{
   int multiplied[{capacity}];
   int true_values[{capacity}];
   int false_values[{capacity}];
+  int selected_lt[{capacity}];
+  int selected_le[{capacity}];
   int selected[{capacity}];
+  int selected_ge[{capacity}];
   int eq_rhs[{capacity}];
   int selected_eq[{capacity}];
+  int selected_ne[{capacity}];
 
   for (int i = 0; i < {capacity}; ++i) {{
     a[i] = seed_a(i);
@@ -50,16 +62,24 @@ static int run_case(int n, int factor) {{
     multiplied[i] = 0;
     true_values[i] = 100000 + i * 13;
     false_values[i] = -100000 - i * 17;
+    selected_lt[i] = 0;
+    selected_le[i] = 0;
     selected[i] = 0;
+    selected_ge[i] = 0;
     eq_rhs[i] = (i % 3 == 0) ? a[i] : b[i];
     selected_eq[i] = 0;
+    selected_ne[i] = 0;
   }}
 
 {pipeline_check}
 {copy_check}
 {mul_check}
+{select_lt_check}
+{select_le_check}
 {select_check}
+{select_ge_check}
 {select_eq_check}
+{select_ne_check}
   return 0;
 }}
 
@@ -185,6 +205,32 @@ for (int i = 0; i < n; ++i) {
 ''')
 
 
+
+def render_select_lt_check():
+    return indent('''int select_lt_status = select_lt(a, b, true_values, false_values, selected_lt, n);
+if (select_lt_status != 0)
+  return 6;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] < b[i] ? true_values[i] : false_values[i];
+  if (bits_i32(selected_lt[i]) != bits_i32(expected))
+    return 130 + i;
+}
+
+''')
+
+
+def render_select_le_check():
+    return indent('''int select_le_status = select_le(a, b, true_values, false_values, selected_le, n);
+if (select_le_status != 0)
+  return 7;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] <= b[i] ? true_values[i] : false_values[i];
+  if (bits_i32(selected_le[i]) != bits_i32(expected))
+    return 150 + i;
+}
+
+''')
+
 def render_select_check():
     return indent('''int select_status = select_gt(a, b, true_values, false_values, selected, n);
 if (select_status != 0)
@@ -198,9 +244,35 @@ for (int i = 0; i < n; ++i) {
 ''')
 
 
+
+def render_select_ge_check():
+    return indent('''int select_ge_status = select_ge(a, b, true_values, false_values, selected_ge, n);
+if (select_ge_status != 0)
+  return 8;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] >= b[i] ? true_values[i] : false_values[i];
+  if (bits_i32(selected_ge[i]) != bits_i32(expected))
+    return 170 + i;
+}
+
+''')
+
 def render_select_eq_check():
     return indent('int select_eq_status = select_eq(a, eq_rhs, true_values, false_values, selected_eq, n);\nif (select_eq_status != 0)\n  return 5;\nfor (int i = 0; i < n; ++i) {\n  int expected = a[i] == eq_rhs[i] ? true_values[i] : false_values[i];\n  if (bits_i32(selected_eq[i]) != bits_i32(expected))\n    return 110 + i;\n}\n\n')
 
+
+
+def render_select_ne_check():
+    return indent('''int select_ne_status = select_ne(a, eq_rhs, true_values, false_values, selected_ne, n);
+if (select_ne_status != 0)
+  return 9;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] != eq_rhs[i] ? true_values[i] : false_values[i];
+  if (bits_i32(selected_ne[i]) != bits_i32(expected))
+    return 190 + i;
+}
+
+''')
 
 def render_harness(data):
     rvv = data["rvv_execution"]
@@ -212,8 +284,12 @@ def render_harness(data):
         pipeline_check=render_pipeline_check(),
         copy_check=render_copy_check(),
         mul_check=render_mul_check(),
+        select_lt_check=render_select_lt_check(),
+        select_le_check=render_select_le_check(),
         select_check=render_select_check(),
+        select_ge_check=render_select_ge_check(),
         select_eq_check=render_select_eq_check(),
+        select_ne_check=render_select_ne_check(),
         capacity=capacity,
         lengths=", ".join(str(length) for length in lengths),
     )

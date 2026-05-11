@@ -12,10 +12,17 @@
     "spec_version": "1.0",
     "minimum_extension": "V",
     "required_base_isa": "RV64GCV",
-    "supported_element_width_bits": [8, 16, 32, 64],
+    "supported_element_width_bits": [
+      8,
+      16,
+      32,
+      64
+    ],
     "default_element_width_bits": 32,
     "default_lmul": "m1",
-    "supported_lmul": ["m1"],
+    "supported_lmul": [
+      "m1"
+    ],
     "tail_policy": "ta",
     "mask_policy": "ma",
     "minimum_vlen_bits_for_current_kernels": 32,
@@ -29,10 +36,16 @@
       "vector_mul",
       "vector_reduce_add",
       "vector_select_gt",
-      "vector_select_eq"
+      "vector_select_eq",
+      "vector_select_lt",
+      "vector_select_le",
+      "vector_select_ge",
+      "vector_select_ne"
     ],
     "source_element_type": "i32",
-    "source_element_width_bits": [32],
+    "source_element_width_bits": [
+      32
+    ],
     "source_memory_access": "unit-stride i32 buffers",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
@@ -42,13 +55,27 @@
     "source_element_width_contract": {
       "strategy": "typed_buffers_first",
       "operation_names": "width-neutral",
-      "current_implemented_width_bits": [32],
-      "planned_width_bits": [8, 16, 32, 64],
+      "current_implemented_width_bits": [
+        32
+      ],
+      "planned_width_bits": [
+        8,
+        16,
+        32,
+        64
+      ],
       "length_unit": "elements",
       "mixed_width_kernel_policy": "reject unless a future operation explicitly documents widening or narrowing"
     },
     "select_predicates": {
-      "signed": ["gt", "eq"],
+      "signed": [
+        "lt",
+        "le",
+        "gt",
+        "ge",
+        "eq",
+        "ne"
+      ],
       "unsigned": [],
       "first_class_masks": false
     }
@@ -57,7 +84,19 @@
     "emulator": "/home/qemu/qemu/build-riscv64-user/qemu-riscv64",
     "emulator_cpu": "max",
     "qemu_ctest_target": "qemu-riscv64",
-    "tested_lengths": [0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17],
+    "tested_lengths": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      16,
+      17
+    ],
     "validated_kernels": [
       "vector_add",
       "vector_copy",
@@ -65,7 +104,11 @@
       "vector_mul",
       "vector_reduce_add",
       "vector_select_gt",
-      "vector_select_eq"
+      "vector_select_eq",
+      "vector_select_lt",
+      "vector_select_le",
+      "vector_select_ge",
+      "vector_select_ne"
     ]
   },
   "toolchain": {

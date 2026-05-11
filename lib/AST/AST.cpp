@@ -6,10 +6,18 @@ namespace zc {
 
 const char *getVectorSelectPredicateName(VectorSelectPredicate predicate) {
   switch (predicate) {
+  case VectorSelectPredicate::LT:
+    return "lt";
+  case VectorSelectPredicate::LE:
+    return "le";
   case VectorSelectPredicate::GT:
     return "gt";
+  case VectorSelectPredicate::GE:
+    return "ge";
   case VectorSelectPredicate::EQ:
     return "eq";
+  case VectorSelectPredicate::NE:
+    return "ne";
   }
   return "unknown";
 }

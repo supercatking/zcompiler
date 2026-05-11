@@ -1896,3 +1896,28 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 30L: Complete Signed Select Predicates
+
+### Execution Target
+
+Complete the signed i32 compare/select predicate family on top of the generic
+vector select AST introduced in Phase 30K.
+
+### Execution Summary
+
+- Added `vector_select_lt`, `vector_select_le`, `vector_select_ge`, and `vector_select_ne`.
+- Mapped signed predicates to MLIR `arith.cmpi` and RVV 1.0 compare instructions.
+- Added examples, lexer/parser/codegen goldens, host correctness scripts, objdump checks, QEMU harness checks, profile updates, and documentation.
+
+### Execution Result
+
+Completed. Full build and CTest validation passed.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

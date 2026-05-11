@@ -35,8 +35,12 @@ enum class StmtKind {
 };
 
 enum class VectorSelectPredicate {
+  LT,
+  LE,
   GT,
+  GE,
   EQ,
+  NE,
 };
 
 const char *getVectorSelectPredicateName(VectorSelectPredicate predicate);

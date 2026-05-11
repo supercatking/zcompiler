@@ -589,21 +589,41 @@ private:
 
   StringRef getVectorSelectSourceName(VectorSelectPredicate predicate) {
     switch (predicate) {
+    case VectorSelectPredicate::LT:
+      return "vector_select_lt";
+    case VectorSelectPredicate::LE:
+      return "vector_select_le";
     case VectorSelectPredicate::GT:
       return "vector_select_gt";
+    case VectorSelectPredicate::GE:
+      return "vector_select_ge";
     case VectorSelectPredicate::EQ:
       return "vector_select_eq";
+    case VectorSelectPredicate::NE:
+      return "vector_select_ne";
     }
     return "vector_select_unknown";
   }
 
   void emitVectorSelectCompare(VectorSelectPredicate predicate) {
     switch (predicate) {
+    case VectorSelectPredicate::LT:
+      os << "  vmslt.vv v0, v1, v2\n";
+      return;
+    case VectorSelectPredicate::LE:
+      os << "  vmsle.vv v0, v1, v2\n";
+      return;
     case VectorSelectPredicate::GT:
       os << "  vmslt.vv v0, v2, v1\n";
       return;
+    case VectorSelectPredicate::GE:
+      os << "  vmsle.vv v0, v2, v1\n";
+      return;
     case VectorSelectPredicate::EQ:
       os << "  vmseq.vv v0, v1, v2\n";
+      return;
+    case VectorSelectPredicate::NE:
+      os << "  vmsne.vv v0, v1, v2\n";
       return;
     }
   }

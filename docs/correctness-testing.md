@@ -208,3 +208,11 @@ Phase 30K adds the equality variant harness:
 test/correctness/vector_select_eq_host.py
 build/correctness/vector_select_eq_host.json
 ```
+
+
+## Phase 30L Signed Select Predicate Coverage
+
+Host correctness now covers `vector_select_lt`, `vector_select_le`,
+`vector_select_gt`, `vector_select_ge`, `vector_select_eq`, and
+`vector_select_ne`. QEMU runtime validation links all six signed i32 select
+kernels into the RVV harness and checks both selected true and false lanes.

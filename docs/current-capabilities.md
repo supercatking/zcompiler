@@ -47,7 +47,7 @@ dialect 组合，使用 `vector.create_mask` 处理尾部长度，因此 `n` 不
 等 RVV 指令，并可以用 `riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d`
 汇编成 `.o` 文件。
 Vector multiply currently maps to vmul.vv in the direct RVV reference backend.
-Vector compare/select currently maps to vmslt.vv or vmseq.vv plus vmerge.vvm.
+Vector compare/select currently covers signed lt/le/gt/ge/eq/ne and maps to vmslt.vv, vmsle.vv, vmseq.vv, or vmsne.vv plus vmerge.vvm.
 
 在当前 WSL 环境中，`/home/qemu/qemu/build-riscv64-user/qemu-riscv64`
 已经可以运行 zcompiler 生成并链接出的 RISC-V64 Linux ELF。CTest 中的

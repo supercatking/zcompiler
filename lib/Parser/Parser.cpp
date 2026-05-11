@@ -155,12 +155,24 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorMulStatement();
   if (check(TokenKind::KwVectorReduceAdd))
     return parseVectorReduceAddStatement();
+  if (check(TokenKind::KwVectorSelectLT))
+    return parseVectorSelectStatement(VectorSelectPredicate::LT,
+                                      "vector_select_lt");
+  if (check(TokenKind::KwVectorSelectLE))
+    return parseVectorSelectStatement(VectorSelectPredicate::LE,
+                                      "vector_select_le");
   if (check(TokenKind::KwVectorSelectGT))
     return parseVectorSelectStatement(VectorSelectPredicate::GT,
                                       "vector_select_gt");
+  if (check(TokenKind::KwVectorSelectGE))
+    return parseVectorSelectStatement(VectorSelectPredicate::GE,
+                                      "vector_select_ge");
   if (check(TokenKind::KwVectorSelectEQ))
     return parseVectorSelectStatement(VectorSelectPredicate::EQ,
                                       "vector_select_eq");
+  if (check(TokenKind::KwVectorSelectNE))
+    return parseVectorSelectStatement(VectorSelectPredicate::NE,
+                                      "vector_select_ne");
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
