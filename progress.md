@@ -1739,3 +1739,32 @@ cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30G: QEMU Harness Generator
+
+### Execution Target
+
+Generate the QEMU RVV C harness from validated manifest data instead of keeping
+the full C program embedded in `test/qemu/run.sh`.
+
+### Execution Summary
+
+- Added `test/qemu/harness.py`.
+- Updated `test/qemu/run.sh` to call the generator.
+- The generated harness uses manifest kernel-check comments, length matrix, and
+  derived array capacity.
+- Added [docs/phase30g-qemu-harness-generator.md](docs/phase30g-qemu-harness-generator.md).
+- Updated README, plan, and progress docs.
+
+### Execution Result
+
+Completed for generated QEMU C harness orchestration.
+
+Validated commands:
+
+```bash
+python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

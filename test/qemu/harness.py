@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+import argparse
+from pathlib import Path
+
+from manifest import load_and_validate
+
+
+HARNESS_TEMPLATE = '''#include <stdint.h>
+
+{kernel_comments}
+extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
+                                   int n, int factor);
+extern int copy_then_sum(int *a, int *out, int n);
+extern int vmul(int *a, int *b, int *c, int n);
+
+static uint32_t bits_i32(int value) {{ return (uint32_t)(int32_t)value; }}
+
+static uint32_t add_i32_bits(int lhs, int rhs) {{
+  return bits_i32(lhs) + bits_i32(rhs);
+}}
+
+static uint32_t mul_i32_bits(uint32_t lhs, int rhs) {{
+  return lhs * bits_i32(rhs);
+}}
+
+static int seed_a(int i) {{
+  switch (i % 6) {{
+  case 0:
+    return 2147483600 - i;
+  case 1:
+    return -2147483600 + i;
+  case 2:
+    return -(i + 2);
+  case 3:
+    return i + 1;
+  case 4:
+    return 123456789 + i;
+  default:
+    return -76543210 - i;
+  }}
+}}
+
+static int seed_b(int i) {{
+  switch (i % 6) {{
+  case 0:
+    return 100 + i;
+  case 1:
+    return -200 - i;
+  case 2:
+    return 17 + i;
+  case 3:
+    return -19 - i;
+  case 4:
+    return 37 + i;
+  default:
+    return 29 + i;
+  }}
+}}
+
+static int run_case(int n, int factor) {{
+  int a[{capacity}];
+  int b[{capacity}];
+  int tmp[{capacity}];
+  int out[{capacity}];
+  int copied[{capacity}];
+  int multiplied[{capacity}];
+
+  for (int i = 0; i < {capacity}; ++i) {{
+    a[i] = seed_a(i);
+    b[i] = seed_b(i);
+    tmp[i] = 0;
+    out[i] = 0;
+    copied[i] = 0;
+    multiplied[i] = 0;
+  }}
+
+  int sum = complex_vector_pipeline(a, b, tmp, out, n, factor);
+  uint32_t expected = 0;
+  for (int i = 0; i < n; ++i) {{
+    uint32_t tmp_expected = add_i32_bits(a[i], b[i]);
+    uint32_t out_expected = mul_i32_bits(tmp_expected, factor);
+    if (bits_i32(tmp[i]) != tmp_expected)
+      return 10 + i;
+    if (bits_i32(out[i]) != out_expected)
+      return 30 + i;
+    expected += out_expected;
+  }}
+  if (bits_i32(sum) != expected)
+    return 1;
+
+  int copy_sum = copy_then_sum(a, copied, n);
+  uint32_t expected_copy_sum = 0;
+  for (int i = 0; i < n; ++i) {{
+    if (bits_i32(copied[i]) != bits_i32(a[i]))
+      return 50 + i;
+    expected_copy_sum += bits_i32(a[i]);
+  }}
+  if (bits_i32(copy_sum) != expected_copy_sum)
+    return 2;
+
+  int mul_status = vmul(a, b, multiplied, n);
+  if (mul_status != 0)
+    return 3;
+  for (int i = 0; i < n; ++i) {{
+    uint32_t mul_expected = bits_i32(a[i]) * bits_i32(b[i]);
+    if (bits_i32(multiplied[i]) != mul_expected)
+      return 70 + i;
+  }}
+
+  return 0;
+}}
+
+static int factor_for_case(int i) {{
+  switch (i % 4) {{
+  case 0:
+    return -3;
+  case 1:
+    return 5;
+  case 2:
+    return -7;
+  default:
+    return 9;
+  }}
+}}
+
+int main(void) {{
+  int lengths[] = {{{lengths}}};
+  int count = sizeof(lengths) / sizeof(lengths[0]);
+
+  for (int i = 0; i < count; ++i) {{
+    int status = run_case(lengths[i], factor_for_case(i));
+    if (status != 0)
+      return 100 + i;
+  }}
+
+  return 0;
+}}
+'''
+
+
+def render_harness(data):
+    rvv = data["rvv_execution"]
+    lengths = rvv["lengths"]
+    capacity = max(max(lengths), 1)
+    kernel_comments = "".join(
+        f"/* {check['kernel']}: {check['check']} */\n" for check in rvv["kernel_checks"]
+    )
+    return HARNESS_TEMPLATE.format(
+        kernel_comments=kernel_comments,
+        capacity=capacity,
+        lengths=", ".join(str(length) for length in lengths),
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate QEMU RVV C harness")
+    parser.add_argument("manifest")
+    parser.add_argument("output")
+    args = parser.parse_args()
+
+    data = load_and_validate(args.manifest)
+    Path(args.output).write_text(render_harness(data), encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main()

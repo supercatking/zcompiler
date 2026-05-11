@@ -697,11 +697,12 @@ Completed slices:
 - Phase 30D: signed `i32` runtime coverage and integer semantics note.
 - Phase 30E: wrapping `i32` bit-pattern checks for current RVV kernels.
 - Phase 30F: scalar source `i32` wrapping semantics for direct RISC-V output.
+- Phase 30G: generated QEMU C harness from validated manifest data.
 
 Planned slices:
 
-- Phase 30G: generate C check fragments from QEMU kernel descriptors.
-- Phase 30H: compare/select source syntax and RVV predicate lowering design.
+- Phase 30H: split per-kernel QEMU check templates into generator units.
+- Phase 30I: compare/select source syntax and RVV predicate lowering design.
 
 Exit criteria:
 
@@ -728,8 +729,7 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Generate C check fragments from QEMU kernel descriptors so new kernels do
-   not need hand-written C harness edits.
+1. Split per-kernel QEMU check templates into generator units.
 2. Start Phase 29B by deciding whether the source language exposes element
    width in syntax or through typed buffers first.
 4. Add compare/select kernels so vector predicates can become first-class.
