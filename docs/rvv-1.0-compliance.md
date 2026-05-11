@@ -60,7 +60,7 @@ Required profile fields for RVV 1.0 tracking:
 | Compare/select unsigned less-or-equal | `vector_select_ule` -> `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select unsigned greater-than | `vector_select_ugt` -> swapped `vmsltu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select unsigned greater-or-equal | `vector_select_uge` -> swapped `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
-| Masked add predicates | `vector_mask_lt/le/gt/ge/eq/ne/ult/ule/ugt/uge` + `vector_masked_add` -> RVV compare mask, masked `vadd.vv`, `vmerge.vvm` passthrough | objdump and QEMU |
+| Masked arithmetic predicates | `vector_mask_*` + `vector_masked_add/sub/mul` slices -> RVV compare mask, masked arithmetic, `vmerge.vvm` passthrough | objdump and QEMU |
 
 ## Current Gaps
 
@@ -69,7 +69,7 @@ Required profile fields for RVV 1.0 tracking:
 | Element widths | typed-buffer contract is defined; implementation remains `i32` only | Phase 29E |
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
-| Masked arithmetic | full current compare mask family can drive masked add; no masked sub/mul/min/max or masked memory family yet | Phase 30Q |
+| Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 30R |
 | Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 30R |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
@@ -120,6 +120,8 @@ The current QEMU test covers the length set above for:
 - `vector_masked_add_ule`
 - `vector_masked_add_ugt`
 - `vector_masked_add_uge`
+- `vector_masked_sub_gt`
+- `vector_masked_mul_gt`
 
 ## Acceptance Rule
 

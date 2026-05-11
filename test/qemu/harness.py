@@ -32,6 +32,10 @@ extern int masked_add_ugt(int *mask_lhs, int *mask_rhs, int *a, int *b,
                            int *passthrough, int *out, int n);
 extern int masked_add_uge(int *mask_lhs, int *mask_rhs, int *a, int *b,
                            int *passthrough, int *out, int n);
+extern int masked_sub_gt(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                         int *passthrough, int *out, int n);
+extern int masked_mul_gt(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                         int *passthrough, int *out, int n);
 extern int select_lt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 extern int select_le(int *a, int *b, int *true_values, int *false_values,
@@ -115,6 +119,7 @@ static int run_case(int n, int factor) {{
 {copy_check}
 {mul_check}
 {masked_add_check}
+{masked_arithmetic_check}
 {select_lt_check}
 {select_le_check}
 {select_check}
@@ -280,6 +285,30 @@ for (int i = 0; i < n; ++i) {{
     return indent("".join(chunks))
 
 
+def render_masked_arithmetic_check():
+    return indent('''int masked_sub_status = masked_sub_gt(a, b, a, b, passthrough, masked_added, n);
+if (masked_sub_status != 0)
+  return 28;
+for (int i = 0; i < n; ++i) {
+  uint32_t sub_expected = bits_i32(a[i]) - bits_i32(b[i]);
+  int expected = a[i] > b[i] ? (int32_t)sub_expected : passthrough[i];
+  if (bits_i32(masked_added[i]) != bits_i32(expected))
+    return 490 + i;
+}
+
+int masked_mul_status = masked_mul_gt(a, b, a, b, passthrough, masked_added, n);
+if (masked_mul_status != 0)
+  return 29;
+for (int i = 0; i < n; ++i) {
+  uint32_t mul_expected = bits_i32(a[i]) * bits_i32(b[i]);
+  int expected = a[i] > b[i] ? (int32_t)mul_expected : passthrough[i];
+  if (bits_i32(masked_added[i]) != bits_i32(expected))
+    return 510 + i;
+}
+
+''')
+
+
 def render_select_lt_check():
     return indent('''int select_lt_status = select_lt(a, b, true_values, false_values, selected_lt, n);
 if (select_lt_status != 0)
@@ -411,6 +440,7 @@ def render_harness(data):
         copy_check=render_copy_check(),
         mul_check=render_mul_check(),
         masked_add_check=render_masked_add_check(),
+        masked_arithmetic_check=render_masked_arithmetic_check(),
         select_lt_check=render_select_lt_check(),
         select_le_check=render_select_le_check(),
         select_check=render_select_check(),

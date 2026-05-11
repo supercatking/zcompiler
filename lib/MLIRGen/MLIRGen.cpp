@@ -223,9 +223,9 @@ private:
     case StmtKind::VectorMask:
       rememberVectorMask(static_cast<const VectorMaskStmtAST &>(statement));
       return;
-    case StmtKind::VectorMaskedAdd:
-      emitVectorMaskedAdd(
-          static_cast<const VectorMaskedAddStmtAST &>(statement));
+    case StmtKind::VectorMaskedBinary:
+      emitVectorMaskedBinary(
+          static_cast<const VectorMaskedBinaryStmtAST &>(statement));
       return;
     }
   }
@@ -484,6 +484,19 @@ private:
   }
 
 
+  Value emitVectorMaskedBinaryOp(VectorMaskedBinaryOp op, Location loc,
+                                 Value lhs, Value rhs) {
+    switch (op) {
+    case VectorMaskedBinaryOp::Add:
+      return builder.create<arith::AddIOp>(loc, lhs, rhs);
+    case VectorMaskedBinaryOp::Sub:
+      return builder.create<arith::SubIOp>(loc, lhs, rhs);
+    case VectorMaskedBinaryOp::Mul:
+      return builder.create<arith::MulIOp>(loc, lhs, rhs);
+    }
+    return nullptr;
+  }
+
   void rememberVectorMask(const VectorMaskStmtAST &statement) {
     if (masks.count(statement.getMask())) {
       result.addDiagnostic("duplicate vector mask '" + statement.getMask() + "'");
@@ -492,7 +505,7 @@ private:
     masks[statement.getMask()] = &statement;
   }
 
-  void emitVectorMaskedAdd(const VectorMaskedAddStmtAST &statement) {
+  void emitVectorMaskedBinary(const VectorMaskedBinaryStmtAST &statement) {
     auto maskDefinition = masks.find(statement.getMask());
     if (maskDefinition == masks.end()) {
       result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
@@ -509,7 +522,10 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || passthrough == variables.end() ||
         maskLHS == variables.end() || maskRHS == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_masked_add statement");
+      result.addDiagnostic("unknown buffer in vector_masked_" +
+                           std::string(getVectorMaskedBinaryOpName(
+                               statement.getOp())) +
+                           " statement");
       return;
     }
 
@@ -533,11 +549,13 @@ private:
     Value lhsVector = emitVectorRead(lhs->second, access);
     Value rhsVector = emitVectorRead(rhs->second, access);
     Value passthroughVector = emitVectorRead(passthrough->second, access);
-    Value sum = builder.create<arith::AddIOp>(access.loc, lhsVector, rhsVector);
+    Value computed = emitVectorMaskedBinaryOp(statement.getOp(), access.loc,
+                                             lhsVector, rhsVector);
     Value selected = builder.create<arith::SelectOp>(
-        access.loc, vectorMask, sum, passthroughVector);
+        access.loc, vectorMask, computed, passthroughVector);
     emitVectorWrite(selected, output->second, access);
   }
+
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
     auto resultVariable = variables.find(statement.getResult());

@@ -222,6 +222,25 @@ grep -q vmsleu.vv "$tmp_dir/vector_masked_add_ule.riscv"
 grep -q vmsltu.vv "$tmp_dir/vector_masked_add_ugt.riscv"
 grep -q vmsleu.vv "$tmp_dir/vector_masked_add_uge.riscv"
 
+for op in sub mul; do
+  "$zc_bin" "$source_root/examples/vector_masked_${op}_gt.zc" --emit-mlir \
+    > "$tmp_dir/vector_masked_${op}_gt.mlir"
+  diff -u -B "$source_root/test/codegen/vector_masked_${op}_gt.mlir" \
+    "$tmp_dir/vector_masked_${op}_gt.mlir"
+
+  "$zc_bin" "$source_root/examples/vector_masked_${op}_gt.zc" --emit-riscv-asm \
+    > "$tmp_dir/vector_masked_${op}_gt.riscv"
+  diff -u "$source_root/test/codegen/vector_masked_${op}_gt.riscv" \
+    "$tmp_dir/vector_masked_${op}_gt.riscv"
+  for instruction in vsetvli vle32.v "v0.t" vmerge.vvm vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_masked_${op}_gt.riscv"
+  done
+done
+grep -q arith.subi "$tmp_dir/vector_masked_sub_gt.mlir"
+grep -q arith.muli "$tmp_dir/vector_masked_mul_gt.mlir"
+grep -q vsub.vv "$tmp_dir/vector_masked_sub_gt.riscv"
+grep -q vmul.vv "$tmp_dir/vector_masked_mul_gt.riscv"
+
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" --emit-ast \
   > "$tmp_dir/complex_vector_pipeline.ast"
 for node in VectorAddStmt VectorScaleStmt VectorReduceAddStmt VectorCopyStmt; do
@@ -293,6 +312,10 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
   for predicate in lt le gt ge eq ne ult ule ugt uge; do
     /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_add_${predicate}.mlir" \
       -o "$tmp_dir/vector_masked_add_${predicate}.opt.mlir"
+  done
+  for op in sub mul; do
+    /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_${op}_gt.mlir" \
+      -o "$tmp_dir/vector_masked_${op}_gt.opt.mlir"
   done
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/complex_vector_pipeline.mlir" \
     -o "$tmp_dir/complex_vector_pipeline.opt.mlir"
@@ -426,6 +449,18 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   grep -q vmsleu.vv "$tmp_dir/vector_masked_add_ule.objdump"
   grep -q vmsltu.vv "$tmp_dir/vector_masked_add_ugt.objdump"
   grep -q vmsleu.vv "$tmp_dir/vector_masked_add_uge.objdump"
+  for op in sub mul; do
+    riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+      "$tmp_dir/vector_masked_${op}_gt.riscv" \
+      -o "$tmp_dir/vector_masked_${op}_gt.o"
+    riscv64-linux-gnu-objdump -d "$tmp_dir/vector_masked_${op}_gt.o" \
+      > "$tmp_dir/vector_masked_${op}_gt.objdump"
+    for instruction in vsetvli vle32.v "v0.t" vmerge.vvm vse32.v; do
+      grep -q "$instruction" "$tmp_dir/vector_masked_${op}_gt.objdump"
+    done
+  done
+  grep -q vsub.vv "$tmp_dir/vector_masked_sub_gt.objdump"
+  grep -q vmul.vv "$tmp_dir/vector_masked_mul_gt.objdump"
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/complex_vector_pipeline.riscv" \
     -o "$tmp_dir/complex_vector_pipeline.o"

@@ -55,7 +55,9 @@
       "vector_mask_ult",
       "vector_mask_ule",
       "vector_mask_ugt",
-      "vector_mask_uge"
+      "vector_mask_uge",
+      "vector_masked_sub",
+      "vector_masked_mul"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [
@@ -113,7 +115,9 @@
     },
     "masked_operations": {
       "implemented": [
-        "vector_masked_add"
+        "vector_masked_add",
+        "vector_masked_sub",
+        "vector_masked_mul"
       ],
       "mask_source": "transient function-local vector_mask_* symbol",
       "current_predicates": [
@@ -173,7 +177,9 @@
       "vector_masked_add_ult",
       "vector_masked_add_ule",
       "vector_masked_add_ugt",
-      "vector_masked_add_uge"
+      "vector_masked_add_uge",
+      "vector_masked_sub_gt",
+      "vector_masked_mul_gt"
     ]
   },
   "toolchain": {

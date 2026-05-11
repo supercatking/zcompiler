@@ -202,6 +202,7 @@ python3 -m json.tool build/correctness/vector_select_gt_host.json
 python3 -m json.tool build/correctness/vector_select_eq_host.json
 python3 -m json.tool build/correctness/vector_masked_add_gt_host.json
 python3 -m json.tool build/correctness/vector_masked_add_predicates_host.json
+python3 -m json.tool build/correctness/vector_masked_arithmetic_gt_host.json
 ```
 
 Phase 30K adds the equality variant harness:
@@ -262,4 +263,17 @@ The aggregate host test writes:
 
 ```text
 build/correctness/vector_masked_add_predicates_host.json
+```
+
+
+## Phase 30Q Masked Arithmetic Consumer Coverage
+
+Host correctness now covers masked add, sub, and mul with a signed greater-than
+mask. QEMU runtime validation links `masked_sub_gt` and `masked_mul_gt` in
+addition to the existing masked-add predicate family.
+
+The test writes:
+
+```text
+build/correctness/vector_masked_arithmetic_gt_host.json
 ```

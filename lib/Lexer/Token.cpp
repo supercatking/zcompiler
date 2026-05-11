@@ -86,6 +86,10 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_mask_uge";
   case TokenKind::KwVectorMaskedAdd:
     return "kw_vector_masked_add";
+  case TokenKind::KwVectorMaskedSub:
+    return "kw_vector_masked_sub";
+  case TokenKind::KwVectorMaskedMul:
+    return "kw_vector_masked_mul";
   case TokenKind::Plus:
     return "plus";
   case TokenKind::Minus:

@@ -1,0 +1,5 @@
+func masked_sub_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, a: ptr<i32>, b: ptr<i32>, passthrough: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_sub out, a, b, m0, passthrough, n;
+  return 0;
+}

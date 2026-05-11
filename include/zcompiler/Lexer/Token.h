@@ -49,6 +49,8 @@ enum class TokenKind {
   KwVectorMaskUGT,
   KwVectorMaskUGE,
   KwVectorMaskedAdd,
+  KwVectorMaskedSub,
+  KwVectorMaskedMul,
 
   Plus,
   Minus,

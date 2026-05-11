@@ -33,7 +33,7 @@ enum class StmtKind {
   VectorReduceAdd,
   VectorSelect,
   VectorMask,
-  VectorMaskedAdd,
+  VectorMaskedBinary,
 };
 
 enum class VectorSelectPredicate {
@@ -50,6 +50,14 @@ enum class VectorSelectPredicate {
 };
 
 const char *getVectorSelectPredicateName(VectorSelectPredicate predicate);
+
+enum class VectorMaskedBinaryOp {
+  Add,
+  Sub,
+  Mul,
+};
+
+const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op);
 
 class ParameterAST final {
 public:
@@ -353,16 +361,18 @@ private:
   std::unique_ptr<ExprAST> length;
 };
 
-class VectorMaskedAddStmtAST final : public StmtAST {
+class VectorMaskedBinaryStmtAST final : public StmtAST {
 public:
-  VectorMaskedAddStmtAST(std::string output, std::string lhs, std::string rhs,
-                         std::string mask, std::string passthrough,
-                         std::unique_ptr<ExprAST> length)
-      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
-        mask(std::move(mask)), passthrough(std::move(passthrough)),
-        length(std::move(length)) {}
-  StmtKind getKind() const override { return StmtKind::VectorMaskedAdd; }
+  VectorMaskedBinaryStmtAST(VectorMaskedBinaryOp op, std::string output,
+                            std::string lhs, std::string rhs,
+                            std::string mask, std::string passthrough,
+                            std::unique_ptr<ExprAST> length)
+      : op(op), output(std::move(output)), lhs(std::move(lhs)),
+        rhs(std::move(rhs)), mask(std::move(mask)),
+        passthrough(std::move(passthrough)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMaskedBinary; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  VectorMaskedBinaryOp getOp() const { return op; }
   const std::string &getOutput() const { return output; }
   const std::string &getLHS() const { return lhs; }
   const std::string &getRHS() const { return rhs; }
@@ -371,6 +381,7 @@ public:
   const ExprAST &getLength() const { return *length; }
 
 private:
+  VectorMaskedBinaryOp op;
   std::string output;
   std::string lhs;
   std::string rhs;

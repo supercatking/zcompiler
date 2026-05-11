@@ -77,6 +77,10 @@ for predicate in lt le gt ge eq ne ult ule ugt uge; do
     --emit-riscv-asm > "$tmp_dir/vector_masked_add_${predicate}.s"
   masked_add_sources+=("$tmp_dir/vector_masked_add_${predicate}.s")
 done
+for op in sub mul; do
+  "$zc_bin" "$source_root/examples/vector_masked_${op}_gt.zc" \
+    --emit-riscv-asm > "$tmp_dir/vector_masked_${op}_gt.s"
+done
 for predicate in lt le gt ge eq ne ult ule ugt uge; do
   "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" \
     --emit-riscv-asm > "$tmp_dir/vector_select_${predicate}.s"
@@ -87,6 +91,8 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/complex_vector_pipeline.s" \
   "$tmp_dir/vector_mul.s" \
   "${masked_add_sources[@]}" \
+  "$tmp_dir/vector_masked_sub_gt.s" \
+  "$tmp_dir/vector_masked_mul_gt.s" \
   "$tmp_dir/vector_select_lt.s" \
   "$tmp_dir/vector_select_le.s" \
   "$tmp_dir/vector_select_gt.s" \

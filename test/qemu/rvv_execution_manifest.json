@@ -29,7 +29,9 @@
       "examples/vector_masked_add_ult.zc",
       "examples/vector_masked_add_ule.zc",
       "examples/vector_masked_add_ugt.zc",
-      "examples/vector_masked_add_uge.zc"
+      "examples/vector_masked_add_uge.zc",
+      "examples/vector_masked_sub_gt.zc",
+      "examples/vector_masked_mul_gt.zc"
     ],
     "validated_kernels": [
       "vector_add",
@@ -56,7 +58,9 @@
       "vector_masked_add_ult",
       "vector_masked_add_ule",
       "vector_masked_add_ugt",
-      "vector_masked_add_uge"
+      "vector_masked_add_uge",
+      "vector_masked_sub_gt",
+      "vector_masked_mul_gt"
     ],
     "lengths": [
       0,
@@ -196,6 +200,16 @@
         "kernel": "vector_masked_add_uge",
         "function": "masked_add_uge",
         "check": "masked_added[i] == (bits_i32(a[i]) >= bits_i32(b[i]) ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_sub_gt",
+        "function": "masked_sub_gt",
+        "check": "masked_added[i] == (a[i] > b[i] ? a[i] - b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_mul_gt",
+        "function": "masked_mul_gt",
+        "check": "masked_added[i] == (a[i] > b[i] ? a[i] * b[i] : passthrough[i])"
       }
     ],
     "integer_semantics": {

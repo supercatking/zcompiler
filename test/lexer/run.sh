@@ -67,6 +67,13 @@ for predicate in lt le gt ge eq ne ult ule ugt uge; do
     "$tmp_dir/vector_masked_add_${predicate}.tokens"
 done
 
+for op in sub mul; do
+  "$zc_bin" "$source_root/examples/vector_masked_${op}_gt.zc" --emit-tokens \
+    > "$tmp_dir/vector_masked_${op}_gt.tokens"
+  diff -u "$source_root/test/lexer/vector_masked_${op}_gt.tokens" \
+    "$tmp_dir/vector_masked_${op}_gt.tokens"
+done
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-tokens \
   > "$tmp_dir/print_i32.tokens"
 diff -u "$source_root/test/lexer/print_i32.tokens" \

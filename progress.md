@@ -2028,3 +2028,33 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 30Q: Masked Arithmetic Consumers
+
+### Execution Target
+
+Extend masked arithmetic beyond add while keeping the AST and lowering path
+structured for future masked binary operations.
+
+### Execution Summary
+
+- Replaced the add-specific masked AST node with `VectorMaskedBinaryStmtAST`.
+- Added `VectorMaskedBinaryOp` with `add`, `sub`, and `mul`.
+- Added lexer/parser support for `vector_masked_sub` and `vector_masked_mul`.
+- Reused transient `vector_mask_*` producers from Phase 30P.
+- Lowered MLIR to `arith.addi`, `arith.subi`, or `arith.muli` plus `arith.select`.
+- Lowered direct RVV to masked `vadd.vv`, `vsub.vv`, or `vmul.vv` plus `vmerge.vvm`.
+- Added examples, goldens, host correctness, objdump checks, profile updates, and QEMU execution checks for the new sub/mul slices.
+
+### Execution Result
+
+Completed for `i32`, `e32,m1`, unit-stride masked add/sub/mul slices. Full RVV
+1.0 compatibility remains incomplete.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

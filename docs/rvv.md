@@ -150,6 +150,8 @@ vector_mask_ule m0, mask_lhs, mask_rhs, n;
 vector_mask_ugt m0, mask_lhs, mask_rhs, n;
 vector_mask_uge m0, mask_lhs, mask_rhs, n;
 vector_masked_add out, a, b, m0, passthrough, n;
+vector_masked_sub out, a, b, m0, passthrough, n;
+vector_masked_mul out, a, b, m0, passthrough, n;
 ```
 
 Current direct RVV reference mappings:
@@ -169,7 +171,7 @@ Current direct RVV reference mappings:
 - `vector_select_ule`: `vle32.v`, `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_ugt`: `vle32.v`, swapped `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
-- `vector_mask_*` + `vector_masked_add`: signed/unsigned compare into `v0`, masked `vadd.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_mask_*` + `vector_masked_add/sub/mul`: compare into `v0`, masked `vadd.vv` / `vsub.vv` / `vmul.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -201,6 +203,8 @@ vector_mask_ule m0, mask_lhs, mask_rhs, n;
 vector_mask_ugt m0, mask_lhs, mask_rhs, n;
 vector_mask_uge m0, mask_lhs, mask_rhs, n;
 vector_masked_add out, a, b, m0, passthrough, n;
+vector_masked_sub out, a, b, m0, passthrough, n;
+vector_masked_mul out, a, b, m0, passthrough, n;
 ```
 
 It lowers to a signed or unsigned vector compare plus select. The direct RVV reference path
@@ -235,3 +239,8 @@ side to all signed and unsigned compare predicates; see
 [phase30p-mask-predicates.md](phase30p-mask-predicates.md). Masks are currently transient
 function-local symbols and are lowered by the direct RVV backend through `v0` plus
 masked arithmetic and `vmerge.vvm` passthrough selection.
+
+
+## Masked Arithmetic Consumers
+
+Phase 30Q adds a generic masked binary AST and implements `vector_masked_sub` and `vector_masked_mul` slices; see [phase30q-masked-arithmetic.md](phase30q-masked-arithmetic.md).

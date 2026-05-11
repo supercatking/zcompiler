@@ -156,3 +156,20 @@ cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_masked_add_ult.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+
+## Phase 30Q Capability Addendum
+
+Masked arithmetic now has a generic binary AST and supports `vector_masked_add`,
+`vector_masked_sub`, and `vector_masked_mul` in the direct RVV reference backend.
+The new sub/mul slices are validated with MLIR, objdump, host correctness, and
+QEMU execution using `vector_mask_gt`.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_masked_sub_gt.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_masked_mul_gt.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

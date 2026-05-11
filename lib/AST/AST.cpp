@@ -30,6 +30,18 @@ const char *getVectorSelectPredicateName(VectorSelectPredicate predicate) {
   return "unknown";
 }
 
+const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op) {
+  switch (op) {
+  case VectorMaskedBinaryOp::Add:
+    return "add";
+  case VectorMaskedBinaryOp::Sub:
+    return "sub";
+  case VectorMaskedBinaryOp::Mul:
+    return "mul";
+  }
+  return "unknown";
+}
+
 namespace {
 
 void writeIndent(raw_ostream &os, unsigned indent) {
@@ -170,15 +182,16 @@ void VectorMaskStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
-void VectorMaskedAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
+void VectorMaskedBinaryStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
-  os << "VectorMaskedAddStmt output=" << output << " lhs=" << lhs
-     << " rhs=" << rhs << " mask=" << mask
-     << " passthrough=" << passthrough << '\n';
+  os << "VectorMaskedBinaryStmt op=" << getVectorMaskedBinaryOpName(op)
+     << " output=" << output << " lhs=" << lhs << " rhs=" << rhs
+     << " mask=" << mask << " passthrough=" << passthrough << '\n';
   writeIndent(os, indent + 1);
   os << "Length\n";
   length->dump(os, indent + 2);
 }
+
 
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);

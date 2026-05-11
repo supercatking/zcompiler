@@ -216,7 +216,14 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorMaskStatement(VectorSelectPredicate::UGE,
                                     "vector_mask_uge");
   if (check(TokenKind::KwVectorMaskedAdd))
-    return parseVectorMaskedAddStatement();
+    return parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp::Add,
+                                            "vector_masked_add");
+  if (check(TokenKind::KwVectorMaskedSub))
+    return parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp::Sub,
+                                            "vector_masked_sub");
+  if (check(TokenKind::KwVectorMaskedMul))
+    return parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp::Mul,
+                                            "vector_masked_mul");
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -595,7 +602,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskStatement(
                                              std::move(length));
 }
 
-std::unique_ptr<StmtAST> Parser::parseVectorMaskedAddStatement() {
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedBinaryStatement(
+    VectorMaskedBinaryOp op, StringRef keyword) {
   advance();
 
   auto parseName = [this](StringRef diagnostic) -> std::string {
@@ -606,24 +614,37 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedAddStatement() {
     return advance().lexeme;
   };
 
-  std::string output = parseName("expected output buffer after vector_masked_add");
-  if (output.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add output"))
+  std::string output =
+      parseName("expected output buffer after " + keyword.str());
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " output"))
     return nullptr;
 
-  std::string lhs = parseName("expected left input buffer in vector_masked_add");
-  if (lhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add left input"))
+  std::string lhs = parseName("expected left input buffer in " + keyword.str());
+  if (lhs.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " left input"))
     return nullptr;
 
-  std::string rhs = parseName("expected right input buffer in vector_masked_add");
-  if (rhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add right input"))
+  std::string rhs =
+      parseName("expected right input buffer in " + keyword.str());
+  if (rhs.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " right input"))
     return nullptr;
 
-  std::string mask = parseName("expected mask name in vector_masked_add");
-  if (mask.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add mask"))
+  std::string mask = parseName("expected mask name in " + keyword.str());
+  if (mask.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " mask"))
     return nullptr;
 
-  std::string passthrough = parseName("expected passthrough buffer in vector_masked_add");
-  if (passthrough.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add passthrough"))
+  std::string passthrough =
+      parseName("expected passthrough buffer in " + keyword.str());
+  if (passthrough.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " passthrough"))
     return nullptr;
 
   auto length = parseExpression();
@@ -631,13 +652,14 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedAddStatement() {
     return nullptr;
 
   if (!expect(TokenKind::Semicolon,
-              "expected ';' after vector_masked_add statement"))
+              "expected ';' after " + keyword.str() + " statement"))
     return nullptr;
 
-  return std::make_unique<VectorMaskedAddStmtAST>(
-      std::move(output), std::move(lhs), std::move(rhs), std::move(mask),
+  return std::make_unique<VectorMaskedBinaryStmtAST>(
+      op, std::move(output), std::move(lhs), std::move(rhs), std::move(mask),
       std::move(passthrough), std::move(length));
 }
+
 
 std::unique_ptr<StmtAST> Parser::parseReturnStatement() {
   advance();

@@ -324,9 +324,9 @@ private:
     case StmtKind::VectorMask:
       rememberVectorMask(static_cast<const VectorMaskStmtAST &>(statement));
       return;
-    case StmtKind::VectorMaskedAdd:
-      emitVectorMaskedAdd(
-          static_cast<const VectorMaskedAddStmtAST &>(statement));
+    case StmtKind::VectorMaskedBinary:
+      emitVectorMaskedBinary(
+          static_cast<const VectorMaskedBinaryStmtAST &>(statement));
       return;
     }
     result.addDiagnostic("unknown statement kind");
@@ -721,6 +721,18 @@ private:
   }
 
 
+  StringRef getVectorMaskedBinaryInstruction(VectorMaskedBinaryOp op) const {
+    switch (op) {
+    case VectorMaskedBinaryOp::Add:
+      return "vadd.vv";
+    case VectorMaskedBinaryOp::Sub:
+      return "vsub.vv";
+    case VectorMaskedBinaryOp::Mul:
+      return "vmul.vv";
+    }
+    return "vadd.vv";
+  }
+
   void rememberVectorMask(const VectorMaskStmtAST &statement) {
     if (masks.count(statement.getMask())) {
       result.addDiagnostic("duplicate vector mask '" + statement.getMask() + "'");
@@ -729,10 +741,10 @@ private:
     masks[statement.getMask()] = &statement;
   }
 
-  void emitVectorMaskedAdd(const VectorMaskedAddStmtAST &statement) {
+  void emitVectorMaskedBinary(const VectorMaskedBinaryStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
       result.addDiagnostic(
-          "vector_masked_add text lowering is only available for RISC-V assembly");
+          "vector_masked binary text lowering is only available for RISC-V assembly");
       return;
     }
 
@@ -752,7 +764,10 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || passthrough == variables.end() ||
         maskLHS == variables.end() || maskRHS == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_masked_add statement");
+      result.addDiagnostic("unknown buffer in vector_masked_" +
+                           std::string(getVectorMaskedBinaryOpName(
+                               statement.getOp())) +
+                           " statement");
       return;
     }
 
@@ -767,8 +782,9 @@ private:
     std::string address1 = nextTempRegister();
     std::string address2 = nextTempRegister();
     std::string address3 = nextTempRegister();
-    std::string loopLabel = nextLabel(".Lvector_masked_add");
-    std::string endLabel = nextLabel(".Lvector_masked_add_end");
+    std::string opName = getVectorMaskedBinaryOpName(statement.getOp());
+    std::string loopLabel = nextLabel(".Lvector_masked_" + opName);
+    std::string endLabel = nextLabel(".Lvector_masked_" + opName + "_end");
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
@@ -796,13 +812,15 @@ private:
     os << "  vle32.v v3, 0(" << address0 << ")\n";
     os << "  vle32.v v4, 0(" << address1 << ")\n";
     os << "  vle32.v v5, 0(" << address2 << ")\n";
-    os << "  vadd.vv v6, v3, v4, v0.t\n";
+    os << "  " << getVectorMaskedBinaryInstruction(statement.getOp())
+       << " v6, v3, v4, v0.t\n";
     os << "  vmerge.vvm v7, v5, v6, v0\n";
     os << "  vse32.v v7, 0(" << address3 << ")\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
   }
+
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {

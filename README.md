@@ -51,7 +51,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector copy, vector scale, and vector
   multiply.
 - Direct RVV reference assembly for vector reduce add.
-- Direct RVV reference assembly for signed/unsigned compare-select and first masked add.
+- Direct RVV reference assembly for signed/unsigned compare-select and masked add/sub/mul slices.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -228,3 +228,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30n-mask-architecture.md](docs/phase30n-mask-architecture.md)
 - [docs/phase30o-masked-add.md](docs/phase30o-masked-add.md)
 - [docs/phase30p-mask-predicates.md](docs/phase30p-mask-predicates.md)
+- [docs/phase30q-masked-arithmetic.md](docs/phase30q-masked-arithmetic.md)
