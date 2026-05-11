@@ -63,8 +63,8 @@ static int run_case(int n, int factor) {
   int multiplied[$rvv_capacity];
 
   for (int i = 0; i < $rvv_capacity; ++i) {
-    a[i] = i + 1;
-    b[i] = 10 + i * 2;
+    a[i] = (i % 2 == 0) ? (i + 1) : -(i + 2);
+    b[i] = (i % 3 == 0) ? -(10 + i) : (10 + i * 2);
     tmp[i] = 0;
     out[i] = 0;
     copied[i] = 0;
@@ -111,7 +111,7 @@ int main(void) {
   int count = sizeof(lengths) / sizeof(lengths[0]);
 
   for (int i = 0; i < count; ++i) {
-    int factor = 2 + (i % 3);
+    int factor = (i % 2 == 0) ? (-2 - (i % 3)) : (2 + (i % 3));
     int status = run_case(lengths[i], factor);
     if (status != 0)
       return 100 + i;

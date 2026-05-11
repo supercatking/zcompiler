@@ -57,6 +57,11 @@
         "function": "vmul",
         "check": "multiplied[i] == a[i] * b[i]"
       }
-    ]
+    ],
+    "integer_semantics": {
+      "element_type": "i32",
+      "signed_test_policy": "mixed positive and negative inputs without signed overflow",
+      "overflow_policy": "source-level overflow behavior is not guaranteed yet; QEMU C checks avoid signed overflow"
+    }
   }
 }

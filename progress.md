@@ -1645,3 +1645,34 @@ python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30D: Signed i32 Runtime Coverage
+
+### Execution Target
+
+Extend QEMU runtime validation beyond positive-only inputs and document the
+current `i32` integer semantics boundary.
+
+### Execution Summary
+
+- Updated `test/qemu/run.sh` so the C harness initializes mixed positive and
+  negative input arrays.
+- Updated runtime scale factors to include negative factors.
+- Added `rvv_execution.integer_semantics` to the QEMU manifest.
+- Extended `test/qemu/manifest.py` validation for the integer semantics policy.
+- Added [docs/phase30d-signed-i32-semantics.md](docs/phase30d-signed-i32-semantics.md).
+- Updated RVV compliance and plan documents.
+
+### Execution Result
+
+Completed for signed no-overflow runtime coverage. Source-level overflow
+behavior remains a planned policy decision.
+
+Validated commands:
+
+```bash
+python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

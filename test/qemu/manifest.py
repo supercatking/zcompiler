@@ -52,6 +52,16 @@ def load_and_validate(path):
         if not check.get("function") or not check.get("check"):
             raise SystemExit("each kernel check needs function and check fields")
 
+    integer_semantics = rvv.get("integer_semantics")
+    if not isinstance(integer_semantics, dict):
+        raise SystemExit("rvv_execution.integer_semantics must be an object")
+    if integer_semantics.get("element_type") != "i32":
+        raise SystemExit("rvv_execution.integer_semantics.element_type must be i32")
+    if not integer_semantics.get("signed_test_policy"):
+        raise SystemExit("rvv_execution.integer_semantics.signed_test_policy is required")
+    if not integer_semantics.get("overflow_policy"):
+        raise SystemExit("rvv_execution.integer_semantics.overflow_policy is required")
+
     return data
 
 

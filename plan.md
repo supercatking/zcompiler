@@ -694,13 +694,13 @@ Completed slices:
 - Phase 30A: `vector_mul c, a, b, n;` elementwise multiply.
 - Phase 30B: QEMU execution manifest for the runtime validation matrix.
 - Phase 30C: validated QEMU kernel descriptors in the execution manifest.
+- Phase 30D: signed `i32` runtime coverage and integer semantics note.
 
 Planned slices:
 
-- Phase 30D: generate C check fragments from QEMU kernel descriptors.
-- Phase 30E: signed integer semantics documentation and negative-value
-  cross-kernel tests.
-- Phase 30F: compare/select source syntax and RVV predicate lowering design.
+- Phase 30E: define source-level overflow behavior and add wrapping/trapping tests.
+- Phase 30F: generate C check fragments from QEMU kernel descriptors.
+- Phase 30G: compare/select source syntax and RVV predicate lowering design.
 
 Exit criteria:
 
@@ -727,10 +727,9 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Generate C check fragments from QEMU kernel descriptors so new kernels do
+1. Define source-level overflow behavior for `i32` arithmetic.
+2. Generate C check fragments from QEMU kernel descriptors so new kernels do
    not need hand-written C harness edits.
-2. Add negative-input tests for add/copy/scale/reduce/mul with explicit signed
-   wrapping policy documentation.
 3. Start Phase 29B by deciding whether the source language exposes element
    width in syntax or through typed buffers first.
 4. Add compare/select kernels so vector predicates can become first-class.
