@@ -1676,3 +1676,34 @@ python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30E: i32 Wrapping Semantics
+
+### Execution Target
+
+Define and validate wrapping `i32` bit-pattern behavior for the current RVV
+kernel subset.
+
+### Execution Summary
+
+- Reworked the QEMU C harness to compute expected arithmetic with `uint32_t`
+  bit-pattern helpers.
+- Seeded QEMU inputs near positive and negative `i32` boundaries.
+- Added negative factors and overflow-producing add/multiply/reduction cases.
+- Updated `rvv_execution.integer_semantics` in the QEMU manifest.
+- Added [docs/phase30e-i32-wrapping-semantics.md](docs/phase30e-i32-wrapping-semantics.md).
+- Updated RVV compliance and plan documents.
+
+### Execution Result
+
+Completed for the current RVV kernel subset. Scalar frontend-wide overflow
+semantics remain a planned decision.
+
+Validated commands:
+
+```bash
+python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

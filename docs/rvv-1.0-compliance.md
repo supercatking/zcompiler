@@ -44,7 +44,7 @@ Required profile fields for RVV 1.0 tracking:
 | Memory access | unit-stride `i32` buffers | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
 | Tail/mask policy | `ta, ma` direct assembly policy | assembly inspection |
-| Signed runtime inputs | mixed positive/negative `i32`, no signed overflow in C checks | QEMU |
+| Signed runtime inputs | mixed positive/negative `i32` including overflow bit patterns | QEMU |
 | Add | `vector_add` -> `vadd.vv` | objdump and QEMU |
 | Copy | `vector_copy` -> `vle32.v` + `vse32.v` | objdump and QEMU |
 | Scale | `vector_scale` -> `vmul.vx` | objdump and QEMU |
@@ -63,7 +63,7 @@ Required profile fields for RVV 1.0 tracking:
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
-| Overflow policy | source-level overflow behavior is not specified yet | Phase 30E |
+| Overflow policy | current RVV kernel subset checks wrapping modulo `2^32` | QEMU bit-pattern checks |
 | Compliance suite | no Spike or riscv-arch-test integration yet | Phase 32B |
 
 ## Required Test Matrix

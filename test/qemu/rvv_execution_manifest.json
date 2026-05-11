@@ -60,8 +60,8 @@
     ],
     "integer_semantics": {
       "element_type": "i32",
-      "signed_test_policy": "mixed positive and negative inputs without signed overflow",
-      "overflow_policy": "source-level overflow behavior is not guaranteed yet; QEMU C checks avoid signed overflow"
+      "signed_test_policy": "mixed positive and negative inputs with bit-pattern overflow cases",
+      "overflow_policy": "current RVV kernel subset is checked as wrapping modulo 2^32"
     }
   }
 }

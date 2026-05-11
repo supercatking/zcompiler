@@ -189,3 +189,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30b-qemu-manifest.md](docs/phase30b-qemu-manifest.md)
 - [docs/phase30c-qemu-kernel-descriptors.md](docs/phase30c-qemu-kernel-descriptors.md)
 - [docs/phase30d-signed-i32-semantics.md](docs/phase30d-signed-i32-semantics.md)
+- [docs/phase30e-i32-wrapping-semantics.md](docs/phase30e-i32-wrapping-semantics.md)
