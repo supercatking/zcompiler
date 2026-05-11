@@ -56,6 +56,10 @@ Required profile fields for RVV 1.0 tracking:
 | Compare/select greater-or-equal | `vector_select_ge` -> swapped `vmsle.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select equality | `vector_select_eq` -> `vmseq.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select not-equal | `vector_select_ne` -> `vmsne.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select unsigned less-than | `vector_select_ult` -> `vmsltu.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select unsigned less-or-equal | `vector_select_ule` -> `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select unsigned greater-than | `vector_select_ugt` -> swapped `vmsltu.vv` + `vmerge.vvm` | objdump and QEMU |
+| Compare/select unsigned greater-or-equal | `vector_select_uge` -> swapped `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
 
 ## Current Gaps
 
@@ -65,7 +69,7 @@ Required profile fields for RVV 1.0 tracking:
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
 | Masked arithmetic | no explicit masked source operations | Phase 30B |
-| Compare/select | signed i32 select predicates are supported; no unsigned predicates or first-class mask values yet | Phase 30M |
+| Compare/select | signed and unsigned i32 select predicates are supported; first-class mask values are still missing | Phase 30N |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
@@ -101,6 +105,10 @@ The current QEMU test covers the length set above for:
 - `vector_select_ge`
 - `vector_select_eq`
 - `vector_select_ne`
+- `vector_select_ult`
+- `vector_select_ule`
+- `vector_select_ugt`
+- `vector_select_uge`
 
 ## Acceptance Rule
 

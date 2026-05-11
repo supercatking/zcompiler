@@ -18,6 +18,14 @@ const char *getVectorSelectPredicateName(VectorSelectPredicate predicate) {
     return "eq";
   case VectorSelectPredicate::NE:
     return "ne";
+  case VectorSelectPredicate::ULT:
+    return "ult";
+  case VectorSelectPredicate::ULE:
+    return "ule";
+  case VectorSelectPredicate::UGT:
+    return "ugt";
+  case VectorSelectPredicate::UGE:
+    return "uge";
   }
   return "unknown";
 }

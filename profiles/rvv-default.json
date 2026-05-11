@@ -40,7 +40,11 @@
       "vector_select_lt",
       "vector_select_le",
       "vector_select_ge",
-      "vector_select_ne"
+      "vector_select_ne",
+      "vector_select_ult",
+      "vector_select_ule",
+      "vector_select_ugt",
+      "vector_select_uge"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [
@@ -76,7 +80,12 @@
         "eq",
         "ne"
       ],
-      "unsigned": [],
+      "unsigned": [
+        "ult",
+        "ule",
+        "ugt",
+        "uge"
+      ],
       "first_class_masks": false
     }
   },
@@ -108,7 +117,11 @@
       "vector_select_lt",
       "vector_select_le",
       "vector_select_ge",
-      "vector_select_ne"
+      "vector_select_ne",
+      "vector_select_ult",
+      "vector_select_ule",
+      "vector_select_ugt",
+      "vector_select_uge"
     ]
   },
   "toolchain": {

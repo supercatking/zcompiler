@@ -71,7 +71,7 @@ fi
   --emit-riscv-asm > "$tmp_dir/complex_vector_pipeline.s"
 "$zc_bin" "$source_root/examples/vector_mul.zc" \
   --emit-riscv-asm > "$tmp_dir/vector_mul.s"
-for predicate in lt le gt ge eq ne; do
+for predicate in lt le gt ge eq ne ult ule ugt uge; do
   "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" \
     --emit-riscv-asm > "$tmp_dir/vector_select_${predicate}.s"
 done
@@ -86,6 +86,10 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/vector_select_ge.s" \
   "$tmp_dir/vector_select_eq.s" \
   "$tmp_dir/vector_select_ne.s" \
+  "$tmp_dir/vector_select_ult.s" \
+  "$tmp_dir/vector_select_ule.s" \
+  "$tmp_dir/vector_select_ugt.s" \
+  "$tmp_dir/vector_select_uge.s" \
   "$tmp_dir/complex_vector_pipeline_harness.c" \
   -o "$tmp_dir/complex_vector_pipeline"
 

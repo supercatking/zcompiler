@@ -426,6 +426,14 @@ private:
       return arith::CmpIPredicate::eq;
     case VectorSelectPredicate::NE:
       return arith::CmpIPredicate::ne;
+    case VectorSelectPredicate::ULT:
+      return arith::CmpIPredicate::ult;
+    case VectorSelectPredicate::ULE:
+      return arith::CmpIPredicate::ule;
+    case VectorSelectPredicate::UGT:
+      return arith::CmpIPredicate::ugt;
+    case VectorSelectPredicate::UGE:
+      return arith::CmpIPredicate::uge;
     }
     return arith::CmpIPredicate::eq;
   }

@@ -56,6 +56,14 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_select_eq";
   case TokenKind::KwVectorSelectNE:
     return "kw_vector_select_ne";
+  case TokenKind::KwVectorSelectULT:
+    return "kw_vector_select_ult";
+  case TokenKind::KwVectorSelectULE:
+    return "kw_vector_select_ule";
+  case TokenKind::KwVectorSelectUGT:
+    return "kw_vector_select_ugt";
+  case TokenKind::KwVectorSelectUGE:
+    return "kw_vector_select_uge";
   case TokenKind::Plus:
     return "plus";
   case TokenKind::Minus:

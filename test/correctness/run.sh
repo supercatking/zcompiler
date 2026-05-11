@@ -32,6 +32,6 @@ python3 "$source_root/test/correctness/vector_select_eq_host.py" \
   "$zc_bin" \
   "$source_root"
 
-for predicate in lt le ge ne; do
+for predicate in lt le ge ne ult ule ugt uge; do
   python3 "$source_root/test/correctness/vector_select_${predicate}_host.py"     "$zc_bin"     "$source_root"
 done

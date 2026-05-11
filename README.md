@@ -168,6 +168,14 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_eq.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ne.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ne.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ult.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ult.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ule.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ule.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ugt.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ugt.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -210,3 +218,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30j-vector-select-gt.md](docs/phase30j-vector-select-gt.md)
 - [docs/phase30k-vector-select-predicates.md](docs/phase30k-vector-select-predicates.md)
 - [docs/phase30l-signed-select-predicates.md](docs/phase30l-signed-select-predicates.md)
+- [docs/phase30m-unsigned-select-predicates.md](docs/phase30m-unsigned-select-predicates.md)

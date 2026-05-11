@@ -232,6 +232,14 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorSelectEQ;
   else if (text == "vector_select_ne")
     kind = TokenKind::KwVectorSelectNE;
+  else if (text == "vector_select_ult")
+    kind = TokenKind::KwVectorSelectULT;
+  else if (text == "vector_select_ule")
+    kind = TokenKind::KwVectorSelectULE;
+  else if (text == "vector_select_ugt")
+    kind = TokenKind::KwVectorSelectUGT;
+  else if (text == "vector_select_uge")
+    kind = TokenKind::KwVectorSelectUGE;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

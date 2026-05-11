@@ -41,6 +41,10 @@ enum class VectorSelectPredicate {
   GE,
   EQ,
   NE,
+  ULT,
+  ULE,
+  UGT,
+  UGE,
 };
 
 const char *getVectorSelectPredicateName(VectorSelectPredicate predicate);

@@ -216,3 +216,11 @@ Host correctness now covers `vector_select_lt`, `vector_select_le`,
 `vector_select_gt`, `vector_select_ge`, `vector_select_eq`, and
 `vector_select_ne`. QEMU runtime validation links all six signed i32 select
 kernels into the RVV harness and checks both selected true and false lanes.
+
+
+## Phase 30M Unsigned Select Predicate Coverage
+
+Host correctness now also covers `vector_select_ult`, `vector_select_ule`,
+`vector_select_ugt`, and `vector_select_uge`. These tests compare `i32` source
+lanes as unsigned 32-bit bit patterns and the QEMU RVV harness validates the
+same semantics with `vmsltu.vv` and `vmsleu.vv`.

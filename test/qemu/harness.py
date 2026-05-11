@@ -24,6 +24,14 @@ extern int select_eq(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 extern int select_ne(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
+extern int select_ult(int *a, int *b, int *true_values, int *false_values,
+                      int *out, int n);
+extern int select_ule(int *a, int *b, int *true_values, int *false_values,
+                      int *out, int n);
+extern int select_ugt(int *a, int *b, int *true_values, int *false_values,
+                      int *out, int n);
+extern int select_uge(int *a, int *b, int *true_values, int *false_values,
+                      int *out, int n);
 
 static uint32_t bits_i32(int value) {{ return (uint32_t)(int32_t)value; }}
 
@@ -52,6 +60,10 @@ static int run_case(int n, int factor) {{
   int eq_rhs[{capacity}];
   int selected_eq[{capacity}];
   int selected_ne[{capacity}];
+  int selected_ult[{capacity}];
+  int selected_ule[{capacity}];
+  int selected_ugt[{capacity}];
+  int selected_uge[{capacity}];
 
   for (int i = 0; i < {capacity}; ++i) {{
     a[i] = seed_a(i);
@@ -69,6 +81,10 @@ static int run_case(int n, int factor) {{
     eq_rhs[i] = (i % 3 == 0) ? a[i] : b[i];
     selected_eq[i] = 0;
     selected_ne[i] = 0;
+    selected_ult[i] = 0;
+    selected_ule[i] = 0;
+    selected_ugt[i] = 0;
+    selected_uge[i] = 0;
   }}
 
 {pipeline_check}
@@ -80,6 +96,10 @@ static int run_case(int n, int factor) {{
 {select_ge_check}
 {select_eq_check}
 {select_ne_check}
+{select_ult_check}
+{select_ule_check}
+{select_ugt_check}
+{select_uge_check}
   return 0;
 }}
 
@@ -274,6 +294,58 @@ for (int i = 0; i < n; ++i) {
 
 ''')
 
+
+def render_select_ult_check():
+    return indent('''int select_ult_status = select_ult(a, b, true_values, false_values, selected_ult, n);
+if (select_ult_status != 0)
+  return 14;
+for (int i = 0; i < n; ++i) {
+  int expected = bits_i32(a[i]) < bits_i32(b[i]) ? true_values[i] : false_values[i];
+  if (bits_i32(selected_ult[i]) != bits_i32(expected))
+    return 210 + i;
+}
+
+''')
+
+
+def render_select_ule_check():
+    return indent('''int select_ule_status = select_ule(a, b, true_values, false_values, selected_ule, n);
+if (select_ule_status != 0)
+  return 15;
+for (int i = 0; i < n; ++i) {
+  int expected = bits_i32(a[i]) <= bits_i32(b[i]) ? true_values[i] : false_values[i];
+  if (bits_i32(selected_ule[i]) != bits_i32(expected))
+    return 230 + i;
+}
+
+''')
+
+
+def render_select_ugt_check():
+    return indent('''int select_ugt_status = select_ugt(a, b, true_values, false_values, selected_ugt, n);
+if (select_ugt_status != 0)
+  return 16;
+for (int i = 0; i < n; ++i) {
+  int expected = bits_i32(a[i]) > bits_i32(b[i]) ? true_values[i] : false_values[i];
+  if (bits_i32(selected_ugt[i]) != bits_i32(expected))
+    return 250 + i;
+}
+
+''')
+
+
+def render_select_uge_check():
+    return indent('''int select_uge_status = select_uge(a, b, true_values, false_values, selected_uge, n);
+if (select_uge_status != 0)
+  return 17;
+for (int i = 0; i < n; ++i) {
+  int expected = bits_i32(a[i]) >= bits_i32(b[i]) ? true_values[i] : false_values[i];
+  if (bits_i32(selected_uge[i]) != bits_i32(expected))
+    return 270 + i;
+}
+
+''')
+
 def render_harness(data):
     rvv = data["rvv_execution"]
     lengths = rvv["lengths"]
@@ -290,6 +362,10 @@ def render_harness(data):
         select_ge_check=render_select_ge_check(),
         select_eq_check=render_select_eq_check(),
         select_ne_check=render_select_ne_check(),
+        select_ult_check=render_select_ult_check(),
+        select_ule_check=render_select_ule_check(),
+        select_ugt_check=render_select_ugt_check(),
+        select_uge_check=render_select_uge_check(),
         capacity=capacity,
         lengths=", ".join(str(length) for length in lengths),
     )

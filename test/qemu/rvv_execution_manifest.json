@@ -15,7 +15,11 @@
       "examples/vector_select_lt.zc",
       "examples/vector_select_le.zc",
       "examples/vector_select_ge.zc",
-      "examples/vector_select_ne.zc"
+      "examples/vector_select_ne.zc",
+      "examples/vector_select_ult.zc",
+      "examples/vector_select_ule.zc",
+      "examples/vector_select_ugt.zc",
+      "examples/vector_select_uge.zc"
     ],
     "validated_kernels": [
       "vector_add",
@@ -28,7 +32,11 @@
       "vector_select_gt",
       "vector_select_ge",
       "vector_select_eq",
-      "vector_select_ne"
+      "vector_select_ne",
+      "vector_select_ult",
+      "vector_select_ule",
+      "vector_select_ugt",
+      "vector_select_uge"
     ],
     "lengths": [
       0,
@@ -98,6 +106,26 @@
         "kernel": "vector_select_ne",
         "function": "select_ne",
         "check": "selected_ne[i] == (a[i] != eq_rhs[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_ult",
+        "function": "select_ult",
+        "check": "selected_ult[i] == ((uint32)a[i] < (uint32)b[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_ule",
+        "function": "select_ule",
+        "check": "selected_ule[i] == ((uint32)a[i] <= (uint32)b[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_ugt",
+        "function": "select_ugt",
+        "check": "selected_ugt[i] == ((uint32)a[i] > (uint32)b[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_select_uge",
+        "function": "select_uge",
+        "check": "selected_uge[i] == ((uint32)a[i] >= (uint32)b[i] ? true_values[i] : false_values[i])"
       }
     ],
     "integer_semantics": {

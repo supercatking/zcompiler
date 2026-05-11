@@ -132,6 +132,10 @@ vector_select_gt out, lhs, rhs, true_values, false_values, n;
 vector_select_ge out, lhs, rhs, true_values, false_values, n;
 vector_select_eq out, lhs, rhs, true_values, false_values, n;
 vector_select_ne out, lhs, rhs, true_values, false_values, n;
+vector_select_ult out, lhs, rhs, true_values, false_values, n;
+vector_select_ule out, lhs, rhs, true_values, false_values, n;
+vector_select_ugt out, lhs, rhs, true_values, false_values, n;
+vector_select_uge out, lhs, rhs, true_values, false_values, n;
 ```
 
 Current direct RVV reference mappings:
@@ -147,6 +151,10 @@ Current direct RVV reference mappings:
 - `vector_select_ge`: `vle32.v`, swapped `vmsle.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_eq`: `vle32.v`, `vmseq.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_ne`: `vle32.v`, `vmsne.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_select_ult`: `vle32.v`, `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_select_ule`: `vle32.v`, `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_select_ugt`: `vle32.v`, swapped `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -154,7 +162,7 @@ independent from RVV instruction names.
 
 ## Compare/Select Kernel
 
-Phase 30L completes the current signed i32 predicate-oriented source operations:
+Phase 30M covers signed and unsigned i32 predicate-oriented source operations:
 
 ```zc
 vector_select_lt out, lhs, rhs, true_values, false_values, n;
@@ -163,10 +171,14 @@ vector_select_gt out, lhs, rhs, true_values, false_values, n;
 vector_select_ge out, lhs, rhs, true_values, false_values, n;
 vector_select_eq out, lhs, rhs, true_values, false_values, n;
 vector_select_ne out, lhs, rhs, true_values, false_values, n;
+vector_select_ult out, lhs, rhs, true_values, false_values, n;
+vector_select_ule out, lhs, rhs, true_values, false_values, n;
+vector_select_ugt out, lhs, rhs, true_values, false_values, n;
+vector_select_uge out, lhs, rhs, true_values, false_values, n;
 ```
 
-It lowers to a signed vector compare plus select. The direct RVV reference path
-uses `vmslt.vv` / `vmsle.vv` for signed ordering, `vmseq.vv` / `vmsne.vv` for equality, and
+It lowers to a signed or unsigned vector compare plus select. The direct RVV reference path
+uses `vmslt.vv` / `vmsle.vv` for signed ordering, `vmsltu.vv` / `vmsleu.vv` for unsigned ordering, `vmseq.vv` / `vmsne.vv` for equality, and
 `vmerge.vvm` to choose between the true and false vectors.
 
 ## RVV 1.0 Compliance Status

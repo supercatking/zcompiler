@@ -601,6 +601,14 @@ private:
       return "vector_select_eq";
     case VectorSelectPredicate::NE:
       return "vector_select_ne";
+    case VectorSelectPredicate::ULT:
+      return "vector_select_ult";
+    case VectorSelectPredicate::ULE:
+      return "vector_select_ule";
+    case VectorSelectPredicate::UGT:
+      return "vector_select_ugt";
+    case VectorSelectPredicate::UGE:
+      return "vector_select_uge";
     }
     return "vector_select_unknown";
   }
@@ -624,6 +632,18 @@ private:
       return;
     case VectorSelectPredicate::NE:
       os << "  vmsne.vv v0, v1, v2\n";
+      return;
+    case VectorSelectPredicate::ULT:
+      os << "  vmsltu.vv v0, v1, v2\n";
+      return;
+    case VectorSelectPredicate::ULE:
+      os << "  vmsleu.vv v0, v1, v2\n";
+      return;
+    case VectorSelectPredicate::UGT:
+      os << "  vmsltu.vv v0, v2, v1\n";
+      return;
+    case VectorSelectPredicate::UGE:
+      os << "  vmsleu.vv v0, v2, v1\n";
       return;
     }
   }

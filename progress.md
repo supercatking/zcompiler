@@ -1921,3 +1921,28 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 30M: Unsigned Select Predicates
+
+### Execution Target
+
+Add unsigned i32 compare/select operations using the generic vector select AST
+and RVV unsigned compare mask instructions.
+
+### Execution Summary
+
+- Added `vector_select_ult`, `vector_select_ule`, `vector_select_ugt`, and `vector_select_uge`.
+- Mapped MLIR unsigned predicates to `vmsltu.vv` and `vmsleu.vv`, swapping operands for greater-than forms.
+- Added examples, lexer/parser/codegen goldens, host correctness scripts, objdump checks, QEMU harness checks, profile updates, and documentation.
+
+### Execution Result
+
+Completed. Full build and CTest validation passed.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

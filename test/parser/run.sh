@@ -61,7 +61,7 @@ diff -u "$source_root/test/parser/vector_select_gt.ast" \
 diff -u "$source_root/test/parser/vector_select_eq.ast" \
   "$tmp_dir/vector_select_eq.ast"
 
-for predicate in lt le ge ne; do
+for predicate in lt le ge ne ult ule ugt uge; do
   "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" --emit-ast     > "$tmp_dir/vector_select_${predicate}.ast"
   diff -u "$source_root/test/parser/vector_select_${predicate}.ast"     "$tmp_dir/vector_select_${predicate}.ast"
 done

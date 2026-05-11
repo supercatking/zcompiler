@@ -173,6 +173,18 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorSelectNE))
     return parseVectorSelectStatement(VectorSelectPredicate::NE,
                                       "vector_select_ne");
+  if (check(TokenKind::KwVectorSelectULT))
+    return parseVectorSelectStatement(VectorSelectPredicate::ULT,
+                                      "vector_select_ult");
+  if (check(TokenKind::KwVectorSelectULE))
+    return parseVectorSelectStatement(VectorSelectPredicate::ULE,
+                                      "vector_select_ule");
+  if (check(TokenKind::KwVectorSelectUGT))
+    return parseVectorSelectStatement(VectorSelectPredicate::UGT,
+                                      "vector_select_ugt");
+  if (check(TokenKind::KwVectorSelectUGE))
+    return parseVectorSelectStatement(VectorSelectPredicate::UGE,
+                                      "vector_select_uge");
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
