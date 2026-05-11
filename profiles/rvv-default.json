@@ -37,7 +37,15 @@
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
     "formal_mlir_llvm_rvv_pipeline": "blocked_at_riscv_llc_toolchain_mismatch",
-    "compliance_status": "RVV 1.0 compatible subset, not full RVV 1.0 coverage"
+    "compliance_status": "RVV 1.0 compatible subset, not full RVV 1.0 coverage",
+    "source_element_width_contract": {
+      "strategy": "typed_buffers_first",
+      "operation_names": "width-neutral",
+      "current_implemented_width_bits": [32],
+      "planned_width_bits": [8, 16, 32, 64],
+      "length_unit": "elements",
+      "mixed_width_kernel_policy": "reject unless a future operation explicitly documents widening or narrowing"
+    }
   },
   "current_execution_validation": {
     "emulator": "/home/qemu/qemu/build-riscv64-user/qemu-riscv64",

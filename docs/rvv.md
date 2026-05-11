@@ -105,6 +105,17 @@ Source vector syntax
   -> RVV-specific lowering
 ```
 
+
+## Source Element-Width Contract
+
+Phase 29B chooses a typed-buffer-first contract for SEW expansion. Kernel names
+remain width-neutral; the pointee type of `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, or
+`ptr<i64>` will drive MLIR element types and direct RVV `vsetvli` SEW selection.
+
+The current implementation still supports only `ptr<i32>` vector kernels. Future
+SEW phases should add one width at a time with profile, golden, objdump, host,
+and QEMU checks.
+
 ## Current Implemented Kernel Surface
 
 The implemented target-independent source operations are:

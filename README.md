@@ -187,6 +187,7 @@ Planning documents for the accelerator direction:
 - [docs/phase26b-riscv-llvm-build.md](docs/phase26b-riscv-llvm-build.md)
 - [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md)
 - [docs/phase28c-qemu-rvv-execution.md](docs/phase28c-qemu-rvv-execution.md)
+- [docs/phase29b-source-element-width-contract.md](docs/phase29b-source-element-width-contract.md)
 - [docs/phase30a-vector-mul.md](docs/phase30a-vector-mul.md)
 - [docs/phase30b-qemu-manifest.md](docs/phase30b-qemu-manifest.md)
 - [docs/phase30c-qemu-kernel-descriptors.md](docs/phase30c-qemu-kernel-descriptors.md)

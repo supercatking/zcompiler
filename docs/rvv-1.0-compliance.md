@@ -56,7 +56,7 @@ Required profile fields for RVV 1.0 tracking:
 
 | Area | Gap | Planned phase |
 | --- | --- | --- |
-| Element widths | source language only exposes `i32` vector kernels | Phase 29B |
+| Element widths | typed-buffer contract is defined; implementation remains `i32` only | Phase 29E |
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
 | Masked arithmetic | no explicit masked source operations | Phase 30B |
@@ -80,6 +80,8 @@ Every RVV kernel should eventually be tested across:
 - positive and negative integer inputs when the operation semantics allow it
 - QEMU execution result checks
 - disassembly checks for expected RVV instruction families
+
+Phase 29B records the source element-width contract: typed buffers first; implemented width remains `i32`.
 
 The current QEMU test covers the length set above for:
 

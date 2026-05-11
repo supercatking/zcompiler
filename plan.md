@@ -660,21 +660,17 @@ under QEMU with checked results.
 
 Goal: turn the current RVV subset into a tracked RVV 1.0 compatibility program.
 
-Phase 29A establishes the compliance baseline:
+Completed slices:
 
-- `profiles/rvv-default.json` records RVV spec version `1.0`.
-- `docs/rvv-1.0-compliance.md` records supported features, gaps, and acceptance
-  rules.
-- QEMU validation covers lengths `0`, `1`, `2`, `3`, `4`, `5`, `7`, `8`, `9`,
-  `16`, and `17`.
+- Phase 29A: compliance baseline profile, matrix, and QEMU length coverage.
+- Phase 29B: typed-buffer-first source element-width contract.
 
 Planned slices:
 
-- Phase 29B: widen source/kernel contracts beyond the current `i32`-only
-  surface.
 - Phase 29C: introduce LMUL policy and tests beyond the current `m1` subset.
 - Phase 29D: add negative-value and overflow-defined test cases for integer
   kernels where semantics are well defined.
+- Phase 29E: implement one non-`i32` SEW path with full tests.
 
 Exit criteria:
 
@@ -704,8 +700,8 @@ Completed slices:
 
 Planned slices:
 
-- Phase 29B: source element-width contract for RVV kernels.
 - Phase 30K: broaden compare/select predicates beyond signed greater-than.
+- Phase 29E: implement the first non-`i32` typed-buffer vector path.
 
 Exit criteria:
 
@@ -732,9 +728,8 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 29B by deciding whether the source language exposes element
-   width in syntax or through typed buffers first.
-2. Start Phase 30K by adding compare/select predicate variants or first-class mask syntax.
+1. Start Phase 30K by adding compare/select predicate variants or first-class mask syntax.
+2. Start Phase 29E with one non-`i32` typed-buffer vector path.
 3. Continue toward LMUL and memory-form coverage after the source type contract is stable.
-5. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
+4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.

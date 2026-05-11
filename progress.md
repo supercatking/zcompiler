@@ -1843,3 +1843,30 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 29B: Source Element-Width Contract
+
+### Execution Target
+
+Decide how source programs will expose RVV element widths beyond the current
+`i32` implementation.
+
+### Execution Summary
+
+- Chose typed buffers as the source-level SEW contract.
+- Kept vector operation names width-neutral.
+- Added a profile contract for current and planned widths.
+- Updated RVV docs, compliance roadmap, README, plan, and progress.
+
+### Execution Result
+
+Contract completed. Current compiler support remains `i32`; implementation of
+non-`i32` SEW paths moves to a later phase.
+
+Validated commands:
+
+```bash
+python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json >/dev/null
+git diff --check
+```
