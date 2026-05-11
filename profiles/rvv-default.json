@@ -26,6 +26,7 @@
       "vector_add",
       "vector_copy",
       "vector_scale",
+      "vector_mul",
       "vector_reduce_add"
     ],
     "source_element_type": "i32",
@@ -46,6 +47,7 @@
       "vector_add",
       "vector_copy",
       "vector_scale",
+      "vector_mul",
       "vector_reduce_add"
     ]
   },

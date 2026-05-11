@@ -39,10 +39,13 @@ fi
 
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" \
   --emit-riscv-asm > "$tmp_dir/complex_vector_pipeline.s"
+"$zc_bin" "$source_root/examples/vector_mul.zc" \
+  --emit-riscv-asm > "$tmp_dir/vector_mul.s"
 cat > "$tmp_dir/complex_vector_pipeline_harness.c" <<'EOF'
 extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
+extern int vmul(int *a, int *b, int *c, int n);
 
 static int run_case(int n, int factor) {
   int a[17];
@@ -50,6 +53,7 @@ static int run_case(int n, int factor) {
   int tmp[17] = {0};
   int out[17] = {0};
   int copied[17] = {0};
+  int multiplied[17] = {0};
 
   for (int i = 0; i < 17; ++i) {
     a[i] = i + 1;
@@ -80,6 +84,14 @@ static int run_case(int n, int factor) {
   if (copy_sum != expected_copy_sum)
     return 2;
 
+  int mul_status = vmul(a, b, multiplied, n);
+  if (mul_status != 0)
+    return 3;
+  for (int i = 0; i < n; ++i) {
+    if (multiplied[i] != a[i] * b[i])
+      return 70 + i;
+  }
+
   return 0;
 }
 
@@ -100,6 +112,7 @@ EOF
 
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/complex_vector_pipeline.s" \
+  "$tmp_dir/vector_mul.s" \
   "$tmp_dir/complex_vector_pipeline_harness.c" \
   -o "$tmp_dir/complex_vector_pipeline"
 

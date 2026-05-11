@@ -310,6 +310,9 @@ private:
     case StmtKind::VectorScale:
       emitVectorScale(static_cast<const VectorScaleStmtAST &>(statement));
       return;
+    case StmtKind::VectorMul:
+      emitVectorMul(static_cast<const VectorMulStmtAST &>(statement));
+      return;
     case StmtKind::VectorReduceAdd:
       emitVectorReduceAdd(
           static_cast<const VectorReduceAddStmtAST &>(statement));
@@ -525,6 +528,57 @@ private:
     os << "  vle32.v v0, 0(" << inputAddress << ")\n";
     os << "  vmul.vx v1, v0, " << factor.name << "\n";
     os << "  vse32.v v1, 0(" << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorMul(const VectorMulStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic(
+          "vector_mul text lowering is only available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_mul statement");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string lhsAddress = nextTempRegister();
+    std::string rhsAddress = nextTempRegister();
+    std::string outputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_mul");
+    std::string endLabel = nextLabel(".Lvector_mul_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
+       << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
+       << offset << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
+       << offset << "\n";
+    os << "  add " << outputAddress << ", " << output->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v0, 0(" << lhsAddress << ")\n";
+    os << "  vle32.v v1, 0(" << rhsAddress << ")\n";
+    os << "  vmul.vv v2, v0, v1\n";
+    os << "  vse32.v v2, 0(" << outputAddress << ")\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";

@@ -118,6 +118,34 @@ The test writes:
 build/correctness/vector_reduce_add_host.json
 ```
 
+## Phase 30A Vector Multiply Host Harness
+
+The fifth host harness is:
+
+```text
+test/correctness/vector_mul_host.py
+```
+
+It validates masked chunk behavior for:
+
+```zc
+vector_mul c, a, b, n;
+```
+
+The MLIR check requires:
+
+- `vector.create_mask`
+- `vector.transfer_read`
+- `vector.transfer_write`
+- `arith.muli`
+- `arith.minui`
+
+The test writes:
+
+```text
+build/correctness/vector_mul_host.json
+```
+
 ## Why Host-Side First
 
 The current WSL environment does not provide `qemu-riscv64`, so Phase 24A starts
@@ -132,5 +160,6 @@ ctest --test-dir build --output-on-failure
 python3 -m json.tool build/correctness/vector_add_host.json
 python3 -m json.tool build/correctness/vector_copy_host.json
 python3 -m json.tool build/correctness/vector_scale_host.json
+python3 -m json.tool build/correctness/vector_mul_host.json
 python3 -m json.tool build/correctness/vector_reduce_add_host.json
 ```

@@ -216,6 +216,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorCopy;
   else if (text == "vector_scale")
     kind = TokenKind::KwVectorScale;
+  else if (text == "vector_mul")
+    kind = TokenKind::KwVectorMul;
   else if (text == "vector_reduce_add")
     kind = TokenKind::KwVectorReduceAdd;
 

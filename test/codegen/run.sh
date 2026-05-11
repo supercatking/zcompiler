@@ -103,6 +103,23 @@ if grep -q "vadd.vv" "$tmp_dir/vector_scale.riscv"; then
   exit 1
 fi
 
+"$zc_bin" "$source_root/examples/vector_mul.zc" --emit-mlir \
+  > "$tmp_dir/vector_mul.mlir"
+diff -u -B "$source_root/test/codegen/vector_mul.mlir" \
+  "$tmp_dir/vector_mul.mlir"
+
+"$zc_bin" "$source_root/examples/vector_mul.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_mul.riscv"
+diff -u "$source_root/test/codegen/vector_mul.riscv" \
+  "$tmp_dir/vector_mul.riscv"
+for instruction in vsetvli vle32.v vmul.vv vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_mul.riscv"
+done
+if grep -q "vadd.vv" "$tmp_dir/vector_mul.riscv"; then
+  echo "vector_mul unexpectedly contains vadd.vv" >&2
+  exit 1
+fi
+
 "$zc_bin" "$source_root/examples/vector_reduce_add.zc" --emit-mlir \
   > "$tmp_dir/vector_reduce_add.mlir"
 diff -u -B "$source_root/test/codegen/vector_reduce_add.mlir" \
@@ -164,6 +181,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/vector_copy.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_scale.mlir" \
     -o "$tmp_dir/vector_scale.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_mul.mlir" \
+    -o "$tmp_dir/vector_mul.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_reduce_add.mlir" \
     -o "$tmp_dir/vector_reduce_add.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/complex_vector_pipeline.mlir" \
@@ -214,6 +233,17 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   done
   if grep -q "vadd.vv" "$tmp_dir/vector_scale.objdump"; then
     echo "vector_scale objdump unexpectedly contains vadd.vv" >&2
+    exit 1
+  fi
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_mul.riscv" -o "$tmp_dir/vector_mul.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_mul.o" \
+    > "$tmp_dir/vector_mul.objdump"
+  for instruction in vsetvli vle32.v vmul.vv vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_mul.objdump"
+  done
+  if grep -q "vadd.vv" "$tmp_dir/vector_mul.objdump"; then
+    echo "vector_mul objdump unexpectedly contains vadd.vv" >&2
     exit 1
   fi
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \

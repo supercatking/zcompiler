@@ -29,6 +29,7 @@ enum class StmtKind {
   VectorAdd,
   VectorCopy,
   VectorScale,
+  VectorMul,
   VectorReduceAdd,
 };
 
@@ -240,6 +241,26 @@ private:
   std::string output;
   std::string input;
   std::unique_ptr<ExprAST> factor;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMulStmtAST final : public StmtAST {
+public:
+  VectorMulStmtAST(std::string output, std::string lhs, std::string rhs,
+                   std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMul; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
   std::unique_ptr<ExprAST> length;
 };
 

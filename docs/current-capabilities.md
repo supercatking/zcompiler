@@ -20,6 +20,7 @@ current boundaries are.
   - `vector_add c, a, b, n;`
   - `vector_copy c, a, n;`
   - `vector_scale c, a, factor, n;`
+  - `vector_mul c, a, b, n;`
   - `vector_reduce_add sum, a, n;`
 
 ## 当前输出能力
@@ -43,6 +44,7 @@ dialect 组合，使用 `vector.create_mask` 处理尾部长度，因此 `n` 不
 `vsetvli`、`vle32.v`、`vse32.v`、`vadd.vv`、`vmul.vx`、`vredsum.vs`
 等 RVV 指令，并可以用 `riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d`
 汇编成 `.o` 文件。
+Vector multiply currently maps to vmul.vv in the direct RVV reference backend.
 
 在当前 WSL 环境中，`/home/qemu/qemu/build-riscv64-user/qemu-riscv64`
 已经可以运行 zcompiler 生成并链接出的 RISC-V64 Linux ELF。CTest 中的

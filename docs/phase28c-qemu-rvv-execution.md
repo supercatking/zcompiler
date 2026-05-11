@@ -38,7 +38,8 @@ The `qemu-riscv64` CTest target validates two execution paths:
    - compiles zcompiler RVV assembly
    - links with a small C correctness harness
    - runs under QEMU with `-cpu max`
-   - checks the vector add, scale, copy, and reduce results by exit status
+   - checks the vector add, scale, multiply, copy, and reduce results by exit
+     status
    - covers lengths `0`, `1`, `2`, `3`, `4`, `5`, `7`, `8`, `9`, `16`,
      and `17`
 

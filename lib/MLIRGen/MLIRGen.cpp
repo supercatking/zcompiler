@@ -209,6 +209,9 @@ private:
     case StmtKind::VectorScale:
       emitVectorScale(static_cast<const VectorScaleStmtAST &>(statement));
       return;
+    case StmtKind::VectorMul:
+      emitVectorMul(static_cast<const VectorMulStmtAST &>(statement));
+      return;
     case StmtKind::VectorReduceAdd:
       emitVectorReduceAdd(
           static_cast<const VectorReduceAddStmtAST &>(statement));
@@ -375,6 +378,35 @@ private:
     Value scaled =
         builder.create<arith::MulIOp>(access.loc, inputVector, factorVector);
     emitVectorWrite(scaled, output->second, access);
+  }
+
+  void emitVectorMul(const VectorMulStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_mul statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value lhsVector = emitVectorRead(lhs->second, access);
+    Value rhsVector = emitVectorRead(rhs->second, access);
+    Value product =
+        builder.create<arith::MulIOp>(access.loc, lhsVector, rhsVector);
+    emitVectorWrite(product, output->second, access);
   }
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {

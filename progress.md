@@ -1546,3 +1546,42 @@ cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30A: Vector Multiply Kernel
+
+### Execution Target
+
+Add `vector_mul c, a, b, n;` as the next RVV 1.0 compatible subset kernel,
+with source syntax, AST support, MLIR lowering, direct RVV assembly, host
+correctness coverage, and QEMU execution validation.
+
+### Execution Summary
+
+- Added lexer keyword support for `vector_mul`.
+- Added `VectorMulStmtAST` and AST dump support.
+- Added parser support for `vector_mul c, a, b, n;`.
+- Added MLIR lowering using masked transfer reads, `arith.muli`, and masked
+  transfer write.
+- Added direct RVV reference assembly using `vsetvli`, `vle32.v`, `vmul.vv`,
+  and `vse32.v`.
+- Added `examples/vector_mul.zc`.
+- Added lexer, parser, MLIR, RISC-V assembly, host correctness, and QEMU
+  regression coverage.
+- Updated RVV profile, compliance docs, README, correctness docs, and
+  [docs/phase30a-vector-mul.md](docs/phase30a-vector-mul.md).
+
+### Execution Result
+
+Completed for elementwise vector multiply over `i32` unit-stride buffers.
+
+Validated commands:
+
+```bash
+python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json >/dev/null
+cmake --build /home/zyz/zcomipler/build -j32
+/home/zyz/mlir/build/bin/mlir-opt /home/zyz/zcomipler/test/codegen/vector_mul.mlir -o /tmp/vector_mul.checked.mlir
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /home/zyz/zcomipler/test/codegen/vector_mul.riscv -o /tmp/vector_mul.o
+riscv64-linux-gnu-objdump -d /tmp/vector_mul.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

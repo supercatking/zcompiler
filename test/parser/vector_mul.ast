@@ -1,0 +1,12 @@
+Module
+  Function name=vmul return=i32
+    Params
+      Param name=a type=ptr<i32>
+      Param name=b type=ptr<i32>
+      Param name=c type=ptr<i32>
+      Param name=n type=i32
+    VectorMulStmt output=c lhs=a rhs=b
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

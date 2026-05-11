@@ -38,6 +38,7 @@ tutorial. It currently supports:
 - Target-independent `vector_add` syntax.
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
+- Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
 - Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
@@ -45,7 +46,8 @@ tutorial. It currently supports:
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
 - Direct RVV reference assembly for vector add.
-- Direct RVV reference assembly for vector copy and vector scale.
+- Direct RVV reference assembly for vector copy, vector scale, and vector
+  multiply.
 - Direct RVV reference assembly for vector reduce add.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
@@ -150,6 +152,8 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
@@ -181,3 +185,4 @@ Planning documents for the accelerator direction:
 - [docs/phase26b-riscv-llvm-build.md](docs/phase26b-riscv-llvm-build.md)
 - [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md)
 - [docs/phase28c-qemu-rvv-execution.md](docs/phase28c-qemu-rvv-execution.md)
+- [docs/phase30a-vector-mul.md](docs/phase30a-vector-mul.md)

@@ -1,0 +1,4 @@
+func vmul(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, n: i32) -> i32 {
+  vector_mul c, a, b, n;
+  return 0;
+}

@@ -107,6 +107,15 @@ void VectorScaleStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorMulStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMulStmt output=" << output << " lhs=" << lhs << " rhs=" << rhs
+     << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void VectorReduceAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorReduceAddStmt result=" << result << " input=" << input << '\n';

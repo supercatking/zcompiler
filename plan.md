@@ -683,6 +683,31 @@ Every supported RVV feature has a profile entry, compliance matrix row,
 assembly/objdump check, and QEMU execution check.
 ```
 
+## Phase 30: Broaden RVV Kernel Surface
+
+Goal: grow the RVV 1.0 compatible subset one small kernel family at a time while
+keeping every feature covered by lexer/parser/codegen tests, MLIR validation,
+objdump checks, profile entries, and QEMU execution.
+
+Completed slices:
+
+- Phase 30A: `vector_mul c, a, b, n;` elementwise multiply.
+
+Planned slices:
+
+- Phase 30B: generated QEMU correctness harness metadata.
+- Phase 30C: signed integer semantics documentation and negative-value
+  cross-kernel tests.
+- Phase 30D: compare/select source syntax and RVV predicate lowering design.
+
+Exit criteria:
+
+```text
+New RVV kernels can be added with minimal harness duplication and each supported
+operation has source syntax, MLIR lowering, direct RVV assembly, objdump checks,
+and QEMU runtime validation.
+```
+
 ## Engineering Rules For All Future Phases
 
 - Think through the core architecture first and document it before coding.
@@ -700,12 +725,12 @@ assembly/objdump check, and QEMU execution check.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Add `vector_mul c, a, b, n;` as the next simple arithmetic kernel.
-2. Add a generated QEMU correctness harness format so new kernels do not need
+1. Add a generated QEMU correctness harness format so new kernels do not need
    hand-written C harness edits.
-3. Add negative-input tests for add/copy/scale/reduce with explicit signed
+2. Add negative-input tests for add/copy/scale/reduce/mul with explicit signed
    wrapping policy documentation.
-4. Start Phase 29B by deciding whether the source language exposes element
+3. Start Phase 29B by deciding whether the source language exposes element
    width in syntax or through typed buffers first.
+4. Add compare/select kernels so vector predicates can become first-class.
 5. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.

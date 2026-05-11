@@ -36,7 +36,7 @@ For the current RVV work, the important assumptions include:
 - current compiler vector element width: `32`
 - current LMUL support: `m1`
 - current source operations: `vector_add`, `vector_copy`, `vector_scale`,
-  `vector_reduce_add`
+  `vector_mul`, `vector_reduce_add`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly
@@ -91,3 +91,17 @@ vector_reduce_add sum, a, n;
 The MLIR path uses a loop-carried scalar accumulator and `vector.reduction
 <add>`. The direct RVV reference backend maps each chunk to `vle32.v`,
 `vmv.s.x`, `vredsum.vs`, and `vmv.x.s`.
+
+## Phase 30A Update
+
+`vector_mul` is now part of the default profile. It keeps the same unit-stride
+`i32`, `vector<4xi32>`, `m1`, and masked-tail assumptions as `vector_add`, but
+uses elementwise vector-vector multiply semantics:
+
+```text
+vector_mul c, a, b, n;
+```
+
+The MLIR path lowers to masked `vector.transfer_read`, `arith.muli`, and
+`vector.transfer_write`. The direct RVV reference backend maps this to
+`vle32.v`, `vmul.vv`, and `vse32.v` inside the standard `vsetvli` loop policy.

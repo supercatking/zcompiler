@@ -33,6 +33,11 @@ diff -u "$source_root/test/lexer/vector_copy.tokens" \
 diff -u "$source_root/test/lexer/vector_scale.tokens" \
   "$tmp_dir/vector_scale.tokens"
 
+"$zc_bin" "$source_root/examples/vector_mul.zc" --emit-tokens \
+  > "$tmp_dir/vector_mul.tokens"
+diff -u "$source_root/test/lexer/vector_mul.tokens" \
+  "$tmp_dir/vector_mul.tokens"
+
 "$zc_bin" "$source_root/examples/vector_reduce_add.zc" --emit-tokens \
   > "$tmp_dir/vector_reduce_add.tokens"
 diff -u "$source_root/test/lexer/vector_reduce_add.tokens" \

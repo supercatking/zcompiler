@@ -47,6 +47,7 @@ Required profile fields for RVV 1.0 tracking:
 | Add | `vector_add` -> `vadd.vv` | objdump and QEMU |
 | Copy | `vector_copy` -> `vle32.v` + `vse32.v` | objdump and QEMU |
 | Scale | `vector_scale` -> `vmul.vx` | objdump and QEMU |
+| Multiply | `vector_mul` -> `vmul.vv` | objdump and QEMU |
 | Reduction | `vector_reduce_add` -> `vredsum.vs` | objdump and QEMU |
 
 ## Current Gaps
@@ -81,6 +82,7 @@ The current QEMU test covers the length set above for:
 - `vector_add`
 - `vector_copy`
 - `vector_scale`
+- `vector_mul`
 - `vector_reduce_add`
 
 ## Acceptance Rule

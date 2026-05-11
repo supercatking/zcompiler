@@ -151,6 +151,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorCopyStatement();
   if (check(TokenKind::KwVectorScale))
     return parseVectorScaleStatement();
+  if (check(TokenKind::KwVectorMul))
+    return parseVectorMulStatement();
   if (check(TokenKind::KwVectorReduceAdd))
     return parseVectorReduceAddStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
@@ -277,6 +279,47 @@ std::unique_ptr<StmtAST> Parser::parseVectorScaleStatement() {
   return std::make_unique<VectorScaleStmtAST>(
       std::move(output), std::move(input), std::move(factor),
       std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMulStatement() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected output buffer after 'vector_mul'");
+    return nullptr;
+  }
+  std::string output = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_mul output"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected left input buffer in vector_mul");
+    return nullptr;
+  }
+  std::string lhs = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_mul left input"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected right input buffer in vector_mul");
+    return nullptr;
+  }
+  std::string rhs = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_mul right input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon, "expected ';' after vector_mul statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMulStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
