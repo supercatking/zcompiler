@@ -240,8 +240,26 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorSelectUGT;
   else if (text == "vector_select_uge")
     kind = TokenKind::KwVectorSelectUGE;
+  else if (text == "vector_mask_lt")
+    kind = TokenKind::KwVectorMaskLT;
+  else if (text == "vector_mask_le")
+    kind = TokenKind::KwVectorMaskLE;
   else if (text == "vector_mask_gt")
     kind = TokenKind::KwVectorMaskGT;
+  else if (text == "vector_mask_ge")
+    kind = TokenKind::KwVectorMaskGE;
+  else if (text == "vector_mask_eq")
+    kind = TokenKind::KwVectorMaskEQ;
+  else if (text == "vector_mask_ne")
+    kind = TokenKind::KwVectorMaskNE;
+  else if (text == "vector_mask_ult")
+    kind = TokenKind::KwVectorMaskULT;
+  else if (text == "vector_mask_ule")
+    kind = TokenKind::KwVectorMaskULE;
+  else if (text == "vector_mask_ugt")
+    kind = TokenKind::KwVectorMaskUGT;
+  else if (text == "vector_mask_uge")
+    kind = TokenKind::KwVectorMaskUGE;
   else if (text == "vector_masked_add")
     kind = TokenKind::KwVectorMaskedAdd;
 

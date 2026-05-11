@@ -71,7 +71,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 
 ## Remaining Mask Work
 
-This phase does not complete RVV mask coverage. Remaining work includes more
-mask predicates, reusable mask values across more operation kinds, logical mask
-ops, masked loads/stores, mask policy tests, and eventually a typed MLIR mask
+This phase does not complete RVV mask coverage. Phase 30P implements the remaining compare mask predicates. Remaining work
+includes reusable mask values across more operation kinds, logical mask ops,
+masked loads/stores, mask policy tests, and eventually a typed MLIR mask
 representation.

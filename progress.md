@@ -1999,3 +1999,32 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 30P: Mask Predicate Family
+
+### Execution Target
+
+Broaden transient vector masks from the first `gt` slice to the full signed and
+unsigned compare predicate family already used by vector select.
+
+### Execution Summary
+
+- Added `vector_mask_lt`, `vector_mask_le`, `vector_mask_gt`, `vector_mask_ge`, `vector_mask_eq`, `vector_mask_ne`, `vector_mask_ult`, `vector_mask_ule`, `vector_mask_ugt`, and `vector_mask_uge`.
+- Reused the existing `VectorMaskStmtAST` and `VectorSelectPredicate` architecture instead of adding a new mask type system.
+- Kept `vector_masked_add` as the first masked arithmetic consumer.
+- Added one example and lexer/parser/codegen golden coverage for every mask predicate.
+- Added host correctness for all masked-add predicate variants.
+- Expanded the generated QEMU harness and manifest to link and execute every masked-add predicate kernel.
+- Updated the RVV profile and phase documentation.
+
+### Execution Result
+
+Completed for the current `i32`, `e32,m1`, unit-stride transient mask subset.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

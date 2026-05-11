@@ -46,7 +46,16 @@
       "vector_select_ugt",
       "vector_select_uge",
       "vector_mask_gt",
-      "vector_masked_add"
+      "vector_masked_add",
+      "vector_mask_lt",
+      "vector_mask_le",
+      "vector_mask_ge",
+      "vector_mask_eq",
+      "vector_mask_ne",
+      "vector_mask_ult",
+      "vector_mask_ule",
+      "vector_mask_ugt",
+      "vector_mask_uge"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [
@@ -88,18 +97,36 @@
         "ugt",
         "uge"
       ],
-      "first_class_masks": "transient_function_local_gt_mask",
+      "first_class_masks": "transient_function_local_compare_masks",
       "implemented_mask_producers": [
-        "vector_mask_gt"
+        "vector_mask_lt",
+        "vector_mask_le",
+        "vector_mask_gt",
+        "vector_mask_ge",
+        "vector_mask_eq",
+        "vector_mask_ne",
+        "vector_mask_ult",
+        "vector_mask_ule",
+        "vector_mask_ugt",
+        "vector_mask_uge"
       ]
     },
     "masked_operations": {
       "implemented": [
         "vector_masked_add"
       ],
-      "mask_source": "transient function-local vector_mask_gt symbol",
+      "mask_source": "transient function-local vector_mask_* symbol",
       "current_predicates": [
-        "gt"
+        "lt",
+        "le",
+        "gt",
+        "ge",
+        "eq",
+        "ne",
+        "ult",
+        "ule",
+        "ugt",
+        "uge"
       ],
       "direct_rvv_policy": "v0 compare mask plus masked vadd.vv and vmerge.vvm passthrough"
     }
@@ -137,7 +164,16 @@
       "vector_select_ule",
       "vector_select_ugt",
       "vector_select_uge",
-      "vector_masked_add_gt"
+      "vector_masked_add_gt",
+      "vector_masked_add_lt",
+      "vector_masked_add_le",
+      "vector_masked_add_ge",
+      "vector_masked_add_eq",
+      "vector_masked_add_ne",
+      "vector_masked_add_ult",
+      "vector_masked_add_ule",
+      "vector_masked_add_ugt",
+      "vector_masked_add_uge"
     ]
   },
   "toolchain": {

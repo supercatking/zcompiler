@@ -201,6 +201,7 @@ python3 -m json.tool build/correctness/vector_reduce_add_host.json
 python3 -m json.tool build/correctness/vector_select_gt_host.json
 python3 -m json.tool build/correctness/vector_select_eq_host.json
 python3 -m json.tool build/correctness/vector_masked_add_gt_host.json
+python3 -m json.tool build/correctness/vector_masked_add_predicates_host.json
 ```
 
 Phase 30K adds the equality variant harness:
@@ -246,4 +247,19 @@ The test writes:
 
 ```text
 build/correctness/vector_masked_add_gt_host.json
+```
+
+
+## Phase 30P Mask Predicate Family Coverage
+
+Host correctness now covers masked add driven by all current compare mask
+predicates: `lt`, `le`, `gt`, `ge`, `eq`, `ne`, `ult`, `ule`, `ugt`, and
+`uge`. The generated QEMU harness links all ten `masked_add_*` functions and
+checks signed, unsigned, equality, active-lane, passthrough-lane, and tail-length
+behavior.
+
+The aggregate host test writes:
+
+```text
+build/correctness/vector_masked_add_predicates_host.json
 ```

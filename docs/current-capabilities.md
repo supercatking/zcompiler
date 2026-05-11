@@ -139,3 +139,20 @@ cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+
+## Phase 30P Capability Addendum
+
+`vector_masked_add` can now be driven by the complete current mask predicate
+family: `vector_mask_lt`, `vector_mask_le`, `vector_mask_gt`, `vector_mask_ge`,
+`vector_mask_eq`, `vector_mask_ne`, `vector_mask_ult`, `vector_mask_ule`,
+`vector_mask_ugt`, and `vector_mask_uge`. Each form has token, AST, MLIR, direct
+RVV assembly, host correctness, objdump, and QEMU runtime validation.
+
+Example command:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_masked_add_ult.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

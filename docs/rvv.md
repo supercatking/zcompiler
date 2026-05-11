@@ -42,7 +42,7 @@ zc vector source syntax
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
 - `zc.vector_select_gt`
-- `zc.vector_mask_gt`
+- `zc.vector_mask_lt/le/gt/ge/eq/ne/ult/ule/ugt/uge`
 - `zc.vector_masked_add`
 
 ## Initial RVV Assembly Goals
@@ -139,7 +139,16 @@ vector_select_ult out, lhs, rhs, true_values, false_values, n;
 vector_select_ule out, lhs, rhs, true_values, false_values, n;
 vector_select_ugt out, lhs, rhs, true_values, false_values, n;
 vector_select_uge out, lhs, rhs, true_values, false_values, n;
+vector_mask_lt m0, mask_lhs, mask_rhs, n;
+vector_mask_le m0, mask_lhs, mask_rhs, n;
 vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_mask_ge m0, mask_lhs, mask_rhs, n;
+vector_mask_eq m0, mask_lhs, mask_rhs, n;
+vector_mask_ne m0, mask_lhs, mask_rhs, n;
+vector_mask_ult m0, mask_lhs, mask_rhs, n;
+vector_mask_ule m0, mask_lhs, mask_rhs, n;
+vector_mask_ugt m0, mask_lhs, mask_rhs, n;
+vector_mask_uge m0, mask_lhs, mask_rhs, n;
 vector_masked_add out, a, b, m0, passthrough, n;
 ```
 
@@ -160,7 +169,7 @@ Current direct RVV reference mappings:
 - `vector_select_ule`: `vle32.v`, `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_ugt`: `vle32.v`, swapped `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
-- `vector_mask_gt` + `vector_masked_add`: `vle32.v`, swapped `vmslt.vv`, masked `vadd.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_mask_*` + `vector_masked_add`: signed/unsigned compare into `v0`, masked `vadd.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -181,7 +190,16 @@ vector_select_ult out, lhs, rhs, true_values, false_values, n;
 vector_select_ule out, lhs, rhs, true_values, false_values, n;
 vector_select_ugt out, lhs, rhs, true_values, false_values, n;
 vector_select_uge out, lhs, rhs, true_values, false_values, n;
+vector_mask_lt m0, mask_lhs, mask_rhs, n;
+vector_mask_le m0, mask_lhs, mask_rhs, n;
 vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_mask_ge m0, mask_lhs, mask_rhs, n;
+vector_mask_eq m0, mask_lhs, mask_rhs, n;
+vector_mask_ne m0, mask_lhs, mask_rhs, n;
+vector_mask_ult m0, mask_lhs, mask_rhs, n;
+vector_mask_ule m0, mask_lhs, mask_rhs, n;
+vector_mask_ugt m0, mask_lhs, mask_rhs, n;
+vector_mask_uge m0, mask_lhs, mask_rhs, n;
 vector_masked_add out, a, b, m0, passthrough, n;
 ```
 
@@ -212,6 +230,8 @@ Current committed subset:
 First-class mask architecture is defined in
 [phase30n-mask-architecture.md](phase30n-mask-architecture.md). Phase 30O implements
 the first narrow slice with `vector_mask_gt` and `vector_masked_add`; see
-[phase30o-masked-add.md](phase30o-masked-add.md). Masks are currently transient
+[phase30o-masked-add.md](phase30o-masked-add.md). Phase 30P broadens the producer
+side to all signed and unsigned compare predicates; see
+[phase30p-mask-predicates.md](phase30p-mask-predicates.md). Masks are currently transient
 function-local symbols and are lowered by the direct RVV backend through `v0` plus
 masked arithmetic and `vmerge.vvm` passthrough selection.

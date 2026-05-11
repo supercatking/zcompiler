@@ -1,0 +1,31 @@
+  .option nopic
+  .text
+  .globl masked_add_ugt
+masked_add_ugt:
+  li t0, 0
+.Lvector_masked_add.0:
+  bgeu t0, a6, .Lvector_masked_add_end.1
+  sub t1, a6, t0
+  vsetvli t1, t1, e32, m1, ta, ma
+  slli t2, t0, 2
+  add t3, a0, t2
+  add t4, a1, t2
+  vle32.v v1, 0(t3)
+  vle32.v v2, 0(t4)
+  vmsltu.vv v0, v2, v1
+  add t3, a2, t2
+  add t4, a3, t2
+  add t5, a4, t2
+  add t6, a5, t2
+  vle32.v v3, 0(t3)
+  vle32.v v4, 0(t4)
+  vle32.v v5, 0(t5)
+  vadd.vv v6, v3, v4, v0.t
+  vmerge.vvm v7, v5, v6, v0
+  vse32.v v7, 0(t6)
+  add t0, t0, t1
+  j .Lvector_masked_add.0
+.Lvector_masked_add_end.1:
+  li t0, 0
+  mv a0, t0
+  ret

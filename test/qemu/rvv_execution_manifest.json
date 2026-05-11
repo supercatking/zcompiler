@@ -20,7 +20,16 @@
       "examples/vector_select_ult.zc",
       "examples/vector_select_ule.zc",
       "examples/vector_select_ugt.zc",
-      "examples/vector_select_uge.zc"
+      "examples/vector_select_uge.zc",
+      "examples/vector_masked_add_lt.zc",
+      "examples/vector_masked_add_le.zc",
+      "examples/vector_masked_add_ge.zc",
+      "examples/vector_masked_add_eq.zc",
+      "examples/vector_masked_add_ne.zc",
+      "examples/vector_masked_add_ult.zc",
+      "examples/vector_masked_add_ule.zc",
+      "examples/vector_masked_add_ugt.zc",
+      "examples/vector_masked_add_uge.zc"
     ],
     "validated_kernels": [
       "vector_add",
@@ -38,7 +47,16 @@
       "vector_select_ule",
       "vector_select_ugt",
       "vector_select_uge",
-      "vector_masked_add_gt"
+      "vector_masked_add_gt",
+      "vector_masked_add_lt",
+      "vector_masked_add_le",
+      "vector_masked_add_ge",
+      "vector_masked_add_eq",
+      "vector_masked_add_ne",
+      "vector_masked_add_ult",
+      "vector_masked_add_ule",
+      "vector_masked_add_ugt",
+      "vector_masked_add_uge"
     ],
     "lengths": [
       0,
@@ -133,6 +151,51 @@
         "kernel": "vector_masked_add_gt",
         "function": "masked_add_gt",
         "check": "masked_added[i] == (a[i] > b[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_lt",
+        "function": "masked_add_lt",
+        "check": "masked_added[i] == (a[i] < b[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_le",
+        "function": "masked_add_le",
+        "check": "masked_added[i] == (a[i] <= b[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_ge",
+        "function": "masked_add_ge",
+        "check": "masked_added[i] == (a[i] >= b[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_eq",
+        "function": "masked_add_eq",
+        "check": "masked_added[i] == (a[i] == eq_rhs[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_ne",
+        "function": "masked_add_ne",
+        "check": "masked_added[i] == (a[i] != eq_rhs[i] ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_ult",
+        "function": "masked_add_ult",
+        "check": "masked_added[i] == (bits_i32(a[i]) < bits_i32(b[i]) ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_ule",
+        "function": "masked_add_ule",
+        "check": "masked_added[i] == (bits_i32(a[i]) <= bits_i32(b[i]) ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_ugt",
+        "function": "masked_add_ugt",
+        "check": "masked_added[i] == (bits_i32(a[i]) > bits_i32(b[i]) ? a[i] + b[i] : passthrough[i])"
+      },
+      {
+        "kernel": "vector_masked_add_uge",
+        "function": "masked_add_uge",
+        "check": "masked_added[i] == (bits_i32(a[i]) >= bits_i32(b[i]) ? a[i] + b[i] : passthrough[i])"
       }
     ],
     "integer_semantics": {

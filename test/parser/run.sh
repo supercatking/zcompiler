@@ -68,10 +68,12 @@ for predicate in lt le ge ne ult ule ugt uge; do
     "$tmp_dir/vector_select_${predicate}.ast"
 done
 
-"$zc_bin" "$source_root/examples/vector_masked_add_gt.zc" --emit-ast \
-  > "$tmp_dir/vector_masked_add_gt.ast"
-diff -u "$source_root/test/parser/vector_masked_add_gt.ast" \
-  "$tmp_dir/vector_masked_add_gt.ast"
+for predicate in lt le gt ge eq ne ult ule ugt uge; do
+  "$zc_bin" "$source_root/examples/vector_masked_add_${predicate}.zc" --emit-ast \
+    > "$tmp_dir/vector_masked_add_${predicate}.ast"
+  diff -u "$source_root/test/parser/vector_masked_add_${predicate}.ast" \
+    "$tmp_dir/vector_masked_add_${predicate}.ast"
+done
 
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-ast \
   > "$tmp_dir/print_i32.ast"

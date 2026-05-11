@@ -702,11 +702,12 @@ Completed slices:
 - Phase 30M: add unsigned i32 compare/select predicates.
 - Phase 30N: define first-class mask and masked arithmetic architecture.
 - Phase 30O: implement `vector_mask_gt` plus `vector_masked_add` with host, objdump, and QEMU validation.
+- Phase 30P: broaden transient masks to all signed and unsigned compare predicates.
 
 Planned slices:
 
-- Phase 30P: broaden transient masks to the remaining signed and unsigned compare predicates.
 - Phase 30Q: add more masked arithmetic consumers after mask predicate coverage is stable.
+- Phase 30R: add logical mask operations or masked memory operations after consumer coverage grows.
 - Phase 29E: implement the first non-`i32` typed-buffer vector path.
 
 Exit criteria:
@@ -734,7 +735,7 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 30P by broadening transient masks to all compare predicates.
+1. Start Phase 30Q by adding more masked arithmetic consumers.
 2. Start Phase 29E with one non-`i32` typed-buffer vector path.
 3. Continue toward masked loads/stores, LMUL, and memory-form coverage after the source type contract is stable.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when

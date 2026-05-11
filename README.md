@@ -41,7 +41,7 @@ tutorial. It currently supports:
 - Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
 - Target-independent compare/select syntax for signed and unsigned `i32` predicates.
-- First transient mask syntax: `vector_mask_gt` plus `vector_masked_add`.
+- Transient mask syntax for signed/unsigned compare predicates plus `vector_masked_add`.
 - Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
@@ -227,3 +227,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30m-unsigned-select-predicates.md](docs/phase30m-unsigned-select-predicates.md)
 - [docs/phase30n-mask-architecture.md](docs/phase30n-mask-architecture.md)
 - [docs/phase30o-masked-add.md](docs/phase30o-masked-add.md)
+- [docs/phase30p-mask-predicates.md](docs/phase30p-mask-predicates.md)

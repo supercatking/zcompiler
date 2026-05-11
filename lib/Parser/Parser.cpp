@@ -185,9 +185,36 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorSelectUGE))
     return parseVectorSelectStatement(VectorSelectPredicate::UGE,
                                       "vector_select_uge");
+  if (check(TokenKind::KwVectorMaskLT))
+    return parseVectorMaskStatement(VectorSelectPredicate::LT,
+                                    "vector_mask_lt");
+  if (check(TokenKind::KwVectorMaskLE))
+    return parseVectorMaskStatement(VectorSelectPredicate::LE,
+                                    "vector_mask_le");
   if (check(TokenKind::KwVectorMaskGT))
     return parseVectorMaskStatement(VectorSelectPredicate::GT,
                                     "vector_mask_gt");
+  if (check(TokenKind::KwVectorMaskGE))
+    return parseVectorMaskStatement(VectorSelectPredicate::GE,
+                                    "vector_mask_ge");
+  if (check(TokenKind::KwVectorMaskEQ))
+    return parseVectorMaskStatement(VectorSelectPredicate::EQ,
+                                    "vector_mask_eq");
+  if (check(TokenKind::KwVectorMaskNE))
+    return parseVectorMaskStatement(VectorSelectPredicate::NE,
+                                    "vector_mask_ne");
+  if (check(TokenKind::KwVectorMaskULT))
+    return parseVectorMaskStatement(VectorSelectPredicate::ULT,
+                                    "vector_mask_ult");
+  if (check(TokenKind::KwVectorMaskULE))
+    return parseVectorMaskStatement(VectorSelectPredicate::ULE,
+                                    "vector_mask_ule");
+  if (check(TokenKind::KwVectorMaskUGT))
+    return parseVectorMaskStatement(VectorSelectPredicate::UGT,
+                                    "vector_mask_ugt");
+  if (check(TokenKind::KwVectorMaskUGE))
+    return parseVectorMaskStatement(VectorSelectPredicate::UGE,
+                                    "vector_mask_uge");
   if (check(TokenKind::KwVectorMaskedAdd))
     return parseVectorMaskedAddStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)

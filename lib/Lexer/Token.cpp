@@ -64,8 +64,26 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_select_ugt";
   case TokenKind::KwVectorSelectUGE:
     return "kw_vector_select_uge";
+  case TokenKind::KwVectorMaskLT:
+    return "kw_vector_mask_lt";
+  case TokenKind::KwVectorMaskLE:
+    return "kw_vector_mask_le";
   case TokenKind::KwVectorMaskGT:
     return "kw_vector_mask_gt";
+  case TokenKind::KwVectorMaskGE:
+    return "kw_vector_mask_ge";
+  case TokenKind::KwVectorMaskEQ:
+    return "kw_vector_mask_eq";
+  case TokenKind::KwVectorMaskNE:
+    return "kw_vector_mask_ne";
+  case TokenKind::KwVectorMaskULT:
+    return "kw_vector_mask_ult";
+  case TokenKind::KwVectorMaskULE:
+    return "kw_vector_mask_ule";
+  case TokenKind::KwVectorMaskUGT:
+    return "kw_vector_mask_ugt";
+  case TokenKind::KwVectorMaskUGE:
+    return "kw_vector_mask_uge";
   case TokenKind::KwVectorMaskedAdd:
     return "kw_vector_masked_add";
   case TokenKind::Plus:

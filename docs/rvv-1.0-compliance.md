@@ -60,7 +60,7 @@ Required profile fields for RVV 1.0 tracking:
 | Compare/select unsigned less-or-equal | `vector_select_ule` -> `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select unsigned greater-than | `vector_select_ugt` -> swapped `vmsltu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select unsigned greater-or-equal | `vector_select_uge` -> swapped `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
-| Masked add | `vector_mask_gt` + `vector_masked_add` -> swapped `vmslt.vv`, masked `vadd.vv`, `vmerge.vvm` passthrough | objdump and QEMU |
+| Masked add predicates | `vector_mask_lt/le/gt/ge/eq/ne/ult/ule/ugt/uge` + `vector_masked_add` -> RVV compare mask, masked `vadd.vv`, `vmerge.vvm` passthrough | objdump and QEMU |
 
 ## Current Gaps
 
@@ -69,8 +69,8 @@ Required profile fields for RVV 1.0 tracking:
 | Element widths | typed-buffer contract is defined; implementation remains `i32` only | Phase 29E |
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
-| Masked arithmetic | first `gt` mask plus masked add is implemented; no general masked arithmetic family yet | Phase 30Q |
-| Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist only as transient function-local `vector_mask_gt` symbols | Phase 30P |
+| Masked arithmetic | full current compare mask family can drive masked add; no masked sub/mul/min/max or masked memory family yet | Phase 30Q |
+| Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 30R |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
@@ -110,7 +110,16 @@ The current QEMU test covers the length set above for:
 - `vector_select_ule`
 - `vector_select_ugt`
 - `vector_select_uge`
+- `vector_masked_add_lt`
+- `vector_masked_add_le`
 - `vector_masked_add_gt`
+- `vector_masked_add_ge`
+- `vector_masked_add_eq`
+- `vector_masked_add_ne`
+- `vector_masked_add_ult`
+- `vector_masked_add_ule`
+- `vector_masked_add_ugt`
+- `vector_masked_add_uge`
 
 ## Acceptance Rule
 

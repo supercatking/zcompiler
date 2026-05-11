@@ -12,8 +12,26 @@ extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
 extern int vmul(int *a, int *b, int *c, int n);
+extern int masked_add_lt(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_le(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
 extern int masked_add_gt(int *mask_lhs, int *mask_rhs, int *a, int *b,
-                         int *passthrough, int *out, int n);
+                           int *passthrough, int *out, int n);
+extern int masked_add_ge(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_eq(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_ne(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_ult(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_ule(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_ugt(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
+extern int masked_add_uge(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                           int *passthrough, int *out, int n);
 extern int select_lt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 extern int select_le(int *a, int *b, int *true_values, int *false_values,
@@ -234,17 +252,32 @@ for (int i = 0; i < n; ++i) {
 
 
 def render_masked_add_check():
-    return indent('''int masked_add_status = masked_add_gt(a, b, a, b, passthrough, masked_added, n);
-if (masked_add_status != 0)
-  return 18;
-for (int i = 0; i < n; ++i) {
+    checks = [
+        ("lt", "a", "b", "a[i] < b[i]", 18, 290),
+        ("le", "a", "b", "a[i] <= b[i]", 19, 310),
+        ("gt", "a", "b", "a[i] > b[i]", 20, 330),
+        ("ge", "a", "b", "a[i] >= b[i]", 21, 350),
+        ("eq", "a", "eq_rhs", "a[i] == eq_rhs[i]", 22, 370),
+        ("ne", "a", "eq_rhs", "a[i] != eq_rhs[i]", 23, 390),
+        ("ult", "a", "b", "bits_i32(a[i]) < bits_i32(b[i])", 24, 410),
+        ("ule", "a", "b", "bits_i32(a[i]) <= bits_i32(b[i])", 25, 430),
+        ("ugt", "a", "b", "bits_i32(a[i]) > bits_i32(b[i])", 26, 450),
+        ("uge", "a", "b", "bits_i32(a[i]) >= bits_i32(b[i])", 27, 470),
+    ]
+    chunks = []
+    for predicate, mask_lhs, mask_rhs, condition, status_base, result_base in checks:
+        chunks.append(f'''int masked_add_{predicate}_status = masked_add_{predicate}({mask_lhs}, {mask_rhs}, a, b, passthrough, masked_added, n);
+if (masked_add_{predicate}_status != 0)
+  return {status_base};
+for (int i = 0; i < n; ++i) {{
   uint32_t add_expected = add_i32_bits(a[i], b[i]);
-  int expected = a[i] > b[i] ? (int32_t)add_expected : passthrough[i];
+  int expected = {condition} ? (int32_t)add_expected : passthrough[i];
   if (bits_i32(masked_added[i]) != bits_i32(expected))
-    return 290 + i;
-}
+    return {result_base} + i;
+}}
 
 ''')
+    return indent("".join(chunks))
 
 
 def render_select_lt_check():
