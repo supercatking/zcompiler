@@ -24,6 +24,12 @@
 <what the prompt asked the assistant to do>
 ```
 
+## Accelerator Profile
+
+```text
+<profile path, or "not applicable">
+```
+
 ## Generated Change Summary
 
 ```text

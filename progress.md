@@ -717,6 +717,40 @@ python3 -m json.tool /home/zyz/zcomipler/build/experiments/rvv-toolchain/rvv-too
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```
 
+## Phase 27A: Profile-Aware AI Experiment Records
+
+### Execution Target
+
+Require vector/RVV AI experiment records to cite the active accelerator profile
+and demonstrate the standard with a concrete accepted record.
+
+### Execution Summary
+
+- Updated `experiments/prompts/TEMPLATE.md` with an `Accelerator Profile`
+  section.
+- Updated `experiments/README.md` to require accelerator profile references
+  when target behavior matters.
+- Updated `docs/ai-workflow.md` so experiment and prompt record formats include
+  `accelerator_profile`.
+- Added `experiments/prompts/vector_kernel_surface_001.md`.
+- Added `experiments/results/vector_kernel_surface_001.md`.
+- Recorded the accepted vector kernel surface:
+  - `vector_add`
+  - `vector_copy`
+  - `vector_scale`
+  - `vector_reduce_add`
+
+### Execution Result
+
+Completed as a workflow and traceability phase.
+
+Validated commands:
+
+```bash
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

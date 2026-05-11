@@ -621,6 +621,9 @@ environment, or the remaining blocker is precisely documented.
 Goal: use the AI workflow to compare kernel-lowering alternatives under the
 active accelerator profile.
 
+Phase 27A adds a profile-aware experiment and prompt record for the vector
+kernel surface.
+
 Deliverables:
 
 - Prompt/result records for at least one kernel-lowering proposal.
@@ -649,9 +652,9 @@ generated IR/assembly, and accept/reject result.
 
 ## Immediate Next Tasks
 
-The next implementation steps after Phase 26A diagnostics:
+The next implementation steps after Phase 27A records:
 
 1. Build a same-version MLIR/LLVM toolchain with `RISCV` enabled in a separate
    directory such as `/home/zyz/mlir/build-riscv`.
-2. Phase 27A: start using accelerator profiles in AI experiment records and
-   optimization proposal comparisons.
+2. Re-run the Phase26 diagnostic and formal RVV lowering probe against that
+   toolchain.

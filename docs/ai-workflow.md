@@ -14,6 +14,7 @@ Each optimization experiment should record:
 ```text
 experiment_id:
 source_program:
+accelerator_profile:
 compiler_flags:
 baseline_output:
 candidate_output:
@@ -32,6 +33,7 @@ prompt:
 model:
 input_files:
 requested_change:
+accelerator_profile:
 generated_change_summary:
 human_review_notes:
 accepted:
@@ -109,6 +111,7 @@ The directory now exists. The first accepted experiment is:
 
 ```text
 experiments/results/vector_add_rvv_001.md
+experiments/results/vector_kernel_surface_001.md
 ```
 
 Prompt records live under:
@@ -122,6 +125,7 @@ The first prompt record is:
 
 ```text
 experiments/prompts/vector_add_rvv_001.md
+experiments/prompts/vector_kernel_surface_001.md
 ```
 
 ## Current Acceptance Standard For Vector Kernels
