@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="930" viewBox="0 0 1280 930" role="img" aria-labelledby="title desc">
   <title id="title">zcompiler architecture</title>
-  <desc id="desc">Architecture diagram for the zcompiler toy compiler, from source language through lexer, parser, AST, code generation, MLIR, LLVM IR, RISC-V assembly, RVV planning, and AI-assisted workflow.</desc>
+  <desc id="desc">Architecture diagram for the zcompiler toy compiler, from source language through lexer, parser, AST, code generation, MLIR, LLVM IR, RISC-V assembly, accelerator profiles, RVV planning, and AI-assisted workflow.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
@@ -26,7 +26,7 @@
     </style>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1280" height="900"/>
+  <rect class="bg" x="0" y="0" width="1280" height="930"/>
 
   <text class="title" x="56" y="58">zcompiler Architecture</text>
   <text class="subtitle" x="56" y="86">A small MLIR-inspired toy compiler growing toward an AI-assisted RISC-V RVV compiler.</text>
@@ -96,10 +96,11 @@
   <text class="box-text" x="945" y="631">MLIR vector dialect</text>
   <text class="box-text" x="945" y="651">RVV instructions</text>
 
-  <rect class="box future" x="60" y="705" width="1100" height="96"/>
+  <rect class="box future" x="60" y="705" width="1100" height="116"/>
   <text class="box-title" x="86" y="737">AI-Assisted Compiler Workflow</text>
   <text class="box-text" x="86" y="761">Record prompts, optimization experiments, generated IR/assembly, benchmark results, and human review notes.</text>
   <text class="box-text" x="86" y="781">AI can suggest changes, but compiler changes must pass tests and reproducible validation.</text>
+  <text class="box-text" x="86" y="801">Accelerator profiles record target assumptions such as rv64gcv, SEW/LMUL, tail/mask policy, and backend strategy.</text>
 
   <path class="line" d="M 165 256 L 165 305"/>
   <path class="line" d="M 165 409 L 165 460"/>

@@ -17,6 +17,7 @@ Benchmark scripts should emit `result.json` with:
 schema_version
 benchmark_id
 source_program
+accelerator_profile
 reference_sources
 output_directory
 tools

@@ -67,28 +67,20 @@ RVV work is planned across several phases:
 - Phase 21: benchmark scalar and vector paths with a documented accelerator
   profile.
 
-## Accelerator Profile Draft
+## Accelerator Profile
 
-Future accelerator profile files should describe:
+The current machine-readable profile is:
 
-```yaml
-name: rvv-generic
-xlen: 64
-vlen_bits: unknown
-elen_bits: 32
-supports:
-  - i32_vector_add
-  - i32_vector_mul
-  - i32_vector_reduce_add
-memory:
-  alignment_bytes: 16
-validation:
-  assembler: riscv64-linux-gnu-as
-  emulator: qemu-riscv64
+```text
+profiles/rvv-default.json
 ```
 
-The profile should stay separate from parser and AST code. Source programs
-should express vector intent; the target profile should guide lowering and
+It records the current `rv64gcv` development target, default `i32` vector-add
+policy, MLIR tail-mask lowering shape, direct RVV reference backend choice, and
+the formal MLIR/LLVM RVV lowering blocker.
+
+The profile stays separate from parser and AST code. Source programs express
+vector intent; the target profile guides lowering, benchmark metadata, and
 validation choices.
 
 ## Architecture Boundary

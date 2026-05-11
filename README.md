@@ -42,6 +42,7 @@ tutorial. It currently supports:
 - RISC-V assembly generation through LLVM's RISC-V backend.
 - Direct RVV reference assembly for vector add.
 - Scalar-vs-vector benchmark metadata for vector add.
+- Machine-readable RVV accelerator profile.
 
 Example target input:
 
@@ -143,6 +144,7 @@ Current RVV vector-add path:
 Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
+- [docs/accelerator-profile.md](docs/accelerator-profile.md)
 - [docs/ai-workflow.md](docs/ai-workflow.md)
 - [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md)
 - [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)

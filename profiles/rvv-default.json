@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "profile_id": "rvv64gcv_i32_m1_default",
+  "description": "Default development profile for zcompiler RVV vector-add experiments.",
+  "target": {
+    "triple": "riscv64-unknown-elf",
+    "march": "rv64gcv",
+    "mabi": "lp64d"
+  },
+  "rvv": {
+    "enabled": true,
+    "minimum_extension": "V",
+    "supported_element_width_bits": [8, 16, 32, 64],
+    "default_element_width_bits": 32,
+    "default_lmul": "m1",
+    "tail_policy": "ta",
+    "mask_policy": "ma",
+    "preferred_vector_length_strategy": "vsetvli from remaining element count"
+  },
+  "current_compiler_policy": {
+    "source_operation": "vector_add",
+    "source_element_type": "i32",
+    "mlir_vector_type": "vector<4xi32>",
+    "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
+    "preferred_riscv_backend": "direct_rvv_reference_assembly",
+    "formal_mlir_llvm_rvv_pipeline": "blocked_at_riscv_llc_toolchain_mismatch"
+  },
+  "toolchain": {
+    "mlir_build": "/home/zyz/mlir/build",
+    "mlir_llvm_version": "23.0.0git",
+    "system_llc_version": "14.0.6",
+    "riscv_assembler": "riscv64-linux-gnu-as",
+    "riscv_objdump": "riscv64-linux-gnu-objdump"
+  },
+  "benchmark_links": {
+    "vector_add": "benchmarks/vector_add/run.sh",
+    "formal_rvv_probe": "scripts/probe-formal-rvv-lowering.sh"
+  }
+}

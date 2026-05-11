@@ -473,6 +473,37 @@ Generated artifacts:
 /home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.objdump
 ```
 
+## Phase 23A: Machine-Readable RVV Accelerator Profile
+
+### Execution Target
+
+Record the current RVV target assumptions in a machine-readable profile that
+benchmarks, lowering probes, and AI experiment records can cite.
+
+### Execution Summary
+
+- Added `profiles/README.md`.
+- Added `profiles/rvv-default.json`.
+- Added [docs/accelerator-profile.md](docs/accelerator-profile.md).
+- Updated `benchmarks/vector_add/run.sh` so generated `result.json` cites the
+  accelerator profile.
+- Updated architecture docs and diagrams to include accelerator profiles.
+- Updated benchmark workflow docs to include `accelerator_profile` in generated
+  metadata.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

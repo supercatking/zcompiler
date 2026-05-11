@@ -48,3 +48,6 @@ not checked in as golden outputs.
 Phase 21C adds a scalar C baseline and records scalar-vs-vector comparison
 metadata, including object-size deltas and whether the scalar baseline contains
 any required RVV instruction families.
+
+The generated metadata cites `profiles/rvv-default.json` so benchmark artifacts
+can be traced back to a concrete target profile.

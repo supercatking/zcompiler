@@ -43,6 +43,7 @@ accepted:
 - Keep generated IR or assembly samples for non-trivial lowering changes.
 - Prefer small compiler passes with narrow behavior.
 - Compare scalar reference output before accepting vector/RVV optimizations.
+- Cite the accelerator profile used for vector/RVV experiments.
 - Record failed experiments; they are useful negative examples.
 
 ## Near-Term Uses
@@ -61,6 +62,7 @@ Before Phase 22, each phase should still keep enough records for future AI
 experiments:
 
 - source program
+- accelerator profile
 - compiler command
 - generated MLIR / LLVM IR / assembly
 - test result

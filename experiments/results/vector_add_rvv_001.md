@@ -29,6 +29,12 @@ vector_add source syntax
   -> objdump inspection
 ```
 
+## Accelerator Profile
+
+```text
+profiles/rvv-default.json
+```
+
 ## Relevant Commits
 
 ```text
@@ -36,6 +42,9 @@ vector_add source syntax
 51ad8a0 Lower vector add to MLIR vector dialect
 208eb9e Add RVV reference assembly for vector add
 f77808e Add vector add benchmark artifacts
+80454f2 Handle vector add tails with MLIR masks
+e860994 Add scalar vector add benchmark baseline
+e673cf5 Probe formal MLIR RVV lowering path
 ```
 
 ## Validation Commands
@@ -63,7 +72,8 @@ The path is intentionally split:
 
 - MLIR vector dialect is available for target-independent inspection.
 - Direct RVV assembly is available as a stable reference backend.
-- Formal MLIR/LLVM RVV lowering remains future work.
+- Formal MLIR/LLVM RVV lowering is reproducibly probed and currently blocked
+  at RISC-V `llc` toolchain mismatch.
 
 ## Notes
 

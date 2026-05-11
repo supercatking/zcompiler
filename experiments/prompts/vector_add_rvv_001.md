@@ -27,6 +27,7 @@ include/zcompiler/
 lib/
 test/
 benchmarks/vector_add/
+profiles/rvv-default.json
 ```
 
 ## Requested Change
@@ -41,7 +42,8 @@ roadmap updates, code changes, tests, benchmark artifacts, and GitHub pushes.
 ```text
 Implemented scalar pointer load/store, target-independent vector_add syntax,
 MLIR vector lowering, direct RVV reference assembly, vector_add benchmark
-artifacts, and the first accepted experiment record.
+artifacts, masked MLIR vector tails, scalar-vs-vector benchmark metadata, the
+formal RVV lowering probe, and the first accepted experiment record.
 ```
 
 ## Validation
@@ -56,8 +58,9 @@ python3 -m json.tool build/benchmarks/vector_add/result.json
 
 ```text
 The RVV reference backend is accepted as a temporary target-specific path.
-Formal MLIR/LLVM RVV lowering and vector tail/mask handling remain follow-up
-work.
+Formal MLIR/LLVM RVV lowering is now probed and blocked at a same-version
+RISC-V `llc` toolchain requirement. Future vector/RVV comparisons should cite
+`profiles/rvv-default.json`.
 ```
 
 ## Accepted

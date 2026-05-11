@@ -385,4 +385,22 @@ an AI self made compiler based on RISCV RVV accelerator
 - 每个 phase 都要补充 testcase。
 - 尽量完整验证；如果有难以立即修复的问题，记录到 `known_issue.md`。
 
-下一步建议优先做 Phase 17：扩展函数调用、赋值和第一版内存模型。原因是 RVV lowering 之前需要更完整的程序表达能力，尤其是调用边界、局部状态和后续 vector load/store 的基础。
+## 9. Accelerator Profile
+
+从 Phase 23A 开始，项目使用机器可读的 accelerator profile 来记录目标假设：
+
+```text
+profiles/rvv-default.json
+```
+
+这个 profile 记录：
+
+- RISC-V target triple、`march`、`mabi`。
+- RVV 默认 element width、LMUL、tail policy、mask policy。
+- 当前 `vector_add` 的 MLIR vector 类型和 tail/mask handling 策略。
+- 当前优先 backend 是 direct RVV reference assembly。
+- formal MLIR/LLVM RVV lowering 目前阻塞在 RISC-V `llc` 工具链不匹配。
+
+这样 benchmark、AI experiment、codegen probe 都可以引用同一个 profile，避免后续比较结果时目标假设不一致。
+
+下一步建议优先做 Phase 24：给 vector-add 输出增加 correctness-oriented execution test。原因是现在代码生成、RVV artifact、benchmark metadata 都已经有了，需要进一步验证“生成的结果真的算对”，而不只是汇编里包含目标指令。

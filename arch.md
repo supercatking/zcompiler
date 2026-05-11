@@ -17,6 +17,8 @@ The diagram shows the current project shape after the toy compiler phases:
 - The RVV and AI-assisted blocks are deliberate future-facing architecture
   areas. They are documented now so the toy compiler can grow toward the final
   accelerator-oriented goal without changing direction later.
+- Accelerator profiles under `profiles/` capture target assumptions such as
+  `rv64gcv`, SEW/LMUL policy, tail/mask policy, and current backend strategy.
 
 ## 1. Design Principles
 
@@ -280,6 +282,8 @@ zcompiler/
     riscv/
   examples/
     hello.zc
+  profiles/
+    rvv-default.json
 ```
 
 ## 8. Testing Strategy
@@ -305,6 +309,7 @@ Future RVV path:
 zc vector language feature
   -> zc vector ops
   -> MLIR vector dialect
+  -> accelerator profile policy
   -> LLVM vector / RVV intrinsics
   -> RISC-V RVV assembly
 ```
@@ -333,11 +338,14 @@ The current roadmap status:
 - Phase 17: completed functions, calls, assignment, and scalar pointer
   load/store.
 - Phase 18: completed target-independent `vector_add` syntax and AST.
-- Phase 19: completed first MLIR vector dialect lowering for fixed
+- Phase 19: completed masked MLIR vector dialect lowering for
   `vector<4xi32>` chunks.
-- Phase 20: completed direct RVV reference assembly for vector add.
-- Phase 21: completed first reproducible vector-add artifact workflow.
+- Phase 20: completed direct RVV reference assembly and formal MLIR/LLVM RVV
+  lowering probe for vector add.
+- Phase 21: completed reproducible vector-add artifact workflow with scalar
+  baseline metadata.
 - Phase 22: completed first AI-assisted experiment record.
+- Phase 23: completed the first machine-readable RVV accelerator profile.
 
-The next implementation priority is tail/mask handling for vector lengths that
-are not multiples of 4, followed by a more formal MLIR/LLVM RVV lowering path.
+The next implementation priority is correctness-oriented vector execution
+testing, followed by expanding the vector kernel surface beyond `vector_add`.

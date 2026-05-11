@@ -71,6 +71,7 @@ cat > "$out_dir/result.json" <<EOF
   "schema_version": 2,
   "benchmark_id": "vector_add_rvv_artifacts",
   "source_program": "examples/vector_add.zc",
+  "accelerator_profile": "profiles/rvv-default.json",
   "reference_sources": {
     "scalar": "benchmarks/vector_add/reference_scalar.c",
     "rvv": "benchmarks/vector_add/reference_rvv.c"
