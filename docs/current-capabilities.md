@@ -14,6 +14,8 @@ current boundaries are.
 - 函数调用。
 - 标量内存访问：`load a[i]` 和 `store c[i] = value;`。
 - 控制流：`if/else`、`while`。
+- 终端输出：`print_i32 expr;`，在 RISC-V Linux/QEMU 路径输出十进制
+  `i32` 值并换行。
 - 目标无关向量 kernel：
   - `vector_add c, a, b, n;`
   - `vector_copy c, a, n;`
@@ -29,6 +31,9 @@ current boundaries are.
 - MLIR: `--emit-mlir`
 - LLVM IR: `--emit-llvm`
 - RISC-V assembly: `--emit-riscv-asm`
+
+`print_i32` 当前是 RISC-V runtime 功能，会生成一个内建
+`zc_print_i32` helper，并通过 RISC-V Linux `write` syscall 输出到 stdout。
 
 向量 kernel 的 MLIR 路径会生成 `scf`、`vector`、`arith`、`func`
 dialect 组合，使用 `vector.create_mask` 处理尾部长度，因此 `n` 不要求是

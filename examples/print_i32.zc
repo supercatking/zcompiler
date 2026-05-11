@@ -1,0 +1,5 @@
+func main() -> i32 {
+  let result = 100 + 120;
+  print_i32 result;
+  return result;
+}

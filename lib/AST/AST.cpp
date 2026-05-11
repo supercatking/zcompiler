@@ -73,6 +73,12 @@ void StoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
   value->dump(os, indent + 2);
 }
 
+void PrintI32StmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "PrintI32Stmt\n";
+  value->dump(os, indent + 1);
+}
+
 void VectorAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorAddStmt output=" << output << " lhs=" << lhs << " rhs=" << rhs

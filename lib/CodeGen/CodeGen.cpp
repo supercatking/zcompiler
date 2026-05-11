@@ -289,6 +289,9 @@ private:
     case StmtKind::Store:
       emitStore(static_cast<const StoreStmtAST &>(statement));
       return;
+    case StmtKind::PrintI32:
+      emitPrintI32(static_cast<const PrintI32StmtAST &>(statement));
+      return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
       return;
@@ -370,6 +373,20 @@ private:
        << " : i32 to index\n";
     os << "    memref.store " << value.name << ", " << found->second.name
        << "[" << indexValue << "] : memref<?xi32>\n";
+  }
+
+  void emitPrintI32(const PrintI32StmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic(
+          "print_i32 text lowering is only available for RISC-V assembly");
+      return;
+    }
+
+    EmittedValue value = emitExpression(statement.getValue());
+    if (value.name.empty())
+      return;
+
+    emitPrintI32CallWithRegisterSave(value.name);
   }
 
   void emitVectorAdd(const VectorAddStmtAST &statement) {
@@ -700,6 +717,45 @@ private:
     return label;
   }
 
+  void emitPrintI32CallWithRegisterSave(StringRef valueRegister) {
+    os << "  addi sp, sp, -128\n";
+    os << "  sd ra, 0(sp)\n";
+    os << "  sd a0, 8(sp)\n";
+    os << "  sd a1, 16(sp)\n";
+    os << "  sd a2, 24(sp)\n";
+    os << "  sd a3, 32(sp)\n";
+    os << "  sd a4, 40(sp)\n";
+    os << "  sd a5, 48(sp)\n";
+    os << "  sd a6, 56(sp)\n";
+    os << "  sd a7, 64(sp)\n";
+    os << "  sd t0, 72(sp)\n";
+    os << "  sd t1, 80(sp)\n";
+    os << "  sd t2, 88(sp)\n";
+    os << "  sd t3, 96(sp)\n";
+    os << "  sd t4, 104(sp)\n";
+    os << "  sd t5, 112(sp)\n";
+    os << "  sd t6, 120(sp)\n";
+    os << "  mv a0, " << valueRegister << "\n";
+    os << "  call zc_print_i32\n";
+    os << "  ld ra, 0(sp)\n";
+    os << "  ld a0, 8(sp)\n";
+    os << "  ld a1, 16(sp)\n";
+    os << "  ld a2, 24(sp)\n";
+    os << "  ld a3, 32(sp)\n";
+    os << "  ld a4, 40(sp)\n";
+    os << "  ld a5, 48(sp)\n";
+    os << "  ld a6, 56(sp)\n";
+    os << "  ld a7, 64(sp)\n";
+    os << "  ld t0, 72(sp)\n";
+    os << "  ld t1, 80(sp)\n";
+    os << "  ld t2, 88(sp)\n";
+    os << "  ld t3, 96(sp)\n";
+    os << "  ld t4, 104(sp)\n";
+    os << "  ld t5, 112(sp)\n";
+    os << "  ld t6, 120(sp)\n";
+    os << "  addi sp, sp, 128\n";
+  }
+
   EmittedValue ensureI1(EmittedValue value) {
     if (value.type == "i1")
       return value;
@@ -842,6 +898,89 @@ private:
   std::map<std::string, EmittedValue> variables;
 };
 
+bool statementUsesPrintI32(const StmtAST &statement) {
+  switch (statement.getKind()) {
+  case StmtKind::PrintI32:
+    return true;
+  case StmtKind::If: {
+    const auto &ifStatement = static_cast<const IfStmtAST &>(statement);
+    for (const auto &bodyStatement : ifStatement.getThenBody())
+      if (statementUsesPrintI32(*bodyStatement))
+        return true;
+    for (const auto &bodyStatement : ifStatement.getElseBody())
+      if (statementUsesPrintI32(*bodyStatement))
+        return true;
+    return false;
+  }
+  case StmtKind::While: {
+    const auto &whileStatement = static_cast<const WhileStmtAST &>(statement);
+    for (const auto &bodyStatement : whileStatement.getBody())
+      if (statementUsesPrintI32(*bodyStatement))
+        return true;
+    return false;
+  }
+  default:
+    return false;
+  }
+}
+
+bool moduleUsesPrintI32(const ModuleAST &module) {
+  for (const auto &function : module.getFunctions())
+    for (const auto &statement : function->getBody())
+      if (statementUsesPrintI32(*statement))
+        return true;
+  return false;
+}
+
+void emitPrintI32Runtime(raw_ostream &os) {
+  os << "  .text\n";
+  os << "  .globl zc_print_i32\n";
+  os << "zc_print_i32:\n";
+  os << "  addi sp, sp, -64\n";
+  os << "  sd ra, 56(sp)\n";
+  os << "  sext.w t0, a0\n";
+  os << "  addi t1, sp, 48\n";
+  os << "  li t2, 10\n";
+  os << "  li t3, 0\n";
+  os << "  bgez t0, .Lzc_print_i32_abs_done\n";
+  os << "  li t3, 1\n";
+  os << "  neg t0, t0\n";
+  os << ".Lzc_print_i32_abs_done:\n";
+  os << "  addi t1, t1, -1\n";
+  os << "  li t4, 10\n";
+  os << "  sb t4, 0(t1)\n";
+  os << "  li t5, 1\n";
+  os << "  bnez t0, .Lzc_print_i32_digits\n";
+  os << "  addi t1, t1, -1\n";
+  os << "  li t4, 48\n";
+  os << "  sb t4, 0(t1)\n";
+  os << "  addi t5, t5, 1\n";
+  os << "  j .Lzc_print_i32_sign\n";
+  os << ".Lzc_print_i32_digits:\n";
+  os << "  remu t4, t0, t2\n";
+  os << "  divu t0, t0, t2\n";
+  os << "  addi t4, t4, 48\n";
+  os << "  addi t1, t1, -1\n";
+  os << "  sb t4, 0(t1)\n";
+  os << "  addi t5, t5, 1\n";
+  os << "  bnez t0, .Lzc_print_i32_digits\n";
+  os << ".Lzc_print_i32_sign:\n";
+  os << "  beqz t3, .Lzc_print_i32_write\n";
+  os << "  addi t1, t1, -1\n";
+  os << "  li t4, 45\n";
+  os << "  sb t4, 0(t1)\n";
+  os << "  addi t5, t5, 1\n";
+  os << ".Lzc_print_i32_write:\n";
+  os << "  li a0, 1\n";
+  os << "  mv a1, t1\n";
+  os << "  mv a2, t5\n";
+  os << "  li a7, 64\n";
+  os << "  ecall\n";
+  os << "  ld ra, 56(sp)\n";
+  os << "  addi sp, sp, 64\n";
+  os << "  ret\n";
+}
+
 CodeGenResult emitModule(const ModuleAST &module, raw_ostream &os,
                          TextDialect dialect) {
   CodeGenResult result;
@@ -861,6 +1000,9 @@ CodeGenResult emitModule(const ModuleAST &module, raw_ostream &os,
     if (dialect == TextDialect::LLVMIR)
       os << '\n';
   }
+
+  if (dialect == TextDialect::RiscVAssembly && moduleUsesPrintI32(module))
+    emitPrintI32Runtime(os);
 
   if (dialect != TextDialect::LLVMIR && dialect != TextDialect::RiscVAssembly)
     os << "}\n";

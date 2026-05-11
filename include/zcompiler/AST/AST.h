@@ -22,6 +22,7 @@ enum class StmtKind {
   Let,
   Assign,
   Store,
+  PrintI32,
   Return,
   If,
   While,
@@ -168,6 +169,18 @@ public:
 private:
   std::string bufferName;
   std::unique_ptr<ExprAST> index;
+  std::unique_ptr<ExprAST> value;
+};
+
+class PrintI32StmtAST final : public StmtAST {
+public:
+  explicit PrintI32StmtAST(std::unique_ptr<ExprAST> value)
+      : value(std::move(value)) {}
+  StmtKind getKind() const override { return StmtKind::PrintI32; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const ExprAST &getValue() const { return *value; }
+
+private:
   std::unique_ptr<ExprAST> value;
 };
 

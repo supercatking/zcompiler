@@ -143,6 +143,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseLetStatement();
   if (check(TokenKind::KwStore))
     return parseStoreStatement();
+  if (check(TokenKind::KwPrintI32))
+    return parsePrintI32Statement();
   if (check(TokenKind::KwVectorAdd))
     return parseVectorAddStatement();
   if (check(TokenKind::KwVectorCopy))
@@ -339,6 +341,19 @@ std::unique_ptr<StmtAST> Parser::parseStoreStatement() {
 
   return std::make_unique<StoreStmtAST>(std::move(bufferName),
                                         std::move(index), std::move(value));
+}
+
+std::unique_ptr<StmtAST> Parser::parsePrintI32Statement() {
+  advance();
+
+  auto value = parseExpression();
+  if (!value)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon, "expected ';' after print_i32 statement"))
+    return nullptr;
+
+  return std::make_unique<PrintI32StmtAST>(std::move(value));
 }
 
 std::unique_ptr<StmtAST> Parser::parseAssignStatement() {

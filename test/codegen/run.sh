@@ -136,6 +136,13 @@ for instruction in vsetvli vle32.v vadd.vv vmul.vx vse32.v vmv.s.x \
   grep -q "$instruction" "$tmp_dir/complex_vector_pipeline.riscv"
 done
 
+"$zc_bin" "$source_root/examples/print_i32.zc" --emit-riscv-asm \
+  > "$tmp_dir/print_i32.riscv"
+diff -u "$source_root/test/codegen/print_i32.riscv" "$tmp_dir/print_i32.riscv"
+for instruction in "call zc_print_i32" "li a7, 64" ecall; do
+  grep -q "$instruction" "$tmp_dir/print_i32.riscv"
+done
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -225,4 +232,6 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
     vredsum.vs vmv.x.s; do
     grep -q "$instruction" "$tmp_dir/complex_vector_pipeline.objdump"
   done
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/print_i32.riscv" -o "$tmp_dir/print_i32.o"
 fi

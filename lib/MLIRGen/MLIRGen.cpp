@@ -185,6 +185,11 @@ private:
     case StmtKind::Store:
       emitStore(static_cast<const StoreStmtAST &>(statement));
       return;
+    case StmtKind::PrintI32:
+      result.addDiagnostic(
+          "MLIR API generation for print_i32 is planned after the RISC-V "
+          "runtime slice");
+      return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
       return;

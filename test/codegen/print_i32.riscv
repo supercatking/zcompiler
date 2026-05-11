@@ -1,0 +1,91 @@
+  .option nopic
+  .text
+  .globl main
+main:
+  li t0, 100
+  li t1, 120
+  add t2, t0, t1
+  addi sp, sp, -128
+  sd ra, 0(sp)
+  sd a0, 8(sp)
+  sd a1, 16(sp)
+  sd a2, 24(sp)
+  sd a3, 32(sp)
+  sd a4, 40(sp)
+  sd a5, 48(sp)
+  sd a6, 56(sp)
+  sd a7, 64(sp)
+  sd t0, 72(sp)
+  sd t1, 80(sp)
+  sd t2, 88(sp)
+  sd t3, 96(sp)
+  sd t4, 104(sp)
+  sd t5, 112(sp)
+  sd t6, 120(sp)
+  mv a0, t2
+  call zc_print_i32
+  ld ra, 0(sp)
+  ld a0, 8(sp)
+  ld a1, 16(sp)
+  ld a2, 24(sp)
+  ld a3, 32(sp)
+  ld a4, 40(sp)
+  ld a5, 48(sp)
+  ld a6, 56(sp)
+  ld a7, 64(sp)
+  ld t0, 72(sp)
+  ld t1, 80(sp)
+  ld t2, 88(sp)
+  ld t3, 96(sp)
+  ld t4, 104(sp)
+  ld t5, 112(sp)
+  ld t6, 120(sp)
+  addi sp, sp, 128
+  mv a0, t2
+  ret
+  .text
+  .globl zc_print_i32
+zc_print_i32:
+  addi sp, sp, -64
+  sd ra, 56(sp)
+  sext.w t0, a0
+  addi t1, sp, 48
+  li t2, 10
+  li t3, 0
+  bgez t0, .Lzc_print_i32_abs_done
+  li t3, 1
+  neg t0, t0
+.Lzc_print_i32_abs_done:
+  addi t1, t1, -1
+  li t4, 10
+  sb t4, 0(t1)
+  li t5, 1
+  bnez t0, .Lzc_print_i32_digits
+  addi t1, t1, -1
+  li t4, 48
+  sb t4, 0(t1)
+  addi t5, t5, 1
+  j .Lzc_print_i32_sign
+.Lzc_print_i32_digits:
+  remu t4, t0, t2
+  divu t0, t0, t2
+  addi t4, t4, 48
+  addi t1, t1, -1
+  sb t4, 0(t1)
+  addi t5, t5, 1
+  bnez t0, .Lzc_print_i32_digits
+.Lzc_print_i32_sign:
+  beqz t3, .Lzc_print_i32_write
+  addi t1, t1, -1
+  li t4, 45
+  sb t4, 0(t1)
+  addi t5, t5, 1
+.Lzc_print_i32_write:
+  li a0, 1
+  mv a1, t1
+  mv a2, t5
+  li a7, 64
+  ecall
+  ld ra, 56(sp)
+  addi sp, sp, 64
+  ret

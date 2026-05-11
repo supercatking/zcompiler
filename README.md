@@ -39,6 +39,7 @@ tutorial. It currently supports:
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
 - Target-independent `vector_reduce_add` syntax.
+- Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
@@ -154,6 +155,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/print_i32.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 /home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
 /home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
@@ -175,3 +177,4 @@ Planning documents for the accelerator direction:
 - [docs/phase25c-vector-reduction.md](docs/phase25c-vector-reduction.md)
 - [docs/phase26-rvv-toolchain.md](docs/phase26-rvv-toolchain.md)
 - [docs/phase26b-riscv-llvm-build.md](docs/phase26b-riscv-llvm-build.md)
+- [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md)

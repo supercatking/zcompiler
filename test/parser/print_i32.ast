@@ -1,0 +1,10 @@
+Module
+  Function name=main return=i32
+    LetStmt name=result
+      BinaryExpr op="+"
+        IntegerExpr value=100
+        IntegerExpr value=120
+    PrintI32Stmt
+      VariableExpr name=result
+    ReturnStmt
+      VariableExpr name=result

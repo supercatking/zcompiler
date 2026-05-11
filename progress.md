@@ -1440,3 +1440,40 @@ riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/complex_vector_pipeline.s -
 riscv64-linux-gnu-objdump -d /tmp/complex_vector_pipeline.o
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 28B: Built-in print_i32 Runtime Output
+
+### Execution Target
+
+Let a `.zc` program print a computed nonzero integer result to the terminal
+when compiled to RISC-V and run under QEMU.
+
+### Execution Summary
+
+- Added `print_i32 expr;` source syntax.
+- Added lexer keyword support for `print_i32`.
+- Added `PrintI32StmtAST` and AST dump support.
+- Added parser support for print statements.
+- Added `examples/print_i32.zc`.
+- Added RISC-V text backend support:
+  - register-preserving call site
+  - emitted `zc_print_i32` runtime helper
+  - signed decimal conversion
+  - Linux `write` syscall
+- Added lexer, parser, and codegen regression coverage.
+- Documented the design in
+  [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md).
+
+### Execution Result
+
+Completed for RISC-V runtime output.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/print_i32.zc --emit-riscv-asm > /tmp/print_i32.s
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/print_i32.s -o /tmp/print_i32_test
+/home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/print_i32_test
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

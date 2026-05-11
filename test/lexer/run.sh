@@ -38,6 +38,11 @@ diff -u "$source_root/test/lexer/vector_scale.tokens" \
 diff -u "$source_root/test/lexer/vector_reduce_add.tokens" \
   "$tmp_dir/vector_reduce_add.tokens"
 
+"$zc_bin" "$source_root/examples/print_i32.zc" --emit-tokens \
+  > "$tmp_dir/print_i32.tokens"
+diff -u "$source_root/test/lexer/print_i32.tokens" \
+  "$tmp_dir/print_i32.tokens"
+
 set +e
 "$zc_bin" "$source_root/test/lexer/invalid.zc" --emit-tokens \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"

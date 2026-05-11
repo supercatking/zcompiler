@@ -208,6 +208,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwLoad;
   else if (text == "store")
     kind = TokenKind::KwStore;
+  else if (text == "print_i32")
+    kind = TokenKind::KwPrintI32;
   else if (text == "vector_add")
     kind = TokenKind::KwVectorAdd;
   else if (text == "vector_copy")
