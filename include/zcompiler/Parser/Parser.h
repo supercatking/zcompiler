@@ -49,6 +49,7 @@ private:
   std::unique_ptr<StmtAST> parseVectorMaskedBinaryStatement(
       VectorMaskedBinaryOp op, llvm::StringRef keyword);
   std::unique_ptr<StmtAST> parseVectorMaskedStoreStatement();
+  std::unique_ptr<StmtAST> parseVectorMaskedLoadStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();

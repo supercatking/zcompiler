@@ -52,6 +52,7 @@ enum class TokenKind {
   KwVectorMaskedSub,
   KwVectorMaskedMul,
   KwVectorMaskedStore,
+  KwVectorMaskedLoad,
 
   Plus,
   Minus,

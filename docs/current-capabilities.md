@@ -197,3 +197,17 @@ cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+## Phase 30S Capability Addendum
+
+`vector_masked_load` is now supported as a masked memory read with explicit passthrough:
+
+```zc
+func masked_load_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, input: ptr<i32>, passthrough: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_load out, input, m0, passthrough, n;
+  return 0;
+}
+```
+
+The direct RVV path emits masked `vle32.v ..., v0.t`, then `vmerge.vvm` with the passthrough vector. This avoids relying on masked-off destination lane behavior while the active profile uses `ta, ma`.

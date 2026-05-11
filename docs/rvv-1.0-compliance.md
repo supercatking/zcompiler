@@ -62,6 +62,7 @@ Required profile fields for RVV 1.0 tracking:
 | Compare/select unsigned greater-or-equal | `vector_select_uge` -> swapped `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Masked arithmetic predicates | `vector_mask_*` + `vector_masked_add/sub/mul` slices -> RVV compare mask, masked arithmetic, `vmerge.vvm` passthrough | objdump and QEMU |
 | Masked store | `vector_mask_*` + `vector_masked_store` -> RVV compare mask and predicated `vse32.v ..., v0.t` | objdump and QEMU |
+| Masked load | `vector_mask_*` + `vector_masked_load` -> masked `vle32.v ..., v0.t` plus `vmerge.vvm` passthrough | objdump and QEMU |
 
 ## Current Gaps
 
@@ -124,6 +125,7 @@ The current QEMU test covers the length set above for:
 - `vector_masked_sub_gt`
 - `vector_masked_mul_gt`
 - `vector_masked_store_gt`
+- `vector_masked_load_gt`
 
 ## Acceptance Rule
 
@@ -149,3 +151,7 @@ ctest --test-dir build --output-on-failure
 ## Phase 30R Compliance Note
 
 `vector_masked_store_gt` is marked as compatible with the current RVV 1.0 subset because the emitted instruction sequence uses legal RVV 1.0 predicated unit-stride store syntax. The implementation remains limited to `i32`, LMUL `m1`, unit-stride memory, and transient function-local compare masks.
+
+## Phase 30S Compliance Note
+
+`vector_masked_load_gt` is compatible with the current RVV 1.0 subset as a unit-stride `i32` masked load slice. Because the active vtype policy is `ta, ma`, the direct RVV sequence explicitly merges the masked load result with the passthrough vector instead of relying on masked-off destination lanes.

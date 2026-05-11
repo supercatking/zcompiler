@@ -370,3 +370,16 @@ vector_mask_* statement
 ```
 
 This keeps mask production target independent in the AST and makes the RISC-V backend solely responsible for choosing the RVV predicated store instruction.
+
+## Phase 30S Architecture Update
+
+Masked load complements masked store, but it must not rely on RVV masked-off destination lane preservation while the profile uses `ta, ma`:
+
+```text
+vector_masked_load out, input, m0, passthrough, n
+  -> VectorMaskedLoadStmtAST
+  -> MLIR masked transfer_read + arith.select passthrough
+  -> RVV masked vle32.v ..., v0.t
+  -> RVV vmerge.vvm passthrough
+  -> RVV vse32.v
+```

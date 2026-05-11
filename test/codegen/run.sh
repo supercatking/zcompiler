@@ -259,6 +259,21 @@ if grep -q vmerge.vvm "$tmp_dir/vector_masked_store_gt.riscv"; then
   exit 1
 fi
 
+"$zc_bin" "$source_root/examples/vector_masked_load_gt.zc" --emit-mlir \
+  > "$tmp_dir/vector_masked_load_gt.mlir"
+diff -u -B "$source_root/test/codegen/vector_masked_load_gt.mlir" \
+  "$tmp_dir/vector_masked_load_gt.mlir"
+
+"$zc_bin" "$source_root/examples/vector_masked_load_gt.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_masked_load_gt.riscv"
+diff -u "$source_root/test/codegen/vector_masked_load_gt.riscv" \
+  "$tmp_dir/vector_masked_load_gt.riscv"
+for instruction in vsetvli vle32.v vmslt.vv "v0.t" vmerge.vvm vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_masked_load_gt.riscv"
+done
+grep -q arith.andi "$tmp_dir/vector_masked_load_gt.mlir"
+grep -q arith.select "$tmp_dir/vector_masked_load_gt.mlir"
+
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" --emit-ast \
   > "$tmp_dir/complex_vector_pipeline.ast"
 for node in VectorAddStmt VectorScaleStmt VectorReduceAddStmt VectorCopyStmt; do
@@ -337,6 +352,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
   done
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_store_gt.mlir" \
     -o "$tmp_dir/vector_masked_store_gt.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_load_gt.mlir" \
+    -o "$tmp_dir/vector_masked_load_gt.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/complex_vector_pipeline.mlir" \
     -o "$tmp_dir/complex_vector_pipeline.opt.mlir"
 fi
@@ -493,6 +510,14 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
     echo "vector_masked_store objdump should not contain vmerge.vvm" >&2
     exit 1
   fi
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_masked_load_gt.riscv" \
+    -o "$tmp_dir/vector_masked_load_gt.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_masked_load_gt.o" \
+    > "$tmp_dir/vector_masked_load_gt.objdump"
+  for instruction in vsetvli vle32.v vmslt.vv "v0.t" vmerge.vvm vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_masked_load_gt.objdump"
+  done
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/complex_vector_pipeline.riscv" \
     -o "$tmp_dir/complex_vector_pipeline.o"

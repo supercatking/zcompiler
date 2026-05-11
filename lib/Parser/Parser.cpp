@@ -226,6 +226,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
                                             "vector_masked_mul");
   if (check(TokenKind::KwVectorMaskedStore))
     return parseVectorMaskedStoreStatement();
+  if (check(TokenKind::KwVectorMaskedLoad))
+    return parseVectorMaskedLoadStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -702,6 +704,55 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedStoreStatement() {
 
   return std::make_unique<VectorMaskedStoreStmtAST>(
       std::move(output), std::move(input), std::move(mask), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedLoadStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_masked_load");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_load output"))
+    return nullptr;
+
+  std::string input = parseName("expected input buffer in vector_masked_load");
+  if (input.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_load input"))
+    return nullptr;
+
+  std::string mask = parseName("expected mask name in vector_masked_load");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_masked_load mask"))
+    return nullptr;
+
+  std::string passthrough =
+      parseName("expected passthrough buffer in vector_masked_load");
+  if (passthrough.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_load passthrough"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_load statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedLoadStmtAST>(
+      std::move(output), std::move(input), std::move(mask),
+      std::move(passthrough), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseReturnStatement() {

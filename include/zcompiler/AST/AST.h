@@ -35,6 +35,7 @@ enum class StmtKind {
   VectorMask,
   VectorMaskedBinary,
   VectorMaskedStore,
+  VectorMaskedLoad,
 };
 
 enum class VectorSelectPredicate {
@@ -409,6 +410,30 @@ private:
   std::string output;
   std::string input;
   std::string mask;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedLoadStmtAST final : public StmtAST {
+public:
+  VectorMaskedLoadStmtAST(std::string output, std::string input,
+                          std::string mask, std::string passthrough,
+                          std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        mask(std::move(mask)), passthrough(std::move(passthrough)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMaskedLoad; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const std::string &getMask() const { return mask; }
+  const std::string &getPassthrough() const { return passthrough; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::string mask;
+  std::string passthrough;
   std::unique_ptr<ExprAST> length;
 };
 

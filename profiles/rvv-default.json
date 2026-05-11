@@ -58,7 +58,8 @@
       "vector_mask_uge",
       "vector_masked_sub",
       "vector_masked_mul",
-      "vector_masked_store"
+      "vector_masked_store",
+      "vector_masked_load"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [
@@ -119,7 +120,8 @@
         "vector_masked_add",
         "vector_masked_sub",
         "vector_masked_mul",
-        "vector_masked_store"
+        "vector_masked_store",
+        "vector_masked_load"
       ],
       "mask_source": "transient function-local vector_mask_* symbol",
       "current_predicates": [
@@ -134,8 +136,9 @@
         "ugt",
         "uge"
       ],
-      "direct_rvv_policy": "v0 compare mask plus masked vadd.vv/vsub.vv/vmul.vv for arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory",
+      "direct_rvv_policy": "v0 compare mask plus masked vadd.vv/vsub.vv/vmul.vv for arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory; vector_masked_load uses masked vle32.v plus vmerge.vvm passthrough because the active policy is ta, ma",
       "memory_consumers": [
+        "vector_masked_load",
         "vector_masked_store"
       ]
     }
@@ -185,7 +188,8 @@
       "vector_masked_add_uge",
       "vector_masked_sub_gt",
       "vector_masked_mul_gt",
-      "vector_masked_store_gt"
+      "vector_masked_store_gt",
+      "vector_masked_load_gt"
     ]
   },
   "toolchain": {

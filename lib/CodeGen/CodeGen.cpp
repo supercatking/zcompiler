@@ -332,6 +332,10 @@ private:
       emitVectorMaskedStore(
           static_cast<const VectorMaskedStoreStmtAST &>(statement));
       return;
+    case StmtKind::VectorMaskedLoad:
+      emitVectorMaskedLoad(
+          static_cast<const VectorMaskedLoadStmtAST &>(statement));
+      return;
     }
     result.addDiagnostic("unknown statement kind");
   }
@@ -888,6 +892,76 @@ private:
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
   }
+
+  void emitVectorMaskedLoad(const VectorMaskedLoadStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic(
+          "vector_masked_load text lowering is only available for RISC-V assembly");
+      return;
+    }
+
+    auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end()) {
+      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
+      return;
+    }
+
+    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    auto passthrough = variables.find(statement.getPassthrough());
+    auto maskLHS = variables.find(maskStatement.getLHS());
+    auto maskRHS = variables.find(maskStatement.getRHS());
+    if (output == variables.end() || input == variables.end() ||
+        passthrough == variables.end() || maskLHS == variables.end() ||
+        maskRHS == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_masked_load statement");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string address0 = nextTempRegister();
+    std::string address1 = nextTempRegister();
+    std::string address2 = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_masked_load");
+    std::string endLabel = nextLabel(".Lvector_masked_load_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
+       << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << address0 << ", " << maskLHS->second.name << ", "
+       << offset << "\n";
+    os << "  add " << address1 << ", " << maskRHS->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v1, 0(" << address0 << ")\n";
+    os << "  vle32.v v2, 0(" << address1 << ")\n";
+    emitVectorSelectCompare(maskStatement.getPredicate());
+
+    os << "  add " << address0 << ", " << input->second.name << ", "
+       << offset << "\n";
+    os << "  add " << address1 << ", " << passthrough->second.name << ", "
+       << offset << "\n";
+    os << "  add " << address2 << ", " << output->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v3, 0(" << address0 << "), v0.t\n";
+    os << "  vle32.v v4, 0(" << address1 << ")\n";
+    os << "  vmerge.vvm v5, v4, v3, v0\n";
+    os << "  vse32.v v5, 0(" << address2 << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {

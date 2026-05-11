@@ -38,6 +38,8 @@ extern int masked_mul_gt(int *mask_lhs, int *mask_rhs, int *a, int *b,
                          int *passthrough, int *out, int n);
 extern int masked_store_gt(int *mask_lhs, int *mask_rhs, int *values,
                            int *out, int n);
+extern int masked_load_gt(int *mask_lhs, int *mask_rhs, int *input,
+                          int *passthrough, int *out, int n);
 extern int select_lt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 extern int select_le(int *a, int *b, int *true_values, int *false_values,
@@ -80,6 +82,7 @@ static int run_case(int n, int factor) {{
   int passthrough[{capacity}];
   int masked_added[{capacity}];
   int masked_stored[{capacity}];
+  int masked_loaded[{capacity}];
   int true_values[{capacity}];
   int false_values[{capacity}];
   int selected_lt[{capacity}];
@@ -104,6 +107,7 @@ static int run_case(int n, int factor) {{
     passthrough[i] = -300000 - i * 19;
     masked_added[i] = 0;
     masked_stored[i] = -700000 - i * 23;
+    masked_loaded[i] = -900000 - i * 37;
     true_values[i] = 100000 + i * 13;
     false_values[i] = -100000 - i * 17;
     selected_lt[i] = 0;
@@ -125,6 +129,7 @@ static int run_case(int n, int factor) {{
 {masked_add_check}
 {masked_arithmetic_check}
 {masked_store_check}
+{masked_load_check}
 {select_lt_check}
 {select_le_check}
 {select_check}
@@ -333,6 +338,24 @@ for (int i = n; i < {capacity}; ++i) {
 ''')
 
 
+def render_masked_load_check():
+    return indent('''int masked_load_status = masked_load_gt(a, b, true_values, false_values, masked_loaded, n);
+if (masked_load_status != 0)
+  return 31;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] > b[i] ? true_values[i] : false_values[i];
+  if (bits_i32(masked_loaded[i]) != bits_i32(expected))
+    return 570 + i;
+}
+for (int i = n; i < {capacity}; ++i) {
+  int initial = -900000 - i * 37;
+  if (bits_i32(masked_loaded[i]) != bits_i32(initial))
+    return 590 + i;
+}
+
+''')
+
+
 def render_select_lt_check():
     return indent('''int select_lt_status = select_lt(a, b, true_values, false_values, selected_lt, n);
 if (select_lt_status != 0)
@@ -466,6 +489,7 @@ def render_harness(data):
         masked_add_check=render_masked_add_check(),
         masked_arithmetic_check=render_masked_arithmetic_check(),
         masked_store_check=render_masked_store_check().replace("{capacity}", str(capacity)),
+        masked_load_check=render_masked_load_check().replace("{capacity}", str(capacity)),
         select_lt_check=render_select_lt_check(),
         select_le_check=render_select_le_check(),
         select_check=render_select_check(),

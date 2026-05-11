@@ -32,7 +32,8 @@
       "examples/vector_masked_add_uge.zc",
       "examples/vector_masked_sub_gt.zc",
       "examples/vector_masked_mul_gt.zc",
-      "examples/vector_masked_store_gt.zc"
+      "examples/vector_masked_store_gt.zc",
+      "examples/vector_masked_load_gt.zc"
     ],
     "validated_kernels": [
       "vector_add",
@@ -62,7 +63,8 @@
       "vector_masked_add_uge",
       "vector_masked_sub_gt",
       "vector_masked_mul_gt",
-      "vector_masked_store_gt"
+      "vector_masked_store_gt",
+      "vector_masked_load_gt"
     ],
     "lengths": [
       0,
@@ -217,6 +219,11 @@
         "kernel": "vector_masked_store_gt",
         "function": "masked_store_gt",
         "check": "masked_stored[i] is updated only when a[i] > b[i]; false lanes and tails preserve previous memory contents"
+      },
+      {
+        "kernel": "vector_masked_load_gt",
+        "function": "masked_load_gt",
+        "check": "masked_loaded[i] == (a[i] > b[i] ? true_values[i] : false_values[i]) and tails preserve previous memory contents"
       }
     ],
     "integer_semantics": {

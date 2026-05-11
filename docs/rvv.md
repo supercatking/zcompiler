@@ -47,6 +47,7 @@ zc vector source syntax
 - `zc.vector_masked_sub`
 - `zc.vector_masked_mul`
 - `zc.vector_masked_store`
+- `zc.vector_masked_load`
 
 ## Initial RVV Assembly Goals
 
@@ -63,6 +64,7 @@ Target RVV instruction families:
 - `vmerge.vvm`
 - masked arithmetic using `v0.t`
 - predicated stores using `vse32.v ..., v0.t`
+- masked loads using `vle32.v ..., v0.t` plus explicit passthrough merge
 
 ## Validation Plan
 
@@ -157,6 +159,7 @@ vector_masked_add out, a, b, m0, passthrough, n;
 vector_masked_sub out, a, b, m0, passthrough, n;
 vector_masked_mul out, a, b, m0, passthrough, n;
 vector_masked_store out, values, m0, n;
+vector_masked_load out, input, m0, passthrough, n;
 ```
 
 Current direct RVV reference mappings:
@@ -178,6 +181,7 @@ Current direct RVV reference mappings:
 - `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_mask_*` + `vector_masked_add/sub/mul`: compare into `v0`, masked `vadd.vv` / `vsub.vv` / `vmul.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_mask_*` + `vector_masked_store`: compare into `v0`, `vse32.v ..., v0.t` to preserve false lanes in memory
+- `vector_mask_*` + `vector_masked_load`: compare into `v0`, masked `vle32.v ..., v0.t`, `vmerge.vvm` passthrough, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -261,3 +265,14 @@ vector_masked_store out, values, m0, n;
 ```
 
 Semantics: active lanes where `m0` is true write `values[i]` into `out[i]`; false lanes keep the previous memory value. Tail lanes outside `n` are also preserved. MLIR lowers this through `arith.andi` combining the tail mask and compare mask before `vector.transfer_write`. Direct RVV uses a compare into `v0` plus predicated `vse32.v ..., v0.t`.
+
+## Phase 30S Masked Load
+
+Phase 30S adds the matching masked load consumer:
+
+```zc
+vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_masked_load out, input, m0, passthrough, n;
+```
+
+Semantics: active true lanes read `input[i]`; active false lanes write `passthrough[i]`; tail lanes outside `n` preserve the existing output memory. Direct RVV uses masked `vle32.v ..., v0.t`, then `vmerge.vvm` to make false-lane passthrough explicit under the current `ta, ma` policy.

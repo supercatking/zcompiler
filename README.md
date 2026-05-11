@@ -41,7 +41,7 @@ tutorial. It currently supports:
 - Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
 - Target-independent compare/select syntax for signed and unsigned `i32` predicates.
-- Transient mask syntax for signed/unsigned compare predicates plus `vector_masked_add/sub/mul/store`.
+- Transient mask syntax for signed/unsigned compare predicates plus `vector_masked_add/sub/mul/store/load`.
 - Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
@@ -51,7 +51,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector copy, vector scale, and vector
   multiply.
 - Direct RVV reference assembly for vector reduce add.
-- Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, and masked store slices.
+- Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -183,6 +183,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -231,3 +232,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30p-mask-predicates.md](docs/phase30p-mask-predicates.md)
 - [docs/phase30q-masked-arithmetic.md](docs/phase30q-masked-arithmetic.md)
 - [docs/phase30r-masked-store.md](docs/phase30r-masked-store.md)
+- [docs/phase30s-masked-load.md](docs/phase30s-masked-load.md)

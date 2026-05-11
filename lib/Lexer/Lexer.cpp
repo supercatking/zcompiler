@@ -268,6 +268,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorMaskedMul;
   else if (text == "vector_masked_store")
     kind = TokenKind::KwVectorMaskedStore;
+  else if (text == "vector_masked_load")
+    kind = TokenKind::KwVectorMaskedLoad;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

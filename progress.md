@@ -2084,3 +2084,28 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+## Phase 30S: Masked Load
+
+### Execution Target
+
+Add the masked load counterpart to masked store while respecting the current RVV `ta, ma` policy.
+
+### Execution Summary
+
+- Added `vector_masked_load out, input, m0, passthrough, n;`.
+- Added `VectorMaskedLoadStmtAST`, lexer/parser support, AST dump, MLIR generation, and direct RVV reference assembly support.
+- MLIR combines tail and predicate masks for the input transfer read, then uses `arith.select` to choose input or passthrough lanes.
+- Direct RVV emits masked `vle32.v ..., v0.t`, then `vmerge.vvm` with passthrough before storing to output.
+- Added example, goldens, host correctness, objdump checks, QEMU manifest/harness integration, profile updates, and documentation.
+
+### Execution Result
+
+Completed for the current `i32`, `e32,m1`, unit-stride masked load slice. Full RVV 1.0 compatibility remains incomplete.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

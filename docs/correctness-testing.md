@@ -204,6 +204,7 @@ python3 -m json.tool build/correctness/vector_masked_add_gt_host.json
 python3 -m json.tool build/correctness/vector_masked_add_predicates_host.json
 python3 -m json.tool build/correctness/vector_masked_arithmetic_gt_host.json
 python3 -m json.tool build/correctness/vector_masked_store_gt_host.json
+python3 -m json.tool build/correctness/vector_masked_load_gt_host.json
 ```
 
 Phase 30K adds the equality variant harness:
@@ -299,4 +300,20 @@ Run artifact inspection:
 
 ```bash
 python3 -m json.tool build/correctness/vector_masked_store_gt_host.json
+```
+
+## Phase 30S Masked Load Host Harness
+
+The masked load harness is:
+
+```text
+test/correctness/vector_masked_load_gt_host.py
+```
+
+It checks that true lanes use input values, false lanes use passthrough values, and output tail elements outside `n` stay unchanged. The RVV text check requires masked `vle32.v` with `v0.t`, `vmerge.vvm`, and `vse32.v`.
+
+The test writes:
+
+```text
+build/correctness/vector_masked_load_gt_host.json
 ```

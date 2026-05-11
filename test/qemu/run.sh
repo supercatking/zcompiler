@@ -83,6 +83,8 @@ for op in sub mul; do
 done
 "$zc_bin" "$source_root/examples/vector_masked_store_gt.zc" \
   --emit-riscv-asm > "$tmp_dir/vector_masked_store_gt.s"
+"$zc_bin" "$source_root/examples/vector_masked_load_gt.zc" \
+  --emit-riscv-asm > "$tmp_dir/vector_masked_load_gt.s"
 for predicate in lt le gt ge eq ne ult ule ugt uge; do
   "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" \
     --emit-riscv-asm > "$tmp_dir/vector_select_${predicate}.s"
@@ -96,6 +98,7 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/vector_masked_sub_gt.s" \
   "$tmp_dir/vector_masked_mul_gt.s" \
   "$tmp_dir/vector_masked_store_gt.s" \
+  "$tmp_dir/vector_masked_load_gt.s" \
   "$tmp_dir/vector_select_lt.s" \
   "$tmp_dir/vector_select_le.s" \
   "$tmp_dir/vector_select_gt.s" \

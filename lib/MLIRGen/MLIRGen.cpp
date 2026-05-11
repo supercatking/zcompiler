@@ -231,6 +231,10 @@ private:
       emitVectorMaskedStore(
           static_cast<const VectorMaskedStoreStmtAST &>(statement));
       return;
+    case StmtKind::VectorMaskedLoad:
+      emitVectorMaskedLoad(
+          static_cast<const VectorMaskedLoadStmtAST &>(statement));
+      return;
     }
   }
 
@@ -603,6 +607,55 @@ private:
 
     Value inputVector = emitVectorRead(input->second, access);
     emitVectorWrite(inputVector, output->second, writeAccess);
+  }
+
+  void emitVectorMaskedLoad(const VectorMaskedLoadStmtAST &statement) {
+    auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end()) {
+      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
+      return;
+    }
+
+    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    auto passthrough = variables.find(statement.getPassthrough());
+    auto maskLHS = variables.find(maskStatement.getLHS());
+    auto maskRHS = variables.find(maskStatement.getRHS());
+    if (output == variables.end() || input == variables.end() ||
+        passthrough == variables.end() || maskLHS == variables.end() ||
+        maskRHS == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_masked_load statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value maskLHSVector = emitVectorRead(maskLHS->second, access);
+    Value maskRHSVector = emitVectorRead(maskRHS->second, access);
+    Value vectorMask = builder.create<arith::CmpIOp>(
+        access.loc, getMLIRPredicate(maskStatement.getPredicate()),
+        maskLHSVector, maskRHSVector);
+    Value combinedMask =
+        builder.create<arith::AndIOp>(access.loc, access.mask, vectorMask);
+    MaskedVectorAccess readAccess = access;
+    readAccess.mask = combinedMask;
+
+    Value inputVector = emitVectorRead(input->second, readAccess);
+    Value passthroughVector = emitVectorRead(passthrough->second, access);
+    Value selected = builder.create<arith::SelectOp>(
+        access.loc, vectorMask, inputVector, passthroughVector);
+    emitVectorWrite(selected, output->second, access);
   }
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {

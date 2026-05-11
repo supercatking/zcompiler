@@ -79,6 +79,11 @@ done
 diff -u "$source_root/test/lexer/vector_masked_store_gt.tokens" \
   "$tmp_dir/vector_masked_store_gt.tokens"
 
+"$zc_bin" "$source_root/examples/vector_masked_load_gt.zc" --emit-tokens \
+  > "$tmp_dir/vector_masked_load_gt.tokens"
+diff -u "$source_root/test/lexer/vector_masked_load_gt.tokens" \
+  "$tmp_dir/vector_masked_load_gt.tokens"
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-tokens \
   > "$tmp_dir/print_i32.tokens"
 diff -u "$source_root/test/lexer/print_i32.tokens" \
