@@ -160,6 +160,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
 /home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ```
 
 Planning documents for the accelerator direction:
@@ -178,3 +179,4 @@ Planning documents for the accelerator direction:
 - [docs/phase26-rvv-toolchain.md](docs/phase26-rvv-toolchain.md)
 - [docs/phase26b-riscv-llvm-build.md](docs/phase26b-riscv-llvm-build.md)
 - [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md)
+- [docs/phase28c-qemu-rvv-execution.md](docs/phase28c-qemu-rvv-execution.md)

@@ -1477,3 +1477,38 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/print_i32.
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/print_i32_test
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 28C: QEMU RVV Execution Validation
+
+### Execution Target
+
+Add automated QEMU validation so zcompiler-generated RISC-V64 binaries are
+executed, not only assembled.
+
+### Execution Summary
+
+- Added `test/qemu/run.sh`.
+- Added a `qemu-riscv64` CTest target.
+- The test uses:
+  - `/home/qemu/qemu/build-riscv64-user/qemu-riscv64` by default
+  - `ZCOMPILER_QEMU_RISCV64` override when needed
+- The test validates `examples/print_i32.zc` by checking:
+  - stdout is `220`
+  - QEMU process exit status is `220`
+- The test validates `examples/complex_vector_pipeline.zc` by linking the
+  generated RVV assembly with a C correctness harness and checking QEMU exit
+  status `0`.
+- Added [docs/phase28c-qemu-rvv-execution.md](docs/phase28c-qemu-rvv-execution.md).
+- Updated README and current capability docs.
+
+### Execution Result
+
+Completed for local QEMU-backed RVV execution validation.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

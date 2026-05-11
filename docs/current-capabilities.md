@@ -44,6 +44,10 @@ dialect 组合，使用 `vector.create_mask` 处理尾部长度，因此 `n` 不
 等 RVV 指令，并可以用 `riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d`
 汇编成 `.o` 文件。
 
+在当前 WSL 环境中，`/home/qemu/qemu/build-riscv64-user/qemu-riscv64`
+已经可以运行 zcompiler 生成并链接出的 RISC-V64 Linux ELF。CTest 中的
+`qemu-riscv64` target 会验证 `print_i32` stdout 和 RVV pipeline 运行结果。
+
 ## 当前最复杂稳定示例
 
 示例源码：
@@ -96,8 +100,6 @@ riscv64-linux-gnu-objdump -d /tmp/complex_vector_pipeline.o
 
 - 控制流程序可以走 AST、LLVM IR、部分 RISC-V 文本路径，但 in-memory
   MLIRGen 对 `if/while` 仍是后续 phase 工作。
-- 当前 WSL 环境没有 `qemu-riscv64`，所以现在能做到“编译并汇编成 RISC-V
-  object”，还不是在本机直接运行 RVV binary。
 - formal MLIR/LLVM 到 RVV machine code 的路径仍受本地 LLVM/MLIR 工具链限制：
   `/home/zyz/mlir/build/bin/llc` 当前没有 RISC-V target。直接 RVV reference
   backend 是当前可验证的 accelerator 输出路径。
