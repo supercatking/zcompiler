@@ -197,3 +197,12 @@ Current committed subset:
 - unit-stride memory
 - `ta, ma` direct assembly policy
 - QEMU-tested lengths: `0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17`
+
+
+## Mask Architecture
+
+First-class mask architecture is now defined in
+[phase30n-mask-architecture.md](phase30n-mask-architecture.md). The current
+compiler does not yet implement `vector_mask_*` or masked arithmetic statements;
+the next implementation phase should add the first fused mask producer plus
+masked add path.

@@ -1946,3 +1946,28 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 30N: First-Class Mask Architecture
+
+### Execution Target
+
+Define the source, AST, MLIR, RVV, and validation contract for first-class mask
+values before implementation.
+
+### Execution Summary
+
+- Chose transient function-local mask symbols as the first source-level contract.
+- Deferred memory-backed RVV mask buffers because bit-packed mask layout would broaden the phase.
+- Planned `vector_mask_gt` plus `vector_masked_add` as the first implementation slice.
+- Documented expected AST nodes, MLIR lowering shape, direct RVV lowering shape, validation matrix, and open design points.
+
+### Execution Result
+
+Architecture completed. Implementation moves to Phase 30O.
+
+Validated commands:
+
+```bash
+git diff --check
+```

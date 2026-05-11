@@ -219,3 +219,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30k-vector-select-predicates.md](docs/phase30k-vector-select-predicates.md)
 - [docs/phase30l-signed-select-predicates.md](docs/phase30l-signed-select-predicates.md)
 - [docs/phase30m-unsigned-select-predicates.md](docs/phase30m-unsigned-select-predicates.md)
+- [docs/phase30n-mask-architecture.md](docs/phase30n-mask-architecture.md)
