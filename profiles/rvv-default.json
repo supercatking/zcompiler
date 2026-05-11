@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "profile_id": "rvv64gcv_i32_m1_default",
   "description": "Default development profile for zcompiler RVV vector kernel experiments.",
   "target": {
@@ -9,12 +9,16 @@
   },
   "rvv": {
     "enabled": true,
+    "spec_version": "1.0",
     "minimum_extension": "V",
+    "required_base_isa": "RV64GCV",
     "supported_element_width_bits": [8, 16, 32, 64],
     "default_element_width_bits": 32,
     "default_lmul": "m1",
+    "supported_lmul": ["m1"],
     "tail_policy": "ta",
     "mask_policy": "ma",
+    "minimum_vlen_bits_for_current_kernels": 32,
     "preferred_vector_length_strategy": "vsetvli from remaining element count"
   },
   "current_compiler_policy": {
@@ -25,10 +29,25 @@
       "vector_reduce_add"
     ],
     "source_element_type": "i32",
+    "source_element_width_bits": [32],
+    "source_memory_access": "unit-stride i32 buffers",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
-    "formal_mlir_llvm_rvv_pipeline": "blocked_at_riscv_llc_toolchain_mismatch"
+    "formal_mlir_llvm_rvv_pipeline": "blocked_at_riscv_llc_toolchain_mismatch",
+    "compliance_status": "RVV 1.0 compatible subset, not full RVV 1.0 coverage"
+  },
+  "current_execution_validation": {
+    "emulator": "/home/qemu/qemu/build-riscv64-user/qemu-riscv64",
+    "emulator_cpu": "max",
+    "qemu_ctest_target": "qemu-riscv64",
+    "tested_lengths": [0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17],
+    "validated_kernels": [
+      "vector_add",
+      "vector_copy",
+      "vector_scale",
+      "vector_reduce_add"
+    ]
   },
   "toolchain": {
     "mlir_build": "/home/zyz/mlir/build",

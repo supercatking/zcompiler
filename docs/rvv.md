@@ -58,7 +58,9 @@ Target RVV instruction families:
 
 - Add scalar and vector reference tests.
 - Use generated LLVM IR or assembly inspection for the first RVV checks.
-- Add QEMU or Spike execution only after the scalar RISC-V path is stable.
+- Keep QEMU execution validation in CTest for emitted RISC-V64/RVV binaries.
+- Track RVV 1.0 coverage in
+  [rvv-1.0-compliance.md](rvv-1.0-compliance.md).
 
 ## Phase Roadmap
 
@@ -78,9 +80,10 @@ The current machine-readable profile is:
 profiles/rvv-default.json
 ```
 
-It records the current `rv64gcv` development target, default `i32` vector-add
-policy, MLIR tail-mask lowering shape, direct RVV reference backend choice, and
-the formal MLIR/LLVM RVV lowering blocker.
+It records the current `rv64gcv` development target, RVV 1.0 target spec,
+default `i32` vector-add policy, MLIR tail-mask lowering shape, direct RVV
+reference backend choice, QEMU validation matrix, and the formal MLIR/LLVM RVV
+lowering blocker.
 
 The profile stays separate from parser and AST code. Source programs express
 vector intent; the target profile guides lowering, benchmark metadata, and
@@ -119,3 +122,20 @@ Current direct RVV reference mappings:
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
+
+## RVV 1.0 Compliance Status
+
+The current compiler should be treated as an RVV 1.0 compatible subset, not a
+complete RVV 1.0 implementation. The tracked compliance matrix is:
+
+```text
+docs/rvv-1.0-compliance.md
+```
+
+Current committed subset:
+
+- `SEW=32`
+- `LMUL=m1`
+- unit-stride memory
+- `ta, ma` direct assembly policy
+- QEMU-tested lengths: `0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17`

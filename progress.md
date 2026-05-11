@@ -1512,3 +1512,37 @@ cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 29A: RVV 1.0 Compliance Baseline
+
+### Execution Target
+
+Make the RVV 1.0 compatibility goal explicit and testable without claiming full
+RVV 1.0 coverage before the compiler supports it.
+
+### Execution Summary
+
+- Updated `profiles/rvv-default.json` to schema version 2.
+- Added RVV profile fields for:
+  - `spec_version: 1.0`
+  - `required_base_isa: RV64GCV`
+  - supported LMUL for the current compiler subset
+  - current compiler compliance status
+  - QEMU execution validation matrix
+- Added [docs/rvv-1.0-compliance.md](docs/rvv-1.0-compliance.md).
+- Updated RVV, accelerator-profile, README, and plan documents.
+- Extended `test/qemu/run.sh` so the complex RVV pipeline is executed across
+  lengths `0`, `1`, `2`, `3`, `4`, `5`, `7`, `8`, `9`, `16`, and `17`.
+
+### Execution Result
+
+Completed as the baseline RVV 1.0 compliance tracking phase.
+
+Validated commands:
+
+```bash
+python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

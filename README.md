@@ -166,6 +166,7 @@ ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
+- [docs/rvv-1.0-compliance.md](docs/rvv-1.0-compliance.md)
 - [docs/current-capabilities.md](docs/current-capabilities.md)
 - [docs/accelerator-profile.md](docs/accelerator-profile.md)
 - [docs/correctness-testing.md](docs/correctness-testing.md)

@@ -48,6 +48,9 @@ dialect 组合，使用 `vector.create_mask` 处理尾部长度，因此 `n` 不
 已经可以运行 zcompiler 生成并链接出的 RISC-V64 Linux ELF。CTest 中的
 `qemu-riscv64` target 会验证 `print_i32` stdout 和 RVV pipeline 运行结果。
 
+当前 RVV 状态是 RVV 1.0 compatible subset，而不是 full RVV 1.0 coverage。
+具体合规矩阵见 [rvv-1.0-compliance.md](rvv-1.0-compliance.md)。
+
 ## 当前最复杂稳定示例
 
 示例源码：

@@ -17,7 +17,9 @@ For the current RVV work, the important assumptions include:
 - RISC-V target triple.
 - `march` and `mabi`.
 - RVV element width and LMUL policy.
+- RVV spec version.
 - Tail and mask policy.
+- QEMU execution validation coverage.
 - Whether the compiler is using the direct RVV reference backend or the formal
   MLIR/LLVM path.
 - Toolchain versions that generated the artifacts.
@@ -29,13 +31,28 @@ For the current RVV work, the important assumptions include:
 - `riscv64-unknown-elf`
 - `rv64gcv`
 - `lp64d`
+- RVV spec version: `1.0`
 - default vector element type: `i32`
+- current compiler vector element width: `32`
+- current LMUL support: `m1`
 - current source operations: `vector_add`, `vector_copy`, `vector_scale`,
   `vector_reduce_add`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly
+- current execution validation: `qemu-riscv64` CTest over lengths `0`, `1`,
+  `2`, `3`, `4`, `5`, `7`, `8`, `9`, `16`, and `17`
 - formal MLIR/LLVM RVV path: blocked at RISC-V `llc` toolchain mismatch
+
+## RVV 1.0 Compliance Tracking
+
+The profile is intentionally explicit that the current compiler is an RVV 1.0
+compatible subset rather than a full RVV 1.0 implementation. The detailed
+support matrix and acceptance rule live in:
+
+```text
+docs/rvv-1.0-compliance.md
+```
 
 ## Usage
 

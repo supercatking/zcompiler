@@ -638,6 +638,51 @@ One vector-kernel optimization proposal is recorded with profile, tests,
 generated IR/assembly, and accept/reject result.
 ```
 
+## Phase 28: Executable RVV Demo and Runtime Output
+
+Goal: make zcompiler-generated RISC-V64/RVV programs observable and executable
+under QEMU.
+
+Completed slices:
+
+- Phase 28A: current capability demo in `examples/complex_vector_pipeline.zc`.
+- Phase 28B: built-in `print_i32 expr;` RISC-V runtime output.
+- Phase 28C: `qemu-riscv64` CTest execution validation.
+
+Exit criteria:
+
+```text
+A zcompiler-generated RISC-V64 binary can print a value and RVV kernels can run
+under QEMU with checked results.
+```
+
+## Phase 29: RVV 1.0 Compliance Tracking
+
+Goal: turn the current RVV subset into a tracked RVV 1.0 compatibility program.
+
+Phase 29A establishes the compliance baseline:
+
+- `profiles/rvv-default.json` records RVV spec version `1.0`.
+- `docs/rvv-1.0-compliance.md` records supported features, gaps, and acceptance
+  rules.
+- QEMU validation covers lengths `0`, `1`, `2`, `3`, `4`, `5`, `7`, `8`, `9`,
+  `16`, and `17`.
+
+Planned slices:
+
+- Phase 29B: widen source/kernel contracts beyond the current `i32`-only
+  surface.
+- Phase 29C: introduce LMUL policy and tests beyond the current `m1` subset.
+- Phase 29D: add negative-value and overflow-defined test cases for integer
+  kernels where semantics are well defined.
+
+Exit criteria:
+
+```text
+Every supported RVV feature has a profile entry, compliance matrix row,
+assembly/objdump check, and QEMU execution check.
+```
+
 ## Engineering Rules For All Future Phases
 
 - Think through the core architecture first and document it before coding.
@@ -653,9 +698,14 @@ generated IR/assembly, and accept/reject result.
 
 ## Immediate Next Tasks
 
-The next implementation steps after Phase 26B build-plan scripting:
+The next implementation steps after Phase 29A compliance baseline:
 
-1. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
-   ready for a larger local LLVM build.
-2. Re-run the Phase26 diagnostic and formal RVV lowering probe against that
-   toolchain.
+1. Add `vector_mul c, a, b, n;` as the next simple arithmetic kernel.
+2. Add a generated QEMU correctness harness format so new kernels do not need
+   hand-written C harness edits.
+3. Add negative-input tests for add/copy/scale/reduce with explicit signed
+   wrapping policy documentation.
+4. Start Phase 29B by deciding whether the source language exposes element
+   width in syntax or through typed buffers first.
+5. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
+   ready for the larger same-version RISC-V-enabled LLVM/MLIR build.

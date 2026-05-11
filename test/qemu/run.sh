@@ -44,18 +44,16 @@ extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
 
-int main(void) {
-  int a[9];
-  int b[9];
-  int tmp[9] = {0};
-  int out[9] = {0};
-  int copied[9] = {0};
-  int n = 9;
-  int factor = 3;
+static int run_case(int n, int factor) {
+  int a[17];
+  int b[17];
+  int tmp[17] = {0};
+  int out[17] = {0};
+  int copied[17] = {0};
 
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0; i < 17; ++i) {
     a[i] = i + 1;
-    b[i] = 10 + i;
+    b[i] = 10 + i * 2;
   }
 
   int sum = complex_vector_pipeline(a, b, tmp, out, n, factor);
@@ -81,6 +79,20 @@ int main(void) {
   }
   if (copy_sum != expected_copy_sum)
     return 2;
+
+  return 0;
+}
+
+int main(void) {
+  int lengths[] = {0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17};
+  int count = sizeof(lengths) / sizeof(lengths[0]);
+
+  for (int i = 0; i < count; ++i) {
+    int factor = 2 + (i % 3);
+    int status = run_case(lengths[i], factor);
+    if (status != 0)
+      return 100 + i;
+  }
 
   return 0;
 }
