@@ -1818,3 +1818,28 @@ Validated commands:
 ```bash
 git diff --check
 ```
+
+
+## Phase 30J: Vector Select Greater-Than
+
+### Execution Target
+
+Implement the first RVV predicate/select kernel end to end.
+
+### Execution Summary
+
+- Added `vector_select_gt out, lhs, rhs, true_values, false_values, n;`.
+- Added lexer keyword, AST node, parser support, MLIR vector lowering, and direct RVV assembly.
+- Added golden lexer/parser/codegen tests, host correctness checks, objdump checks, and QEMU runtime validation.
+- Updated RVV profile, compliance matrix, correctness docs, README, and plan.
+
+### Execution Result
+
+Completed for signed `i32` greater-than vector select in the current `e32,m1` unit-stride subset.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

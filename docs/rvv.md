@@ -41,7 +41,7 @@ zc vector source syntax
 - `zc.vector_scale`
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
-- `zc.vector_select_gt` (planned compare/select predicate kernel)
+- `zc.vector_select_gt`
 
 ## Initial RVV Assembly Goals
 
@@ -54,8 +54,8 @@ Target RVV instruction families:
 - `vmul.vx`
 - `vmul.vv`
 - `vredsum.vs`
-- `vmslt.vv` (planned compare mask)
-- `vmerge.vvm` (planned masked select)
+- `vmslt.vv`
+- `vmerge.vvm`
 
 ## Validation Plan
 
@@ -115,6 +115,7 @@ vector_copy c, a, n;
 vector_scale c, a, factor, n;
 vector_mul c, a, b, n;
 vector_reduce_add sum, a, n;
+vector_select_gt out, lhs, rhs, true_values, false_values, n;
 ```
 
 Current direct RVV reference mappings:
@@ -124,21 +125,22 @@ Current direct RVV reference mappings:
 - `vector_scale`: `vle32.v`, `vmul.vx`, `vse32.v`
 - `vector_mul`: `vle32.v`, `vmul.vv`, `vse32.v`
 - `vector_reduce_add`: `vle32.v`, `vmv.s.x`, `vredsum.vs`, `vmv.x.s`
+- `vector_select_gt`: `vle32.v`, `vmslt.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
 
 
-## Planned Compare/Select Kernel
+## Compare/Select Kernel
 
-Phase 30I defines the first predicate-oriented source operation:
+Phase 30J implements the first predicate-oriented source operation:
 
 ```zc
 vector_select_gt out, lhs, rhs, true_values, false_values, n;
 ```
 
 It lowers to a signed vector compare plus select. The direct RVV reference path
-will use `vmslt.vv v0, rhs, lhs` to form the greater-than mask and
+uses `vmslt.vv v0, rhs, lhs` to form the greater-than mask and
 `vmerge.vvm` to choose between the true and false vectors.
 
 ## RVV 1.0 Compliance Status

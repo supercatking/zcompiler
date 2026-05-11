@@ -124,6 +124,16 @@ void VectorReduceAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorSelectGTStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorSelectGTStmt output=" << output << " lhs=" << lhs
+     << " rhs=" << rhs << " true=" << trueValues
+     << " false=" << falseValues << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "ReturnStmt\n";

@@ -71,11 +71,14 @@ fi
   --emit-riscv-asm > "$tmp_dir/complex_vector_pipeline.s"
 "$zc_bin" "$source_root/examples/vector_mul.zc" \
   --emit-riscv-asm > "$tmp_dir/vector_mul.s"
+"$zc_bin" "$source_root/examples/vector_select_gt.zc" \
+  --emit-riscv-asm > "$tmp_dir/vector_select_gt.s"
 python3 "$source_root/test/qemu/harness.py" "$manifest" \
   "$tmp_dir/complex_vector_pipeline_harness.c"
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/complex_vector_pipeline.s" \
   "$tmp_dir/vector_mul.s" \
+  "$tmp_dir/vector_select_gt.s" \
   "$tmp_dir/complex_vector_pipeline_harness.c" \
   -o "$tmp_dir/complex_vector_pipeline"
 

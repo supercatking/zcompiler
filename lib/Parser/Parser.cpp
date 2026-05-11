@@ -155,6 +155,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorMulStatement();
   if (check(TokenKind::KwVectorReduceAdd))
     return parseVectorReduceAddStatement();
+  if (check(TokenKind::KwVectorSelectGT))
+    return parseVectorSelectGTStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -353,6 +355,55 @@ std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
 
   return std::make_unique<VectorReduceAddStmtAST>(
       std::move(result), std::move(input), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorSelectGTStatement() {
+  advance();
+
+  auto parseBuffer = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output = parseBuffer("expected output buffer after 'vector_select_gt'");
+  if (output.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_select_gt output"))
+    return nullptr;
+
+  std::string lhs = parseBuffer("expected left compare buffer in vector_select_gt");
+  if (lhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_select_gt left compare input"))
+    return nullptr;
+
+  std::string rhs = parseBuffer("expected right compare buffer in vector_select_gt");
+  if (rhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_select_gt right compare input"))
+    return nullptr;
+
+  std::string trueValues = parseBuffer("expected true-value buffer in vector_select_gt");
+  if (trueValues.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_select_gt true-value input"))
+    return nullptr;
+
+  std::string falseValues = parseBuffer("expected false-value buffer in vector_select_gt");
+  if (falseValues.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_select_gt false-value input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_select_gt statement"))
+    return nullptr;
+
+  return std::make_unique<VectorSelectGTStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs),
+      std::move(trueValues), std::move(falseValues), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseStoreStatement() {

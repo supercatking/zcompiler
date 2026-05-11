@@ -31,6 +31,7 @@ enum class StmtKind {
   VectorScale,
   VectorMul,
   VectorReduceAdd,
+  VectorSelectGT,
 };
 
 class ParameterAST final {
@@ -279,6 +280,32 @@ public:
 private:
   std::string result;
   std::string input;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorSelectGTStmtAST final : public StmtAST {
+public:
+  VectorSelectGTStmtAST(std::string output, std::string lhs, std::string rhs,
+                        std::string trueValues, std::string falseValues,
+                        std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        trueValues(std::move(trueValues)), falseValues(std::move(falseValues)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorSelectGT; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const std::string &getTrueValues() const { return trueValues; }
+  const std::string &getFalseValues() const { return falseValues; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
+  std::string trueValues;
+  std::string falseValues;
   std::unique_ptr<ExprAST> length;
 };
 

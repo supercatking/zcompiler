@@ -156,6 +156,8 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_gt.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -194,3 +196,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30g-qemu-harness-generator.md](docs/phase30g-qemu-harness-generator.md)
 - [docs/phase30h-qemu-check-templates.md](docs/phase30h-qemu-check-templates.md)
 - [docs/phase30i-vector-compare-select-design.md](docs/phase30i-vector-compare-select-design.md)
+- [docs/phase30j-vector-select-gt.md](docs/phase30j-vector-select-gt.md)

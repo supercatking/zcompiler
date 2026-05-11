@@ -216,6 +216,10 @@ private:
       emitVectorReduceAdd(
           static_cast<const VectorReduceAddStmtAST &>(statement));
       return;
+    case StmtKind::VectorSelectGT:
+      emitVectorSelectGT(
+          static_cast<const VectorSelectGTStmtAST &>(statement));
+      return;
     }
   }
 
@@ -407,6 +411,42 @@ private:
     Value product =
         builder.create<arith::MulIOp>(access.loc, lhsVector, rhsVector);
     emitVectorWrite(product, output->second, access);
+  }
+
+  void emitVectorSelectGT(const VectorSelectGTStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    auto trueValues = variables.find(statement.getTrueValues());
+    auto falseValues = variables.find(statement.getFalseValues());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end() || trueValues == variables.end() ||
+        falseValues == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_select_gt statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value lhsVector = emitVectorRead(lhs->second, access);
+    Value rhsVector = emitVectorRead(rhs->second, access);
+    Value trueVector = emitVectorRead(trueValues->second, access);
+    Value falseVector = emitVectorRead(falseValues->second, access);
+    Value mask = builder.create<arith::CmpIOp>(
+        access.loc, arith::CmpIPredicate::sgt, lhsVector, rhsVector);
+    Value selected =
+        builder.create<arith::SelectOp>(access.loc, mask, trueVector, falseVector);
+    emitVectorWrite(selected, output->second, access);
   }
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {

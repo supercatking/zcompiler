@@ -220,6 +220,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorMul;
   else if (text == "vector_reduce_add")
     kind = TokenKind::KwVectorReduceAdd;
+  else if (text == "vector_select_gt")
+    kind = TokenKind::KwVectorSelectGT;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

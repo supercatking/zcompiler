@@ -700,11 +700,12 @@ Completed slices:
 - Phase 30G: generated QEMU C harness from validated manifest data.
 - Phase 30H: split QEMU check rendering into per-family generator units.
 - Phase 30I: compare/select source syntax and RVV predicate lowering design.
+- Phase 30J: `vector_select_gt` through lexer, parser, MLIR, RVV assembly, host correctness, and QEMU.
 
 Planned slices:
 
-- Phase 30J: implement `vector_select_gt` through lexer, parser, MLIR, RVV assembly, and QEMU.
 - Phase 29B: source element-width contract for RVV kernels.
+- Phase 30K: broaden compare/select predicates beyond signed greater-than.
 
 Exit criteria:
 
@@ -731,9 +732,9 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Implement Phase 30J: `vector_select_gt` end to end with QEMU checks.
-2. Start Phase 29B by deciding whether the source language exposes element
+1. Start Phase 29B by deciding whether the source language exposes element
    width in syntax or through typed buffers first.
-3. Extend predicate support beyond greater-than select once the first path is stable.
+2. Start Phase 30K by adding compare/select predicate variants or first-class mask syntax.
+3. Continue toward LMUL and memory-form coverage after the source type contract is stable.
 5. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.

@@ -43,6 +43,11 @@ diff -u "$source_root/test/lexer/vector_mul.tokens" \
 diff -u "$source_root/test/lexer/vector_reduce_add.tokens" \
   "$tmp_dir/vector_reduce_add.tokens"
 
+"$zc_bin" "$source_root/examples/vector_select_gt.zc" --emit-tokens \
+  > "$tmp_dir/vector_select_gt.tokens"
+diff -u "$source_root/test/lexer/vector_select_gt.tokens" \
+  "$tmp_dir/vector_select_gt.tokens"
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-tokens \
   > "$tmp_dir/print_i32.tokens"
 diff -u "$source_root/test/lexer/print_i32.tokens" \

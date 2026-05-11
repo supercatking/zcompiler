@@ -42,6 +42,7 @@ private:
   std::unique_ptr<StmtAST> parseVectorScaleStatement();
   std::unique_ptr<StmtAST> parseVectorMulStatement();
   std::unique_ptr<StmtAST> parseVectorReduceAddStatement();
+  std::unique_ptr<StmtAST> parseVectorSelectGTStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();

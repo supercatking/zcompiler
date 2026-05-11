@@ -51,6 +51,11 @@ diff -u "$source_root/test/parser/vector_mul.ast" \
 diff -u "$source_root/test/parser/vector_reduce_add.ast" \
   "$tmp_dir/vector_reduce_add.ast"
 
+"$zc_bin" "$source_root/examples/vector_select_gt.zc" --emit-ast \
+  > "$tmp_dir/vector_select_gt.ast"
+diff -u "$source_root/test/parser/vector_select_gt.ast" \
+  "$tmp_dir/vector_select_gt.ast"
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-ast \
   > "$tmp_dir/print_i32.ast"
 diff -u "$source_root/test/parser/print_i32.ast" "$tmp_dir/print_i32.ast"

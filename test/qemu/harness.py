@@ -12,6 +12,8 @@ extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
 extern int vmul(int *a, int *b, int *c, int n);
+extern int select_gt(int *a, int *b, int *true_values, int *false_values,
+                     int *out, int n);
 
 static uint32_t bits_i32(int value) {{ return (uint32_t)(int32_t)value; }}
 
@@ -31,6 +33,9 @@ static int run_case(int n, int factor) {{
   int out[{capacity}];
   int copied[{capacity}];
   int multiplied[{capacity}];
+  int true_values[{capacity}];
+  int false_values[{capacity}];
+  int selected[{capacity}];
 
   for (int i = 0; i < {capacity}; ++i) {{
     a[i] = seed_a(i);
@@ -39,11 +44,15 @@ static int run_case(int n, int factor) {{
     out[i] = 0;
     copied[i] = 0;
     multiplied[i] = 0;
+    true_values[i] = 100000 + i * 13;
+    false_values[i] = -100000 - i * 17;
+    selected[i] = 0;
   }}
 
 {pipeline_check}
 {copy_check}
 {mul_check}
+{select_check}
   return 0;
 }}
 
@@ -169,6 +178,19 @@ for (int i = 0; i < n; ++i) {
 ''')
 
 
+def render_select_check():
+    return indent('''int select_status = select_gt(a, b, true_values, false_values, selected, n);
+if (select_status != 0)
+  return 4;
+for (int i = 0; i < n; ++i) {
+  int expected = a[i] > b[i] ? true_values[i] : false_values[i];
+  if (bits_i32(selected[i]) != bits_i32(expected))
+    return 90 + i;
+}
+
+''')
+
+
 def render_harness(data):
     rvv = data["rvv_execution"]
     lengths = rvv["lengths"]
@@ -179,6 +201,7 @@ def render_harness(data):
         pipeline_check=render_pipeline_check(),
         copy_check=render_copy_check(),
         mul_check=render_mul_check(),
+        select_check=render_select_check(),
         capacity=capacity,
         lengths=", ".join(str(length) for length in lengths),
     )
