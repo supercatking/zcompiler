@@ -44,6 +44,9 @@ zc vector source syntax
 - `zc.vector_select_gt`
 - `zc.vector_mask_lt/le/gt/ge/eq/ne/ult/ule/ugt/uge`
 - `zc.vector_masked_add`
+- `zc.vector_masked_sub`
+- `zc.vector_masked_mul`
+- `zc.vector_masked_store`
 
 ## Initial RVV Assembly Goals
 
@@ -59,6 +62,7 @@ Target RVV instruction families:
 - `vmslt.vv`
 - `vmerge.vvm`
 - masked arithmetic using `v0.t`
+- predicated stores using `vse32.v ..., v0.t`
 
 ## Validation Plan
 
@@ -152,6 +156,7 @@ vector_mask_uge m0, mask_lhs, mask_rhs, n;
 vector_masked_add out, a, b, m0, passthrough, n;
 vector_masked_sub out, a, b, m0, passthrough, n;
 vector_masked_mul out, a, b, m0, passthrough, n;
+vector_masked_store out, values, m0, n;
 ```
 
 Current direct RVV reference mappings:
@@ -172,6 +177,7 @@ Current direct RVV reference mappings:
 - `vector_select_ugt`: `vle32.v`, swapped `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_mask_*` + `vector_masked_add/sub/mul`: compare into `v0`, masked `vadd.vv` / `vsub.vv` / `vmul.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_mask_*` + `vector_masked_store`: compare into `v0`, `vse32.v ..., v0.t` to preserve false lanes in memory
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -244,3 +250,14 @@ masked arithmetic and `vmerge.vvm` passthrough selection.
 ## Masked Arithmetic Consumers
 
 Phase 30Q adds a generic masked binary AST and implements `vector_masked_sub` and `vector_masked_mul` slices; see [phase30q-masked-arithmetic.md](phase30q-masked-arithmetic.md).
+
+## Phase 30R Masked Store
+
+Phase 30R adds the first masked memory-side-effect consumer:
+
+```zc
+vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_masked_store out, values, m0, n;
+```
+
+Semantics: active lanes where `m0` is true write `values[i]` into `out[i]`; false lanes keep the previous memory value. Tail lanes outside `n` are also preserved. MLIR lowers this through `arith.andi` combining the tail mask and compare mask before `vector.transfer_write`. Direct RVV uses a compare into `v0` plus predicated `vse32.v ..., v0.t`.

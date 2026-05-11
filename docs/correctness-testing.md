@@ -203,6 +203,7 @@ python3 -m json.tool build/correctness/vector_select_eq_host.json
 python3 -m json.tool build/correctness/vector_masked_add_gt_host.json
 python3 -m json.tool build/correctness/vector_masked_add_predicates_host.json
 python3 -m json.tool build/correctness/vector_masked_arithmetic_gt_host.json
+python3 -m json.tool build/correctness/vector_masked_store_gt_host.json
 ```
 
 Phase 30K adds the equality variant harness:
@@ -276,4 +277,26 @@ The test writes:
 
 ```text
 build/correctness/vector_masked_arithmetic_gt_host.json
+```
+
+## Phase 30R Masked Store Host Harness
+
+The masked store harness is:
+
+```text
+test/correctness/vector_masked_store_gt_host.py
+```
+
+It checks that `vector_masked_store` writes only true mask lanes, preserves false lanes in the destination buffer, and preserves elements outside `n`. The MLIR check requires `arith.andi` so tail and predicate masks are combined before `vector.transfer_write`; the RVV text check requires `vse32.v` with `v0.t` and rejects `vmerge.vvm` for this kernel.
+
+The test writes:
+
+```text
+build/correctness/vector_masked_store_gt_host.json
+```
+
+Run artifact inspection:
+
+```bash
+python3 -m json.tool build/correctness/vector_masked_store_gt_host.json
 ```

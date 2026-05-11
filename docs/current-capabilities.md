@@ -173,3 +173,27 @@ cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_masked_mul_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+## Phase 30R Capability Addendum
+
+The compiler can now compile `vector_masked_store` as the first masked memory consumer:
+
+```zc
+func masked_store_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, values: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_store out, values, m0, n;
+  return 0;
+}
+```
+
+The MLIR path combines the vector tail mask and compare mask with `arith.andi` before `vector.transfer_write`. The direct RVV path emits `vse32.v ..., v0.t`, so false mask lanes preserve the old destination memory value instead of selecting a passthrough vector.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-ast
+./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-mlir
+./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

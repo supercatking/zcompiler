@@ -353,3 +353,20 @@ The current roadmap status:
 The next implementation priority is moving toward formal MLIR-to-RVV lowering
 and emulator-backed correctness tests when a suitable RISC-V environment is
 available.
+
+## Phase 30R Architecture Update
+
+Masked store adds a memory-side-effect mask consumer while preserving the frontend/backend boundary:
+
+```text
+vector_mask_* statement
+  -> transient function-local VectorMaskStmtAST
+  -> vector_masked_store statement
+  -> VectorMaskedStoreStmtAST
+  -> MLIR tail mask AND compare mask
+  -> vector.transfer_write with combined mask
+  -> RVV v0 compare mask
+  -> predicated vse32.v ..., v0.t
+```
+
+This keeps mask production target independent in the AST and makes the RISC-V backend solely responsible for choosing the RVV predicated store instruction.

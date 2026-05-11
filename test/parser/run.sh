@@ -82,6 +82,11 @@ for op in sub mul; do
     "$tmp_dir/vector_masked_${op}_gt.ast"
 done
 
+"$zc_bin" "$source_root/examples/vector_masked_store_gt.zc" --emit-ast \
+  > "$tmp_dir/vector_masked_store_gt.ast"
+diff -u "$source_root/test/parser/vector_masked_store_gt.ast" \
+  "$tmp_dir/vector_masked_store_gt.ast"
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-ast \
   > "$tmp_dir/print_i32.ast"
 diff -u "$source_root/test/parser/print_i32.ast" "$tmp_dir/print_i32.ast"

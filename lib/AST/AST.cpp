@@ -193,6 +193,15 @@ void VectorMaskedBinaryStmtAST::dump(raw_ostream &os, unsigned indent) const {
 }
 
 
+void VectorMaskedStoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedStoreStmt output=" << output << " input=" << input
+     << " mask=" << mask << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "ReturnStmt\n";

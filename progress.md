@@ -2058,3 +2058,29 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+## Phase 30R: Masked Store
+
+### Execution Target
+
+Add the first masked memory operation so a compare mask can control whether a vector store writes each lane.
+
+### Execution Summary
+
+- Added `vector_masked_store out, values, m0, n;` as a side-effecting mask consumer.
+- Added `VectorMaskedStoreStmtAST` instead of folding store into masked arithmetic, keeping memory effects explicit.
+- Added lexer, parser, AST dump, MLIR generation, and direct RVV reference assembly support.
+- Lowered MLIR through `arith.cmpi`, `arith.andi`, and masked `vector.transfer_write` so tail lanes and false predicate lanes are both preserved.
+- Lowered direct RVV through compare into `v0` plus predicated `vse32.v ..., v0.t`.
+- Added example source, lexer/parser/codegen goldens, host correctness, objdump checks, QEMU harness integration, manifest/profile updates, and phase documentation.
+
+### Execution Result
+
+Completed for the current `i32`, `e32,m1`, unit-stride masked store slice. False lanes preserve existing destination memory; tail lanes outside `n` remain unchanged. Full RVV 1.0 compatibility remains incomplete.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

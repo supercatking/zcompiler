@@ -1,0 +1,5 @@
+func masked_store_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, values: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_store out, values, m0, n;
+  return 0;
+}

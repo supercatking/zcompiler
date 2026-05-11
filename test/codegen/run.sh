@@ -241,6 +241,24 @@ grep -q arith.muli "$tmp_dir/vector_masked_mul_gt.mlir"
 grep -q vsub.vv "$tmp_dir/vector_masked_sub_gt.riscv"
 grep -q vmul.vv "$tmp_dir/vector_masked_mul_gt.riscv"
 
+"$zc_bin" "$source_root/examples/vector_masked_store_gt.zc" --emit-mlir \
+  > "$tmp_dir/vector_masked_store_gt.mlir"
+diff -u -B "$source_root/test/codegen/vector_masked_store_gt.mlir" \
+  "$tmp_dir/vector_masked_store_gt.mlir"
+
+"$zc_bin" "$source_root/examples/vector_masked_store_gt.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_masked_store_gt.riscv"
+diff -u "$source_root/test/codegen/vector_masked_store_gt.riscv" \
+  "$tmp_dir/vector_masked_store_gt.riscv"
+for instruction in vsetvli vle32.v vmslt.vv "v0.t" vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_masked_store_gt.riscv"
+done
+grep -q arith.andi "$tmp_dir/vector_masked_store_gt.mlir"
+if grep -q vmerge.vvm "$tmp_dir/vector_masked_store_gt.riscv"; then
+  echo "vector_masked_store should use a predicated store, not a merge" >&2
+  exit 1
+fi
+
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" --emit-ast \
   > "$tmp_dir/complex_vector_pipeline.ast"
 for node in VectorAddStmt VectorScaleStmt VectorReduceAddStmt VectorCopyStmt; do
@@ -317,6 +335,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_${op}_gt.mlir" \
       -o "$tmp_dir/vector_masked_${op}_gt.opt.mlir"
   done
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_masked_store_gt.mlir" \
+    -o "$tmp_dir/vector_masked_store_gt.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/complex_vector_pipeline.mlir" \
     -o "$tmp_dir/complex_vector_pipeline.opt.mlir"
 fi
@@ -461,6 +481,18 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   done
   grep -q vsub.vv "$tmp_dir/vector_masked_sub_gt.objdump"
   grep -q vmul.vv "$tmp_dir/vector_masked_mul_gt.objdump"
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_masked_store_gt.riscv" \
+    -o "$tmp_dir/vector_masked_store_gt.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_masked_store_gt.o" \
+    > "$tmp_dir/vector_masked_store_gt.objdump"
+  for instruction in vsetvli vle32.v vmslt.vv "v0.t" vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_masked_store_gt.objdump"
+  done
+  if grep -q vmerge.vvm "$tmp_dir/vector_masked_store_gt.objdump"; then
+    echo "vector_masked_store objdump should not contain vmerge.vvm" >&2
+    exit 1
+  fi
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/complex_vector_pipeline.riscv" \
     -o "$tmp_dir/complex_vector_pipeline.o"

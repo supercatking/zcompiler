@@ -61,6 +61,7 @@ Required profile fields for RVV 1.0 tracking:
 | Compare/select unsigned greater-than | `vector_select_ugt` -> swapped `vmsltu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Compare/select unsigned greater-or-equal | `vector_select_uge` -> swapped `vmsleu.vv` + `vmerge.vvm` | objdump and QEMU |
 | Masked arithmetic predicates | `vector_mask_*` + `vector_masked_add/sub/mul` slices -> RVV compare mask, masked arithmetic, `vmerge.vvm` passthrough | objdump and QEMU |
+| Masked store | `vector_mask_*` + `vector_masked_store` -> RVV compare mask and predicated `vse32.v ..., v0.t` | objdump and QEMU |
 
 ## Current Gaps
 
@@ -69,8 +70,8 @@ Required profile fields for RVV 1.0 tracking:
 | Element widths | typed-buffer contract is defined; implementation remains `i32` only | Phase 29E |
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
-| Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 30R |
-| Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 30R |
+| Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
+| Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 31D |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
@@ -122,6 +123,7 @@ The current QEMU test covers the length set above for:
 - `vector_masked_add_uge`
 - `vector_masked_sub_gt`
 - `vector_masked_mul_gt`
+- `vector_masked_store_gt`
 
 ## Acceptance Rule
 
@@ -143,3 +145,7 @@ python3 -m json.tool profiles/rvv-default.json >/dev/null
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ctest --test-dir build --output-on-failure
 ```
+
+## Phase 30R Compliance Note
+
+`vector_masked_store_gt` is marked as compatible with the current RVV 1.0 subset because the emitted instruction sequence uses legal RVV 1.0 predicated unit-stride store syntax. The implementation remains limited to `i32`, LMUL `m1`, unit-stride memory, and transient function-local compare masks.

@@ -49,3 +49,7 @@ python3 "$source_root/test/correctness/vector_masked_add_predicates_host.py" \
 python3 "$source_root/test/correctness/vector_masked_arithmetic_gt_host.py" \
   "$zc_bin" \
   "$source_root"
+
+python3 "$source_root/test/correctness/vector_masked_store_gt_host.py" \
+  "$zc_bin" \
+  "$source_root"

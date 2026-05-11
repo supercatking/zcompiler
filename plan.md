@@ -704,11 +704,12 @@ Completed slices:
 - Phase 30O: implement `vector_mask_gt` plus `vector_masked_add` with host, objdump, and QEMU validation.
 - Phase 30P: broaden transient masks to all signed and unsigned compare predicates.
 - Phase 30Q: add generic masked binary AST plus `vector_masked_sub` and `vector_masked_mul` slices.
+- Phase 30R: add `vector_masked_store` with MLIR combined masks, predicated RVV stores, host checks, objdump checks, and QEMU validation.
 
 Planned slices:
 
-- Phase 30R: add logical mask operations or masked memory operations after consumer coverage grows.
-- Phase 29E: implement the first non-`i32` typed-buffer vector path.
+- Phase 30S: add masked load or mask logical operations (`and/or/xor/not`) to broaden mask composition.
+- Phase 29C: introduce LMUL policy and tests beyond the current `m1` subset.
 - Phase 29E: implement the first non-`i32` typed-buffer vector path.
 
 Exit criteria:
@@ -736,8 +737,8 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 30R with logical mask operations or masked memory operations.
-2. Start Phase 29E with one non-`i32` typed-buffer vector path.
-3. Continue toward masked loads/stores, LMUL, and memory-form coverage after the source type contract is stable.
+1. Start Phase 30S with masked load or mask logical operations so masks become more composable.
+2. Start Phase 29C/29E work: LMUL policy and the first non-`i32` typed-buffer vector path.
+3. Continue toward strided/indexed memory forms after unit-stride masked load/store semantics are covered.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.

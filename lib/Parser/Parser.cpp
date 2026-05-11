@@ -224,6 +224,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorMaskedMul))
     return parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp::Mul,
                                             "vector_masked_mul");
+  if (check(TokenKind::KwVectorMaskedStore))
+    return parseVectorMaskedStoreStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -660,6 +662,47 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedBinaryStatement(
       std::move(passthrough), std::move(length));
 }
 
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedStoreStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_masked_store");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_store output"))
+    return nullptr;
+
+  std::string input = parseName("expected input buffer in vector_masked_store");
+  if (input.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_store input"))
+    return nullptr;
+
+  std::string mask = parseName("expected mask name in vector_masked_store");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_masked_store mask"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_store statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedStoreStmtAST>(
+      std::move(output), std::move(input), std::move(mask), std::move(length));
+}
 
 std::unique_ptr<StmtAST> Parser::parseReturnStatement() {
   advance();

@@ -142,3 +142,7 @@ include:
 
 This standard was applied to `vector_add`, `vector_copy`, `vector_scale`, and
 `vector_reduce_add`.
+
+## Phase 30R Workflow Note
+
+Masked store followed the current AI-assisted compiler workflow: define the architecture slice first, implement the minimal source/AST/MLIR/RVV path, generate golden outputs, run host correctness, run objdump checks, then run QEMU execution before committing. This phase is a good template for future RVV memory-form work because it separates semantic checks from instruction-shape checks.
