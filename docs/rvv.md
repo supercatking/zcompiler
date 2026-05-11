@@ -41,6 +41,7 @@ zc vector source syntax
 - `zc.vector_scale`
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
+- `zc.vector_select_gt` (planned compare/select predicate kernel)
 
 ## Initial RVV Assembly Goals
 
@@ -53,6 +54,8 @@ Target RVV instruction families:
 - `vmul.vx`
 - `vmul.vv`
 - `vredsum.vs`
+- `vmslt.vv` (planned compare mask)
+- `vmerge.vvm` (planned masked select)
 
 ## Validation Plan
 
@@ -124,6 +127,19 @@ Current direct RVV reference mappings:
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
+
+
+## Planned Compare/Select Kernel
+
+Phase 30I defines the first predicate-oriented source operation:
+
+```zc
+vector_select_gt out, lhs, rhs, true_values, false_values, n;
+```
+
+It lowers to a signed vector compare plus select. The direct RVV reference path
+will use `vmslt.vv v0, rhs, lhs` to form the greater-than mask and
+`vmerge.vvm` to choose between the true and false vectors.
 
 ## RVV 1.0 Compliance Status
 

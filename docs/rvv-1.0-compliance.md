@@ -59,7 +59,7 @@ Required profile fields for RVV 1.0 tracking:
 | LMUL policy | only `m1` is emitted | Phase 29C |
 | Memory forms | no strided or indexed vector load/store | Phase 30A |
 | Masked arithmetic | no explicit masked source operations | Phase 30B |
-| Compare/select | no vector compare/select kernels | Phase 30C |
+| Compare/select | source syntax and lowering design defined; implementation pending | Phase 30J |
 | Reductions | only add reduction is implemented | Phase 31A |
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |

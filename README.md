@@ -193,3 +193,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30f-scalar-i32-wrapping.md](docs/phase30f-scalar-i32-wrapping.md)
 - [docs/phase30g-qemu-harness-generator.md](docs/phase30g-qemu-harness-generator.md)
 - [docs/phase30h-qemu-check-templates.md](docs/phase30h-qemu-check-templates.md)
+- [docs/phase30i-vector-compare-select-design.md](docs/phase30i-vector-compare-select-design.md)

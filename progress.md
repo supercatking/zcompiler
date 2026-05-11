@@ -1795,3 +1795,26 @@ python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/r
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30I: Vector Compare/Select Design
+
+### Execution Target
+
+Define the first RVV predicate kernel before changing compiler code.
+
+### Execution Summary
+
+- Chose `vector_select_gt out, lhs, rhs, true_values, false_values, n;` as the first compare/select operation.
+- Documented signed `i32` semantics, AST ownership, MLIR vector lowering, direct RVV lowering, and QEMU acceptance checks.
+- Updated README, RVV direction, compliance roadmap, and plan docs.
+
+### Execution Result
+
+Design completed. Implementation moves to Phase 30J.
+
+Validated commands:
+
+```bash
+git diff --check
+```
