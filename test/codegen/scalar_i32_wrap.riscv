@@ -2,8 +2,8 @@
   .text
   .globl main
 main:
-  li t0, 100
-  li t1, 120
+  li t0, 2147483647
+  li t1, 1
   addw t2, t0, t1
   addi sp, sp, -128
   sd ra, 0(sp)
@@ -41,7 +41,84 @@ main:
   ld t5, 112(sp)
   ld t6, 120(sp)
   addi sp, sp, 128
-  mv a0, t2
+  subw t3, t2, t1
+  addi sp, sp, -128
+  sd ra, 0(sp)
+  sd a0, 8(sp)
+  sd a1, 16(sp)
+  sd a2, 24(sp)
+  sd a3, 32(sp)
+  sd a4, 40(sp)
+  sd a5, 48(sp)
+  sd a6, 56(sp)
+  sd a7, 64(sp)
+  sd t0, 72(sp)
+  sd t1, 80(sp)
+  sd t2, 88(sp)
+  sd t3, 96(sp)
+  sd t4, 104(sp)
+  sd t5, 112(sp)
+  sd t6, 120(sp)
+  mv a0, t3
+  call zc_print_i32
+  ld ra, 0(sp)
+  ld a0, 8(sp)
+  ld a1, 16(sp)
+  ld a2, 24(sp)
+  ld a3, 32(sp)
+  ld a4, 40(sp)
+  ld a5, 48(sp)
+  ld a6, 56(sp)
+  ld a7, 64(sp)
+  ld t0, 72(sp)
+  ld t1, 80(sp)
+  ld t2, 88(sp)
+  ld t3, 96(sp)
+  ld t4, 104(sp)
+  ld t5, 112(sp)
+  ld t6, 120(sp)
+  addi sp, sp, 128
+  li t4, 1073741824
+  li t5, 4
+  mulw t6, t4, t5
+  addi sp, sp, -128
+  sd ra, 0(sp)
+  sd a0, 8(sp)
+  sd a1, 16(sp)
+  sd a2, 24(sp)
+  sd a3, 32(sp)
+  sd a4, 40(sp)
+  sd a5, 48(sp)
+  sd a6, 56(sp)
+  sd a7, 64(sp)
+  sd t0, 72(sp)
+  sd t1, 80(sp)
+  sd t2, 88(sp)
+  sd t3, 96(sp)
+  sd t4, 104(sp)
+  sd t5, 112(sp)
+  sd t6, 120(sp)
+  mv a0, t6
+  call zc_print_i32
+  ld ra, 0(sp)
+  ld a0, 8(sp)
+  ld a1, 16(sp)
+  ld a2, 24(sp)
+  ld a3, 32(sp)
+  ld a4, 40(sp)
+  ld a5, 48(sp)
+  ld a6, 56(sp)
+  ld a7, 64(sp)
+  ld t0, 72(sp)
+  ld t1, 80(sp)
+  ld t2, 88(sp)
+  ld t3, 96(sp)
+  ld t4, 104(sp)
+  ld t5, 112(sp)
+  ld t6, 120(sp)
+  addi sp, sp, 128
+  li t0, 0
+  mv a0, t0
   ret
   .text
   .globl zc_print_i32

@@ -8,7 +8,7 @@ add_at:
   slli t3, a3, 2
   add t4, a1, t3
   lw t5, 0(t4)
-  add t6, t2, t5
+  addw t6, t2, t5
   slli t0, a3, 2
   add t1, a2, t0
   sw t6, 0(t1)

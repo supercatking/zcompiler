@@ -22,6 +22,19 @@ def load_and_validate(path):
     if not isinstance(print_i32.get("expected_exit_status"), int):
         raise SystemExit("print_i32.expected_exit_status must be an integer")
 
+    scalar_i32_wrap = data.get("scalar_i32_wrap")
+    if not isinstance(scalar_i32_wrap, dict):
+        raise SystemExit("manifest scalar_i32_wrap must be an object")
+    if not isinstance(scalar_i32_wrap.get("source"), str):
+        raise SystemExit("scalar_i32_wrap.source must be a string")
+    if not isinstance(scalar_i32_wrap.get("expected_stdout"), str):
+        raise SystemExit("scalar_i32_wrap.expected_stdout must be a string")
+    if not isinstance(scalar_i32_wrap.get("expected_exit_status"), int):
+        raise SystemExit("scalar_i32_wrap.expected_exit_status must be an integer")
+    instructions = scalar_i32_wrap.get("expected_instructions")
+    if not instructions or not all(isinstance(item, str) for item in instructions):
+        raise SystemExit("scalar_i32_wrap.expected_instructions must be a string list")
+
     rvv = data.get("rvv_execution")
     if not isinstance(rvv, dict):
         raise SystemExit("manifest rvv_execution must be an object")
@@ -68,6 +81,7 @@ def load_and_validate(path):
 def emit_shell_env(data, output_path):
     rvv = data["rvv_execution"]
     print_i32 = data["print_i32"]
+    scalar_i32_wrap = data["scalar_i32_wrap"]
     lengths = rvv["lengths"]
     capacity = max(max(lengths), 1)
 
@@ -77,6 +91,13 @@ def emit_shell_env(data, output_path):
             f"print_expected_stdout={shlex.quote(print_i32['expected_stdout'])}\n"
         )
         handle.write(f"print_expected_status={print_i32['expected_exit_status']}\n")
+        handle.write(f"scalar_wrap_source={shlex.quote(scalar_i32_wrap['source'])}\n")
+        handle.write(
+            f"scalar_wrap_expected_stdout={shlex.quote(scalar_i32_wrap['expected_stdout'])}\n"
+        )
+        handle.write(
+            f"scalar_wrap_expected_status={scalar_i32_wrap['expected_exit_status']}\n"
+        )
         handle.write(
             "rvv_lengths_c="
             + shlex.quote(", ".join(str(length) for length in lengths))

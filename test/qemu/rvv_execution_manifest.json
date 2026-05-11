@@ -63,5 +63,15 @@
       "signed_test_policy": "mixed positive and negative inputs with bit-pattern overflow cases",
       "overflow_policy": "current RVV kernel subset is checked as wrapping modulo 2^32"
     }
+  },
+  "scalar_i32_wrap": {
+    "source": "examples/scalar_i32_wrap.zc",
+    "expected_stdout": "-2147483648\n2147483647\n0",
+    "expected_exit_status": 0,
+    "expected_instructions": [
+      "addw",
+      "subw",
+      "mulw"
+    ]
   }
 }

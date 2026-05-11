@@ -901,13 +901,13 @@ private:
   void emitRiscVBinary(StringRef op, StringRef lhs, StringRef rhs,
                        StringRef dest) {
     if (op == "+")
-      os << "  add " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  addw " << dest << ", " << lhs << ", " << rhs << "\n";
     else if (op == "-")
-      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  subw " << dest << ", " << lhs << ", " << rhs << "\n";
     else if (op == "*")
-      os << "  mul " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  mulw " << dest << ", " << lhs << ", " << rhs << "\n";
     else if (op == "/")
-      os << "  div " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  divw " << dest << ", " << lhs << ", " << rhs << "\n";
     else if (op == "<")
       os << "  slt " << dest << ", " << lhs << ", " << rhs << "\n";
     else if (op == ">")
@@ -919,10 +919,10 @@ private:
       os << "  slt " << dest << ", " << lhs << ", " << rhs << "\n";
       os << "  xori " << dest << ", " << dest << ", 1\n";
     } else if (op == "==") {
-      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  subw " << dest << ", " << lhs << ", " << rhs << "\n";
       os << "  seqz " << dest << ", " << dest << "\n";
     } else if (op == "!=") {
-      os << "  sub " << dest << ", " << lhs << ", " << rhs << "\n";
+      os << "  subw " << dest << ", " << lhs << ", " << rhs << "\n";
       os << "  snez " << dest << ", " << dest << "\n";
     } else {
       result.addDiagnostic("unsupported RISC-V operator '" + op.str() + "'");

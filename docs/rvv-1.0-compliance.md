@@ -64,6 +64,7 @@ Required profile fields for RVV 1.0 tracking:
 | ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
 | Overflow policy | current RVV kernel subset checks wrapping modulo `2^32` | QEMU bit-pattern checks |
+| Scalar `i32` arithmetic | direct RISC-V path uses RV64 word ops | QEMU stdout check |
 | Compliance suite | no Spike or riscv-arch-test integration yet | Phase 32B |
 
 ## Required Test Matrix

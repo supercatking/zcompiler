@@ -1,0 +1,12 @@
+func main() -> i32 {
+  let max = 2147483647;
+  let one = 1;
+  let min = max + one;
+  print_i32 min;
+  let back = min - one;
+  print_i32 back;
+  let quarter = 1073741824;
+  let zero = quarter * 4;
+  print_i32 zero;
+  return 0;
+}

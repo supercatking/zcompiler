@@ -1707,3 +1707,35 @@ python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30F: Scalar i32 Wrapping Semantics
+
+### Execution Target
+
+Make scalar source `i32` arithmetic match the current RVV kernel wrapping
+bit-pattern policy in direct RISC-V output.
+
+### Execution Summary
+
+- Changed direct RISC-V scalar `+`, `-`, `*`, and `/` lowering to `addw`,
+  `subw`, `mulw`, and `divw`.
+- Changed equality/inequality helper subtraction to `subw`.
+- Added `examples/scalar_i32_wrap.zc`.
+- Added RISC-V assembly golden coverage for scalar wrapping instructions.
+- Added QEMU stdout validation for scalar `i32` wrapping results.
+- Added [docs/phase30f-scalar-i32-wrapping.md](docs/phase30f-scalar-i32-wrapping.md).
+- Updated RVV compliance, README, plan, and progress docs.
+
+### Execution Result
+
+Completed for the current direct RISC-V scalar runtime path.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/scalar_i32_wrap.zc --emit-riscv-asm
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

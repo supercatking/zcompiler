@@ -696,10 +696,10 @@ Completed slices:
 - Phase 30C: validated QEMU kernel descriptors in the execution manifest.
 - Phase 30D: signed `i32` runtime coverage and integer semantics note.
 - Phase 30E: wrapping `i32` bit-pattern checks for current RVV kernels.
+- Phase 30F: scalar source `i32` wrapping semantics for direct RISC-V output.
 
 Planned slices:
 
-- Phase 30F: decide whether scalar source `i32` expressions also wrap.
 - Phase 30G: generate C check fragments from QEMU kernel descriptors.
 - Phase 30H: compare/select source syntax and RVV predicate lowering design.
 
@@ -728,11 +728,9 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Decide whether scalar source `i32` expressions use the same wrapping policy
-   as the current RVV kernel subset.
-2. Generate C check fragments from QEMU kernel descriptors so new kernels do
+1. Generate C check fragments from QEMU kernel descriptors so new kernels do
    not need hand-written C harness edits.
-3. Start Phase 29B by deciding whether the source language exposes element
+2. Start Phase 29B by deciding whether the source language exposes element
    width in syntax or through typed buffers first.
 4. Add compare/select kernels so vector predicates can become first-class.
 5. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when

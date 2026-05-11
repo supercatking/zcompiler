@@ -44,6 +44,29 @@ if [ "$print_status" -ne "$print_expected_status" ]; then
   exit 1
 fi
 
+"$zc_bin" "$source_root/$scalar_wrap_source" --emit-riscv-asm \
+  > "$tmp_dir/scalar_i32_wrap.s"
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
+  "$tmp_dir/scalar_i32_wrap.s" -o "$tmp_dir/scalar_i32_wrap"
+
+set +e
+scalar_wrap_output="$("$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/scalar_i32_wrap")"
+scalar_wrap_status="$?"
+set -e
+
+if [ "$scalar_wrap_output" != "$scalar_wrap_expected_stdout" ]; then
+  echo "expected scalar_i32_wrap stdout:" >&2
+  printf '%s\n' "$scalar_wrap_expected_stdout" >&2
+  echo "got:" >&2
+  printf '%s\n' "$scalar_wrap_output" >&2
+  exit 1
+fi
+
+if [ "$scalar_wrap_status" -ne "$scalar_wrap_expected_status" ]; then
+  echo "expected scalar_i32_wrap exit status $scalar_wrap_expected_status, got: $scalar_wrap_status" >&2
+  exit 1
+fi
+
 "$zc_bin" "$source_root/examples/complex_vector_pipeline.zc" \
   --emit-riscv-asm > "$tmp_dir/complex_vector_pipeline.s"
 "$zc_bin" "$source_root/examples/vector_mul.zc" \

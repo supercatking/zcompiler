@@ -160,6 +160,14 @@ for instruction in "call zc_print_i32" "li a7, 64" ecall; do
   grep -q "$instruction" "$tmp_dir/print_i32.riscv"
 done
 
+"$zc_bin" "$source_root/examples/scalar_i32_wrap.zc" --emit-riscv-asm \
+  > "$tmp_dir/scalar_i32_wrap.riscv"
+diff -u "$source_root/test/codegen/scalar_i32_wrap.riscv" \
+  "$tmp_dir/scalar_i32_wrap.riscv"
+for instruction in addw subw mulw "call zc_print_i32"; do
+  grep -q "$instruction" "$tmp_dir/scalar_i32_wrap.riscv"
+done
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -264,4 +272,6 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   done
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/print_i32.riscv" -o "$tmp_dir/print_i32.o"
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/scalar_i32_wrap.riscv" -o "$tmp_dir/scalar_i32_wrap.o"
 fi
