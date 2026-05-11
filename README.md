@@ -150,6 +150,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
+/home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```
 
@@ -165,3 +166,4 @@ Planning documents for the accelerator direction:
 - [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md)
 - [docs/phase25-vector-kernels.md](docs/phase25-vector-kernels.md)
 - [docs/phase25c-vector-reduction.md](docs/phase25c-vector-reduction.md)
+- [docs/phase26-rvv-toolchain.md](docs/phase26-rvv-toolchain.md)

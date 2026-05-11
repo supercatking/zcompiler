@@ -73,6 +73,9 @@ for a future same-version LLVM/MLIR RVV backend.
 
 ## Next Actions
 
+- Run `./scripts/check-rvv-toolchain.sh` before re-running the formal lowering
+  probe. It records whether the active MLIR build has a same-version
+  RISC-V-capable `llc`.
 - Rebuild `/home/zyz/mlir/llvm-project` with RISC-V targets enabled, or install
   a same-version LLVM toolchain that includes RISC-V.
 - Re-run `./scripts/probe-formal-rvv-lowering.sh`.

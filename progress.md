@@ -679,6 +679,44 @@ riscv64-linux-gnu-objdump -d /tmp/vector_reduce_add.o
 python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_reduce_add_host.json
 ```
 
+## Phase 26A: RVV Toolchain Diagnostic
+
+### Execution Target
+
+Make the formal MLIR-to-RVV lowering blocker reproducible and machine-readable.
+
+### Execution Summary
+
+- Added `scripts/check-rvv-toolchain.sh`.
+- Added `docs/phase26-rvv-toolchain.md`.
+- The diagnostic script records:
+  - MLIR tool versions.
+  - local `llc` version and RISC-V target status.
+  - system `llc` version and RISC-V target status.
+  - RISC-V assembler and objdump presence.
+  - relevant local MLIR CMake cache values.
+- Confirmed the current local MLIR build uses:
+  - `LLVM_TARGETS_TO_BUILD=host`
+  - `LLVM_DEFAULT_TARGET_TRIPLE=x86_64-unknown-linux-gnu`
+- Confirmed current status:
+  - local LLVM 23 `llc` has no RISC-V target.
+  - system LLVM 14 `llc` has RISC-V but is version-incompatible with LLVM 23
+    IR/bitcode.
+
+### Execution Result
+
+Completed as a diagnostic and planning phase. The formal lowering path remains
+blocked until a same-version RISC-V-capable LLVM/MLIR toolchain is built or
+installed.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
+python3 -m json.tool /home/zyz/zcomipler/build/experiments/rvv-toolchain/rvv-toolchain-diagnostic.json
+/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

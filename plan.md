@@ -605,6 +605,7 @@ through LLVM to RISC-V RVV assembly without the temporary direct assembly path.
 Deliverables:
 
 - Toolchain alignment plan for local LLVM 23 MLIR and RISC-V-enabled `llc`.
+- Repeatable RVV toolchain diagnostic script.
 - Re-run of `scripts/probe-formal-rvv-lowering.sh`.
 - Updated formal lowering notes and tests if the blocker is removed.
 
@@ -648,9 +649,9 @@ generated IR/assembly, and accept/reject result.
 
 ## Immediate Next Tasks
 
-The next implementation steps after Phase 25B:
+The next implementation steps after Phase 26A diagnostics:
 
-1. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
-   vector-to-RVV lowering path can reach RISC-V assembly.
+1. Build a same-version MLIR/LLVM toolchain with `RISCV` enabled in a separate
+   directory such as `/home/zyz/mlir/build-riscv`.
 2. Phase 27A: start using accelerator profiles in AI experiment records and
    optimization proposal comparisons.
