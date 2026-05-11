@@ -186,3 +186,4 @@ Planning documents for the accelerator direction:
 - [docs/phase28b-print-i32.md](docs/phase28b-print-i32.md)
 - [docs/phase28c-qemu-rvv-execution.md](docs/phase28c-qemu-rvv-execution.md)
 - [docs/phase30a-vector-mul.md](docs/phase30a-vector-mul.md)
+- [docs/phase30b-qemu-manifest.md](docs/phase30b-qemu-manifest.md)

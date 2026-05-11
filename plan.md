@@ -692,13 +692,14 @@ objdump checks, profile entries, and QEMU execution.
 Completed slices:
 
 - Phase 30A: `vector_mul c, a, b, n;` elementwise multiply.
+- Phase 30B: QEMU execution manifest for the runtime validation matrix.
 
 Planned slices:
 
-- Phase 30B: generated QEMU correctness harness metadata.
-- Phase 30C: signed integer semantics documentation and negative-value
+- Phase 30C: generated per-kernel QEMU correctness harness descriptors.
+- Phase 30D: signed integer semantics documentation and negative-value
   cross-kernel tests.
-- Phase 30D: compare/select source syntax and RVV predicate lowering design.
+- Phase 30E: compare/select source syntax and RVV predicate lowering design.
 
 Exit criteria:
 
@@ -725,8 +726,8 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Add a generated QEMU correctness harness format so new kernels do not need
-   hand-written C harness edits.
+1. Add generated per-kernel QEMU correctness descriptors so new kernels do not
+   need hand-written C harness edits.
 2. Add negative-input tests for add/copy/scale/reduce/mul with explicit signed
    wrapping policy documentation.
 3. Start Phase 29B by deciding whether the source language exposes element

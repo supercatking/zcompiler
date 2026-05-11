@@ -1585,3 +1585,34 @@ riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /home/zyz/zcomipler/test/codegen
 riscv64-linux-gnu-objdump -d /tmp/vector_mul.o
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30B: QEMU Execution Manifest
+
+### Execution Target
+
+Move QEMU execution settings and RVV length coverage into a structured manifest
+so runtime validation is easier to extend as new kernels are added.
+
+### Execution Summary
+
+- Added `test/qemu/rvv_execution_manifest.json`.
+- Updated `test/qemu/run.sh` to read QEMU CPU mode, `print_i32` expectations,
+  validated kernel metadata, and RVV length matrix from the manifest.
+- Updated the temporary C harness generation so `lengths[]` comes from manifest
+  data instead of a hard-coded C literal.
+- Added [docs/phase30b-qemu-manifest.md](docs/phase30b-qemu-manifest.md).
+- Updated QEMU validation docs, README, and plan.
+
+### Execution Result
+
+Completed as the first data-driven QEMU validation step. Per-kernel generated C
+checks remain planned for Phase 30C.
+
+Validated commands:
+
+```bash
+python3 -m json.tool /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json >/dev/null
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```

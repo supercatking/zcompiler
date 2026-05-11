@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "qemu_cpu": "max",
+  "print_i32": {
+    "source": "examples/print_i32.zc",
+    "expected_stdout": "220",
+    "expected_exit_status": 220
+  },
+  "rvv_execution": {
+    "sources": [
+      "examples/complex_vector_pipeline.zc",
+      "examples/vector_mul.zc"
+    ],
+    "validated_kernels": [
+      "vector_add",
+      "vector_scale",
+      "vector_copy",
+      "vector_reduce_add",
+      "vector_mul"
+    ],
+    "lengths": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      7,
+      8,
+      9,
+      16,
+      17
+    ]
+  }
+}

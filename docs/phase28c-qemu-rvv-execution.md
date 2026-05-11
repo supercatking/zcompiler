@@ -43,6 +43,20 @@ The `qemu-riscv64` CTest target validates two execution paths:
    - covers lengths `0`, `1`, `2`, `3`, `4`, `5`, `7`, `8`, `9`, `16`,
      and `17`
 
+## Execution Manifest
+
+The QEMU test reads this manifest before generating the temporary C harness:
+
+```text
+test/qemu/rvv_execution_manifest.json
+```
+
+The manifest records the QEMU CPU mode, `print_i32` stdout/exit expectations,
+the RVV source files used by the test, the validated kernel list, and the length
+matrix. `test/qemu/run.sh` uses the length matrix to generate the C harness
+initializer, so future length coverage changes are data updates instead of C
+source edits.
+
 ## Manual Command
 
 ```bash
