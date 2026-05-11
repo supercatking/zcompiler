@@ -23,40 +23,7 @@ static uint32_t mul_i32_bits(uint32_t lhs, int rhs) {{
   return lhs * bits_i32(rhs);
 }}
 
-static int seed_a(int i) {{
-  switch (i % 6) {{
-  case 0:
-    return 2147483600 - i;
-  case 1:
-    return -2147483600 + i;
-  case 2:
-    return -(i + 2);
-  case 3:
-    return i + 1;
-  case 4:
-    return 123456789 + i;
-  default:
-    return -76543210 - i;
-  }}
-}}
-
-static int seed_b(int i) {{
-  switch (i % 6) {{
-  case 0:
-    return 100 + i;
-  case 1:
-    return -200 - i;
-  case 2:
-    return 17 + i;
-  case 3:
-    return -19 - i;
-  case 4:
-    return 37 + i;
-  default:
-    return 29 + i;
-  }}
-}}
-
+{seed_helpers}
 static int run_case(int n, int factor) {{
   int a[{capacity}];
   int b[{capacity}];
@@ -74,39 +41,9 @@ static int run_case(int n, int factor) {{
     multiplied[i] = 0;
   }}
 
-  int sum = complex_vector_pipeline(a, b, tmp, out, n, factor);
-  uint32_t expected = 0;
-  for (int i = 0; i < n; ++i) {{
-    uint32_t tmp_expected = add_i32_bits(a[i], b[i]);
-    uint32_t out_expected = mul_i32_bits(tmp_expected, factor);
-    if (bits_i32(tmp[i]) != tmp_expected)
-      return 10 + i;
-    if (bits_i32(out[i]) != out_expected)
-      return 30 + i;
-    expected += out_expected;
-  }}
-  if (bits_i32(sum) != expected)
-    return 1;
-
-  int copy_sum = copy_then_sum(a, copied, n);
-  uint32_t expected_copy_sum = 0;
-  for (int i = 0; i < n; ++i) {{
-    if (bits_i32(copied[i]) != bits_i32(a[i]))
-      return 50 + i;
-    expected_copy_sum += bits_i32(a[i]);
-  }}
-  if (bits_i32(copy_sum) != expected_copy_sum)
-    return 2;
-
-  int mul_status = vmul(a, b, multiplied, n);
-  if (mul_status != 0)
-    return 3;
-  for (int i = 0; i < n; ++i) {{
-    uint32_t mul_expected = bits_i32(a[i]) * bits_i32(b[i]);
-    if (bits_i32(multiplied[i]) != mul_expected)
-      return 70 + i;
-  }}
-
+{pipeline_check}
+{copy_check}
+{mul_check}
   return 0;
 }}
 
@@ -138,15 +75,110 @@ int main(void) {{
 '''
 
 
+def indent(text, spaces=2):
+    prefix = " " * spaces
+    return "".join(prefix + line if line.strip() else line for line in text.splitlines(True))
+
+
+def render_kernel_comments(kernel_checks):
+    return "".join(
+        f"/* {check['kernel']}: {check['check']} */\n" for check in kernel_checks
+    )
+
+
+def render_seed_helpers():
+    return '''static int seed_a(int i) {
+  switch (i % 6) {
+  case 0:
+    return 2147483600 - i;
+  case 1:
+    return -2147483600 + i;
+  case 2:
+    return -(i + 2);
+  case 3:
+    return i + 1;
+  case 4:
+    return 123456789 + i;
+  default:
+    return -76543210 - i;
+  }
+}
+
+static int seed_b(int i) {
+  switch (i % 6) {
+  case 0:
+    return 100 + i;
+  case 1:
+    return -200 - i;
+  case 2:
+    return 17 + i;
+  case 3:
+    return -19 - i;
+  case 4:
+    return 37 + i;
+  default:
+    return 29 + i;
+  }
+}
+
+'''
+
+
+def render_pipeline_check():
+    return indent('''int sum = complex_vector_pipeline(a, b, tmp, out, n, factor);
+uint32_t expected = 0;
+for (int i = 0; i < n; ++i) {
+  uint32_t tmp_expected = add_i32_bits(a[i], b[i]);
+  uint32_t out_expected = mul_i32_bits(tmp_expected, factor);
+  if (bits_i32(tmp[i]) != tmp_expected)
+    return 10 + i;
+  if (bits_i32(out[i]) != out_expected)
+    return 30 + i;
+  expected += out_expected;
+}
+if (bits_i32(sum) != expected)
+  return 1;
+
+''')
+
+
+def render_copy_check():
+    return indent('''int copy_sum = copy_then_sum(a, copied, n);
+uint32_t expected_copy_sum = 0;
+for (int i = 0; i < n; ++i) {
+  if (bits_i32(copied[i]) != bits_i32(a[i]))
+    return 50 + i;
+  expected_copy_sum += bits_i32(a[i]);
+}
+if (bits_i32(copy_sum) != expected_copy_sum)
+  return 2;
+
+''')
+
+
+def render_mul_check():
+    return indent('''int mul_status = vmul(a, b, multiplied, n);
+if (mul_status != 0)
+  return 3;
+for (int i = 0; i < n; ++i) {
+  uint32_t mul_expected = bits_i32(a[i]) * bits_i32(b[i]);
+  if (bits_i32(multiplied[i]) != mul_expected)
+    return 70 + i;
+}
+
+''')
+
+
 def render_harness(data):
     rvv = data["rvv_execution"]
     lengths = rvv["lengths"]
     capacity = max(max(lengths), 1)
-    kernel_comments = "".join(
-        f"/* {check['kernel']}: {check['check']} */\n" for check in rvv["kernel_checks"]
-    )
     return HARNESS_TEMPLATE.format(
-        kernel_comments=kernel_comments,
+        kernel_comments=render_kernel_comments(rvv["kernel_checks"]),
+        seed_helpers=render_seed_helpers(),
+        pipeline_check=render_pipeline_check(),
+        copy_check=render_copy_check(),
+        mul_check=render_mul_check(),
         capacity=capacity,
         lengths=", ".join(str(length) for length in lengths),
     )

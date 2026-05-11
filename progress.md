@@ -1768,3 +1768,30 @@ python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/r
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30H: QEMU Check Templates
+
+### Execution Target
+
+Refactor the generated QEMU C harness into explicit check-rendering units so new
+kernel families can be added without editing one monolithic C template.
+
+### Execution Summary
+
+- Refactored `test/qemu/harness.py` into separate render helpers.
+- Kept generated C behavior equivalent to Phase 30G.
+- Added [docs/phase30h-qemu-check-templates.md](docs/phase30h-qemu-check-templates.md).
+- Updated README, plan, and progress docs.
+
+### Execution Result
+
+Completed for QEMU harness generator structure.
+
+Validated commands:
+
+```bash
+python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
