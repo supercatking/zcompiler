@@ -1,0 +1,14 @@
+func complex_vector_pipeline(a: ptr<i32>, b: ptr<i32>, tmp: ptr<i32>, out: ptr<i32>, n: i32, factor: i32) -> i32 {
+  vector_add tmp, a, b, n;
+  vector_scale out, tmp, factor, n;
+  let sum = 0;
+  vector_reduce_add sum, out, n;
+  return sum;
+}
+
+func copy_then_sum(a: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_copy out, a, n;
+  let sum = 0;
+  vector_reduce_add sum, out, n;
+  return sum;
+}

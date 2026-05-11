@@ -75,6 +75,8 @@ source.zc
 
 - [arch.md](arch.md): architecture design for the first toy compiler.
 - [plan.md](plan.md): phased implementation plan and milestones.
+- [docs/current-capabilities.md](docs/current-capabilities.md): current
+  compiler capabilities, limits, and the most complex stable demo.
 
 ## Build Phase 1
 
@@ -149,6 +151,9 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 /home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
 /home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
@@ -158,6 +163,7 @@ Current RVV vector-kernel path:
 Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
+- [docs/current-capabilities.md](docs/current-capabilities.md)
 - [docs/accelerator-profile.md](docs/accelerator-profile.md)
 - [docs/correctness-testing.md](docs/correctness-testing.md)
 - [docs/ai-workflow.md](docs/ai-workflow.md)

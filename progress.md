@@ -1398,3 +1398,45 @@ Validated commands:
 riscv64-linux-gnu-as /tmp/calls.s -o /tmp/calls.o
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+## Phase 28A: Current Capability Demo
+
+### Execution Target
+
+Create a single high-coverage example that demonstrates the strongest currently
+stable compiler path from toy source to MLIR, RVV assembly, and RISC-V object
+generation.
+
+### Execution Summary
+
+- Added `examples/complex_vector_pipeline.zc`.
+- Added [docs/current-capabilities.md](docs/current-capabilities.md).
+- Updated `README.md` to link the current capability document and demo
+  commands.
+- Extended `test/codegen/run.sh` so the demo is covered by CTest.
+- The demo covers:
+  - multiple functions in one module
+  - `ptr<i32>` parameters
+  - `vector_add`
+  - `vector_copy`
+  - `vector_scale`
+  - `vector_reduce_add`
+  - masked MLIR vector lowering
+  - direct RVV reference assembly
+  - RISC-V object generation when the cross assembler is available
+
+### Execution Result
+
+Completed as the current "most complex stable demo" for the compiler.
+
+Validated commands:
+
+```bash
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir > /tmp/complex_vector_pipeline.mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/complex_vector_pipeline.mlir -o /tmp/complex_vector_pipeline.checked.mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm > /tmp/complex_vector_pipeline.s
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/complex_vector_pipeline.s -o /tmp/complex_vector_pipeline.o
+riscv64-linux-gnu-objdump -d /tmp/complex_vector_pipeline.o
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
