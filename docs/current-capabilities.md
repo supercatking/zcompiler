@@ -111,3 +111,31 @@ riscv64-linux-gnu-objdump -d /tmp/complex_vector_pipeline.o
 - formal MLIR/LLVM 到 RVV machine code 的路径仍受本地 LLVM/MLIR 工具链限制：
   `/home/zyz/mlir/build/bin/llc` 当前没有 RISC-V target。直接 RVV reference
   backend 是当前可验证的 accelerator 输出路径。
+
+
+## Phase 30O Capability Addendum
+
+The compiler can now compile the first masked arithmetic example:
+
+```zc
+func masked_add_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, a: ptr<i32>, b: ptr<i32>, passthrough: ptr<i32>, out: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_add out, a, b, m0, passthrough, n;
+  return 0;
+}
+```
+
+Supported output paths for this example are token dump, AST dump, MLIR, and
+direct RVV assembly. The direct RVV path emits a compare mask in `v0`, masked
+`vadd.vv`, `vmerge.vvm` passthrough selection, and `vse32.v`. The kernel is now
+covered by host correctness and by the QEMU RVV execution harness.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-ast
+./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-mlir
+./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

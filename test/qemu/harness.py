@@ -12,6 +12,8 @@ extern int complex_vector_pipeline(int *a, int *b, int *tmp, int *out,
                                    int n, int factor);
 extern int copy_then_sum(int *a, int *out, int n);
 extern int vmul(int *a, int *b, int *c, int n);
+extern int masked_add_gt(int *mask_lhs, int *mask_rhs, int *a, int *b,
+                         int *passthrough, int *out, int n);
 extern int select_lt(int *a, int *b, int *true_values, int *false_values,
                      int *out, int n);
 extern int select_le(int *a, int *b, int *true_values, int *false_values,
@@ -51,6 +53,8 @@ static int run_case(int n, int factor) {{
   int out[{capacity}];
   int copied[{capacity}];
   int multiplied[{capacity}];
+  int passthrough[{capacity}];
+  int masked_added[{capacity}];
   int true_values[{capacity}];
   int false_values[{capacity}];
   int selected_lt[{capacity}];
@@ -72,6 +76,8 @@ static int run_case(int n, int factor) {{
     out[i] = 0;
     copied[i] = 0;
     multiplied[i] = 0;
+    passthrough[i] = -300000 - i * 19;
+    masked_added[i] = 0;
     true_values[i] = 100000 + i * 13;
     false_values[i] = -100000 - i * 17;
     selected_lt[i] = 0;
@@ -90,6 +96,7 @@ static int run_case(int n, int factor) {{
 {pipeline_check}
 {copy_check}
 {mul_check}
+{masked_add_check}
 {select_lt_check}
 {select_le_check}
 {select_check}
@@ -226,6 +233,20 @@ for (int i = 0; i < n; ++i) {
 
 
 
+def render_masked_add_check():
+    return indent('''int masked_add_status = masked_add_gt(a, b, a, b, passthrough, masked_added, n);
+if (masked_add_status != 0)
+  return 18;
+for (int i = 0; i < n; ++i) {
+  uint32_t add_expected = add_i32_bits(a[i], b[i]);
+  int expected = a[i] > b[i] ? (int32_t)add_expected : passthrough[i];
+  if (bits_i32(masked_added[i]) != bits_i32(expected))
+    return 290 + i;
+}
+
+''')
+
+
 def render_select_lt_check():
     return indent('''int select_lt_status = select_lt(a, b, true_values, false_values, selected_lt, n);
 if (select_lt_status != 0)
@@ -356,6 +377,7 @@ def render_harness(data):
         pipeline_check=render_pipeline_check(),
         copy_check=render_copy_check(),
         mul_check=render_mul_check(),
+        masked_add_check=render_masked_add_check(),
         select_lt_check=render_select_lt_check(),
         select_le_check=render_select_le_check(),
         select_check=render_select_check(),

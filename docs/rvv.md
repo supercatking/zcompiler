@@ -42,6 +42,8 @@ zc vector source syntax
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
 - `zc.vector_select_gt`
+- `zc.vector_mask_gt`
+- `zc.vector_masked_add`
 
 ## Initial RVV Assembly Goals
 
@@ -56,6 +58,7 @@ Target RVV instruction families:
 - `vredsum.vs`
 - `vmslt.vv`
 - `vmerge.vvm`
+- masked arithmetic using `v0.t`
 
 ## Validation Plan
 
@@ -136,6 +139,8 @@ vector_select_ult out, lhs, rhs, true_values, false_values, n;
 vector_select_ule out, lhs, rhs, true_values, false_values, n;
 vector_select_ugt out, lhs, rhs, true_values, false_values, n;
 vector_select_uge out, lhs, rhs, true_values, false_values, n;
+vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_masked_add out, a, b, m0, passthrough, n;
 ```
 
 Current direct RVV reference mappings:
@@ -155,6 +160,7 @@ Current direct RVV reference mappings:
 - `vector_select_ule`: `vle32.v`, `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_ugt`: `vle32.v`, swapped `vmsltu.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_select_uge`: `vle32.v`, swapped `vmsleu.vv`, `vmerge.vvm`, `vse32.v`
+- `vector_mask_gt` + `vector_masked_add`: `vle32.v`, swapped `vmslt.vv`, masked `vadd.vv`, `vmerge.vvm`, `vse32.v`
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -175,6 +181,8 @@ vector_select_ult out, lhs, rhs, true_values, false_values, n;
 vector_select_ule out, lhs, rhs, true_values, false_values, n;
 vector_select_ugt out, lhs, rhs, true_values, false_values, n;
 vector_select_uge out, lhs, rhs, true_values, false_values, n;
+vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_masked_add out, a, b, m0, passthrough, n;
 ```
 
 It lowers to a signed or unsigned vector compare plus select. The direct RVV reference path
@@ -201,8 +209,9 @@ Current committed subset:
 
 ## Mask Architecture
 
-First-class mask architecture is now defined in
-[phase30n-mask-architecture.md](phase30n-mask-architecture.md). The current
-compiler does not yet implement `vector_mask_*` or masked arithmetic statements;
-the next implementation phase should add the first fused mask producer plus
-masked add path.
+First-class mask architecture is defined in
+[phase30n-mask-architecture.md](phase30n-mask-architecture.md). Phase 30O implements
+the first narrow slice with `vector_mask_gt` and `vector_masked_add`; see
+[phase30o-masked-add.md](phase30o-masked-add.md). Masks are currently transient
+function-local symbols and are lowered by the direct RVV backend through `v0` plus
+masked arithmetic and `vmerge.vvm` passthrough selection.

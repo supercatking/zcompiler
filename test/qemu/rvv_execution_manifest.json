@@ -10,6 +10,7 @@
     "sources": [
       "examples/complex_vector_pipeline.zc",
       "examples/vector_mul.zc",
+      "examples/vector_masked_add_gt.zc",
       "examples/vector_select_gt.zc",
       "examples/vector_select_eq.zc",
       "examples/vector_select_lt.zc",
@@ -36,7 +37,8 @@
       "vector_select_ult",
       "vector_select_ule",
       "vector_select_ugt",
-      "vector_select_uge"
+      "vector_select_uge",
+      "vector_masked_add_gt"
     ],
     "lengths": [
       0,
@@ -126,6 +128,11 @@
         "kernel": "vector_select_uge",
         "function": "select_uge",
         "check": "selected_uge[i] == ((uint32)a[i] >= (uint32)b[i] ? true_values[i] : false_values[i])"
+      },
+      {
+        "kernel": "vector_masked_add_gt",
+        "function": "masked_add_gt",
+        "check": "masked_added[i] == (a[i] > b[i] ? a[i] + b[i] : passthrough[i])"
       }
     ],
     "integer_semantics": {

@@ -40,6 +40,8 @@ tutorial. It currently supports:
 - Target-independent `vector_scale` syntax.
 - Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
+- Target-independent compare/select syntax for signed and unsigned `i32` predicates.
+- First transient mask syntax: `vector_mask_gt` plus `vector_masked_add`.
 - Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
@@ -49,6 +51,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector copy, vector scale, and vector
   multiply.
 - Direct RVV reference assembly for vector reduce add.
+- Direct RVV reference assembly for signed/unsigned compare-select and first masked add.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -176,6 +179,9 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ugt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-ast
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -220,3 +226,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30l-signed-select-predicates.md](docs/phase30l-signed-select-predicates.md)
 - [docs/phase30m-unsigned-select-predicates.md](docs/phase30m-unsigned-select-predicates.md)
 - [docs/phase30n-mask-architecture.md](docs/phase30n-mask-architecture.md)
+- [docs/phase30o-masked-add.md](docs/phase30o-masked-add.md)

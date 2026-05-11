@@ -240,6 +240,10 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorSelectUGT;
   else if (text == "vector_select_uge")
     kind = TokenKind::KwVectorSelectUGE;
+  else if (text == "vector_mask_gt")
+    kind = TokenKind::KwVectorMaskGT;
+  else if (text == "vector_masked_add")
+    kind = TokenKind::KwVectorMaskedAdd;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

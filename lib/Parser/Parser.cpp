@@ -185,6 +185,11 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorSelectUGE))
     return parseVectorSelectStatement(VectorSelectPredicate::UGE,
                                       "vector_select_uge");
+  if (check(TokenKind::KwVectorMaskGT))
+    return parseVectorMaskStatement(VectorSelectPredicate::GT,
+                                    "vector_mask_gt");
+  if (check(TokenKind::KwVectorMaskedAdd))
+    return parseVectorMaskedAddStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -522,6 +527,89 @@ std::unique_ptr<StmtAST> Parser::parseLetStatement() {
     return nullptr;
 
   return std::make_unique<LetStmtAST>(std::move(name), std::move(value));
+}
+
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskStatement(
+    VectorSelectPredicate predicate, StringRef keyword) {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string mask = parseName("expected mask name after vector_mask");
+  if (mask.empty() || !expect(TokenKind::Comma, "expected ',' after mask name"))
+    return nullptr;
+
+  std::string lhs = parseName("expected left compare buffer in vector_mask");
+  if (lhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_mask left input"))
+    return nullptr;
+
+  std::string rhs = parseName("expected right compare buffer in vector_mask");
+  if (rhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_mask right input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  std::string terminatorMessage =
+      "expected ';' after " + keyword.str() + " statement";
+  if (!expect(TokenKind::Semicolon, terminatorMessage))
+    return nullptr;
+
+  return std::make_unique<VectorMaskStmtAST>(predicate, std::move(mask),
+                                             std::move(lhs), std::move(rhs),
+                                             std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedAddStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output = parseName("expected output buffer after vector_masked_add");
+  if (output.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add output"))
+    return nullptr;
+
+  std::string lhs = parseName("expected left input buffer in vector_masked_add");
+  if (lhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add left input"))
+    return nullptr;
+
+  std::string rhs = parseName("expected right input buffer in vector_masked_add");
+  if (rhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add right input"))
+    return nullptr;
+
+  std::string mask = parseName("expected mask name in vector_masked_add");
+  if (mask.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add mask"))
+    return nullptr;
+
+  std::string passthrough = parseName("expected passthrough buffer in vector_masked_add");
+  if (passthrough.empty() || !expect(TokenKind::Comma, "expected ',' after vector_masked_add passthrough"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_add statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedAddStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs), std::move(mask),
+      std::move(passthrough), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseReturnStatement() {

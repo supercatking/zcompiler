@@ -32,6 +32,8 @@ enum class StmtKind {
   VectorMul,
   VectorReduceAdd,
   VectorSelect,
+  VectorMask,
+  VectorMaskedAdd,
 };
 
 enum class VectorSelectPredicate {
@@ -324,6 +326,56 @@ private:
   std::string rhs;
   std::string trueValues;
   std::string falseValues;
+  std::unique_ptr<ExprAST> length;
+};
+
+
+class VectorMaskStmtAST final : public StmtAST {
+public:
+  VectorMaskStmtAST(VectorSelectPredicate predicate, std::string mask,
+                    std::string lhs, std::string rhs,
+                    std::unique_ptr<ExprAST> length)
+      : predicate(predicate), mask(std::move(mask)), lhs(std::move(lhs)),
+        rhs(std::move(rhs)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMask; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  VectorSelectPredicate getPredicate() const { return predicate; }
+  const std::string &getMask() const { return mask; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  VectorSelectPredicate predicate;
+  std::string mask;
+  std::string lhs;
+  std::string rhs;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedAddStmtAST final : public StmtAST {
+public:
+  VectorMaskedAddStmtAST(std::string output, std::string lhs, std::string rhs,
+                         std::string mask, std::string passthrough,
+                         std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        mask(std::move(mask)), passthrough(std::move(passthrough)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMaskedAdd; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const std::string &getMask() const { return mask; }
+  const std::string &getPassthrough() const { return passthrough; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
+  std::string mask;
+  std::string passthrough;
   std::unique_ptr<ExprAST> length;
 };
 

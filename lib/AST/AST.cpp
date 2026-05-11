@@ -160,6 +160,26 @@ void VectorSelectStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+
+void VectorMaskStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskStmt predicate=" << getVectorSelectPredicateName(predicate)
+     << " mask=" << mask << " lhs=" << lhs << " rhs=" << rhs << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorMaskedAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedAddStmt output=" << output << " lhs=" << lhs
+     << " rhs=" << rhs << " mask=" << mask
+     << " passthrough=" << passthrough << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "ReturnStmt\n";

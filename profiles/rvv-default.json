@@ -44,7 +44,9 @@
       "vector_select_ult",
       "vector_select_ule",
       "vector_select_ugt",
-      "vector_select_uge"
+      "vector_select_uge",
+      "vector_mask_gt",
+      "vector_masked_add"
     ],
     "source_element_type": "i32",
     "source_element_width_bits": [
@@ -86,7 +88,20 @@
         "ugt",
         "uge"
       ],
-      "first_class_masks": false
+      "first_class_masks": "transient_function_local_gt_mask",
+      "implemented_mask_producers": [
+        "vector_mask_gt"
+      ]
+    },
+    "masked_operations": {
+      "implemented": [
+        "vector_masked_add"
+      ],
+      "mask_source": "transient function-local vector_mask_gt symbol",
+      "current_predicates": [
+        "gt"
+      ],
+      "direct_rvv_policy": "v0 compare mask plus masked vadd.vv and vmerge.vvm passthrough"
     }
   },
   "current_execution_validation": {
@@ -121,7 +136,8 @@
       "vector_select_ult",
       "vector_select_ule",
       "vector_select_ugt",
-      "vector_select_uge"
+      "vector_select_uge",
+      "vector_masked_add_gt"
     ]
   },
   "toolchain": {

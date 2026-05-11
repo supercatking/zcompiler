@@ -200,6 +200,7 @@ python3 -m json.tool build/correctness/vector_mul_host.json
 python3 -m json.tool build/correctness/vector_reduce_add_host.json
 python3 -m json.tool build/correctness/vector_select_gt_host.json
 python3 -m json.tool build/correctness/vector_select_eq_host.json
+python3 -m json.tool build/correctness/vector_masked_add_gt_host.json
 ```
 
 Phase 30K adds the equality variant harness:
@@ -224,3 +225,25 @@ Host correctness now also covers `vector_select_ult`, `vector_select_ule`,
 `vector_select_ugt`, and `vector_select_uge`. These tests compare `i32` source
 lanes as unsigned 32-bit bit patterns and the QEMU RVV harness validates the
 same semantics with `vmsltu.vv` and `vmsleu.vv`.
+
+
+## Phase 30O Masked Add Coverage
+
+Host correctness now covers the first transient-mask arithmetic slice:
+
+```zc
+vector_mask_gt m0, mask_lhs, mask_rhs, n;
+vector_masked_add out, a, b, m0, passthrough, n;
+```
+
+The MLIR check requires `arith.cmpi sgt`, `arith.addi`, `arith.select`, masked
+vector transfers, and dynamic tail masks. The host model checks `i32` wrapping
+for active mask lanes and passthrough preservation for inactive mask lanes. QEMU
+runtime validation links the generated `masked_add_gt` kernel into the generated
+RVV harness.
+
+The test writes:
+
+```text
+build/correctness/vector_masked_add_gt_host.json
+```

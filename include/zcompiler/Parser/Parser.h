@@ -44,6 +44,9 @@ private:
   std::unique_ptr<StmtAST> parseVectorReduceAddStatement();
   std::unique_ptr<StmtAST> parseVectorSelectStatement(
       VectorSelectPredicate predicate, llvm::StringRef keyword);
+  std::unique_ptr<StmtAST> parseVectorMaskStatement(
+      VectorSelectPredicate predicate, llvm::StringRef keyword);
+  std::unique_ptr<StmtAST> parseVectorMaskedAddStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();

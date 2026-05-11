@@ -1971,3 +1971,31 @@ Validated commands:
 ```bash
 git diff --check
 ```
+
+
+## Phase 30O: Masked Vector Add
+
+### Execution Target
+
+Implement the first source-visible mask producer plus masked arithmetic consumer
+from the Phase 30N architecture.
+
+### Execution Summary
+
+- Added `vector_mask_gt m0, mask_lhs, mask_rhs, n;` as a transient function-local mask producer.
+- Added `vector_masked_add out, a, b, m0, passthrough, n;` as the first masked arithmetic consumer.
+- Added lexer, token dump, AST dump, parser, MLIR generation, and direct RVV reference assembly support.
+- Lowered MLIR through `arith.cmpi sgt`, `arith.addi`, `arith.select`, and masked vector transfer operations.
+- Lowered direct RVV through `vmslt.vv`, masked `vadd.vv`, `vmerge.vvm`, and `vse32.v`.
+- Added golden tests, host correctness, assembler/objdump checks, QEMU harness validation, profile updates, and documentation.
+
+### Execution Result
+
+Completed for the first `i32` masked arithmetic slice in the current `e32,m1` unit-stride subset.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```

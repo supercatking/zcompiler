@@ -62,9 +62,16 @@ diff -u "$source_root/test/parser/vector_select_eq.ast" \
   "$tmp_dir/vector_select_eq.ast"
 
 for predicate in lt le ge ne ult ule ugt uge; do
-  "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" --emit-ast     > "$tmp_dir/vector_select_${predicate}.ast"
-  diff -u "$source_root/test/parser/vector_select_${predicate}.ast"     "$tmp_dir/vector_select_${predicate}.ast"
+  "$zc_bin" "$source_root/examples/vector_select_${predicate}.zc" --emit-ast \
+    > "$tmp_dir/vector_select_${predicate}.ast"
+  diff -u "$source_root/test/parser/vector_select_${predicate}.ast" \
+    "$tmp_dir/vector_select_${predicate}.ast"
 done
+
+"$zc_bin" "$source_root/examples/vector_masked_add_gt.zc" --emit-ast \
+  > "$tmp_dir/vector_masked_add_gt.ast"
+diff -u "$source_root/test/parser/vector_masked_add_gt.ast" \
+  "$tmp_dir/vector_masked_add_gt.ast"
 
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-ast \
   > "$tmp_dir/print_i32.ast"

@@ -1,0 +1,18 @@
+Module
+  Function name=masked_add_gt return=i32
+    Params
+      Param name=mask_lhs type=ptr<i32>
+      Param name=mask_rhs type=ptr<i32>
+      Param name=a type=ptr<i32>
+      Param name=b type=ptr<i32>
+      Param name=passthrough type=ptr<i32>
+      Param name=out type=ptr<i32>
+      Param name=n type=i32
+    VectorMaskStmt predicate=gt mask=m0 lhs=mask_lhs rhs=mask_rhs
+      Length
+        VariableExpr name=n
+    VectorMaskedAddStmt output=out lhs=a rhs=b mask=m0 passthrough=passthrough
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

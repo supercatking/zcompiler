@@ -41,6 +41,7 @@ public:
 private:
   void emitFunction(const FunctionAST &function) {
     variables.clear();
+    masks.clear();
     Location loc = builder.getUnknownLoc();
     SmallVector<Type, 4> inputTypes;
     for (const ParameterAST &parameter : function.getParameters())
@@ -218,6 +219,13 @@ private:
       return;
     case StmtKind::VectorSelect:
       emitVectorSelect(static_cast<const VectorSelectStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMask:
+      rememberVectorMask(static_cast<const VectorMaskStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskedAdd:
+      emitVectorMaskedAdd(
+          static_cast<const VectorMaskedAddStmtAST &>(statement));
       return;
     }
   }
@@ -475,6 +483,62 @@ private:
     emitVectorWrite(selected, output->second, access);
   }
 
+
+  void rememberVectorMask(const VectorMaskStmtAST &statement) {
+    if (masks.count(statement.getMask())) {
+      result.addDiagnostic("duplicate vector mask '" + statement.getMask() + "'");
+      return;
+    }
+    masks[statement.getMask()] = &statement;
+  }
+
+  void emitVectorMaskedAdd(const VectorMaskedAddStmtAST &statement) {
+    auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end()) {
+      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
+      return;
+    }
+
+    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    auto passthrough = variables.find(statement.getPassthrough());
+    auto maskLHS = variables.find(maskStatement.getLHS());
+    auto maskRHS = variables.find(maskStatement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end() || passthrough == variables.end() ||
+        maskLHS == variables.end() || maskRHS == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_masked_add statement");
+      return;
+    }
+
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value maskLHSVector = emitVectorRead(maskLHS->second, access);
+    Value maskRHSVector = emitVectorRead(maskRHS->second, access);
+    Value vectorMask = builder.create<arith::CmpIOp>(
+        access.loc, getMLIRPredicate(maskStatement.getPredicate()),
+        maskLHSVector, maskRHSVector);
+    Value lhsVector = emitVectorRead(lhs->second, access);
+    Value rhsVector = emitVectorRead(rhs->second, access);
+    Value passthroughVector = emitVectorRead(passthrough->second, access);
+    Value sum = builder.create<arith::AddIOp>(access.loc, lhsVector, rhsVector);
+    Value selected = builder.create<arith::SelectOp>(
+        access.loc, vectorMask, sum, passthroughVector);
+    emitVectorWrite(selected, output->second, access);
+  }
+
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
     auto resultVariable = variables.find(statement.getResult());
     auto input = variables.find(statement.getInput());
@@ -538,6 +602,7 @@ private:
   OpBuilder builder;
   MLIRGenResult &result;
   std::map<std::string, Value> variables;
+  std::map<std::string, const VectorMaskStmtAST *> masks;
 };
 
 } // namespace

@@ -38,6 +38,8 @@ enum class TokenKind {
   KwVectorSelectULE,
   KwVectorSelectUGT,
   KwVectorSelectUGE,
+  KwVectorMaskGT,
+  KwVectorMaskedAdd,
 
   Plus,
   Minus,
