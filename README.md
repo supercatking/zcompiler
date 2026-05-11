@@ -37,14 +37,16 @@ tutorial. It currently supports:
 - Scalar indexed `load` / `store`.
 - Target-independent `vector_add` syntax.
 - Target-independent `vector_copy` syntax.
+- Target-independent `vector_scale` syntax.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
 - Direct RVV reference assembly for vector add.
+- Direct RVV reference assembly for vector copy and vector scale.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
-- Host-side correctness harness for masked vector-add tails.
+- Host-side correctness harnesses for masked vector tails.
 
 Example target input:
 
@@ -141,6 +143,8 @@ Current RVV vector-add path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm
 /home/zyz/zcomipler/benchmarks/vector_add/run.sh
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ```

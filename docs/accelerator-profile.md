@@ -30,7 +30,7 @@ For the current RVV work, the important assumptions include:
 - `rv64gcv`
 - `lp64d`
 - default vector element type: `i32`
-- current source operations: `vector_add`, `vector_copy`
+- current source operations: `vector_add`, `vector_copy`, `vector_scale`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly
@@ -47,3 +47,16 @@ Benchmarks should include the profile path in their generated metadata:
 AI experiment records should also cite the profile when comparing optimization
 results. This keeps future performance or code-size claims tied to a concrete
 target assumption instead of an implicit machine model.
+
+## Phase 25B Update
+
+`vector_scale` is now part of the default profile. It keeps the same `i32`,
+`vector<4xi32>`, and masked-tail assumptions as `vector_add` and `vector_copy`,
+but adds scalar-to-vector broadcast plus multiply semantics:
+
+```text
+vector_scale c, a, factor, n;
+```
+
+The direct RVV reference backend maps this to `vle32.v`, `vmul.vx`, and
+`vse32.v` inside the same `vsetvli` loop policy.

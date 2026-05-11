@@ -36,6 +36,8 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_add";
   case TokenKind::KwVectorCopy:
     return "kw_vector_copy";
+  case TokenKind::KwVectorScale:
+    return "kw_vector_scale";
   case TokenKind::Plus:
     return "plus";
   case TokenKind::Minus:

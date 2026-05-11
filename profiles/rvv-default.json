@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile_id": "rvv64gcv_i32_m1_default",
-  "description": "Default development profile for zcompiler RVV vector-add experiments.",
+  "description": "Default development profile for zcompiler RVV vector kernel experiments.",
   "target": {
     "triple": "riscv64-unknown-elf",
     "march": "rv64gcv",
@@ -18,7 +18,7 @@
     "preferred_vector_length_strategy": "vsetvli from remaining element count"
   },
   "current_compiler_policy": {
-    "source_operations": ["vector_add", "vector_copy"],
+    "source_operations": ["vector_add", "vector_copy", "vector_scale"],
     "source_element_type": "i32",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",

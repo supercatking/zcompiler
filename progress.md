@@ -578,6 +578,57 @@ riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_copy.s -o /tmp/vecto
 python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_copy_host.json
 ```
 
+## Phase 25B: Vector Scale Kernel Surface
+
+### Execution Target
+
+Add a compute kernel that multiplies an input vector by a scalar factor while
+reusing the Phase 25 masked vector memory architecture.
+
+### Execution Summary
+
+- Added `vector_scale c, a, factor, n;` source syntax.
+- Added lexer keyword support for `vector_scale`.
+- Added `VectorScaleStmtAST` with output buffer, input buffer, scalar factor,
+  and length expression.
+- Added parser support and AST dump output for `VectorScaleStmt`.
+- Reused `MLIRGen` masked vector loop/read/write helpers.
+- Added MLIR lowering with:
+  - `vector.create_mask`
+  - `vector.transfer_read`
+  - `vector.broadcast`
+  - `arith.muli`
+  - `vector.transfer_write`
+- Added direct RVV reference assembly with:
+  - `vsetvli`
+  - `vle32.v`
+  - `vmul.vx`
+  - `vse32.v`
+- Added `examples/vector_scale.zc`.
+- Added lexer, parser, MLIR, RISC-V assembly, assembler/objdump, and host-side
+  correctness coverage for `vector_scale`.
+- Updated `profiles/rvv-default.json`, architecture docs, RVV docs,
+  correctness docs, AI workflow docs, README, and roadmap.
+
+### Execution Result
+
+Completed.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j2
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir > /tmp/vector_scale.mlir
+/home/zyz/mlir/build/bin/mlir-opt /tmp/vector_scale.mlir -o /tmp/vector_scale.checked.mlir
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm > /tmp/vector_scale.s
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_scale.s -o /tmp/vector_scale.o
+riscv64-linux-gnu-objdump -d /tmp/vector_scale.o
+python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_scale_host.json
+/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

@@ -38,6 +38,7 @@ zc vector source syntax
 - `zc.vector_store`
 - `zc.vector_copy`
 - `zc.vector_add`
+- `zc.vector_scale`
 - `zc.vector_mul`
 - `zc.vector_reduce_add`
 
@@ -49,6 +50,7 @@ Target RVV instruction families:
 - `vle32.v`
 - `vse32.v`
 - `vadd.vv`
+- `vmul.vx`
 - `vmul.vv`
 - `vredsum.vs`
 
@@ -96,3 +98,22 @@ Source vector syntax
   -> MLIR vector dialect
   -> RVV-specific lowering
 ```
+
+## Current Implemented Kernel Surface
+
+The implemented target-independent source operations are:
+
+```zc
+vector_add c, a, b, n;
+vector_copy c, a, n;
+vector_scale c, a, factor, n;
+```
+
+Current direct RVV reference mappings:
+
+- `vector_add`: `vle32.v`, `vadd.vv`, `vse32.v`
+- `vector_copy`: `vle32.v`, `vse32.v`
+- `vector_scale`: `vle32.v`, `vmul.vx`, `vse32.v`
+
+All three use a `vsetvli` loop and keep source-level syntax independent from
+RVV instruction names.

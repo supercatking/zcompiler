@@ -408,3 +408,26 @@ Phase 24A 已经补充 host-side correctness harness，用来验证 masked `vect
 Phase 25A 已经新增 `vector_copy c, a, n;`，并复用 masked MLIR vector lowering、RVV load/store reference assembly、golden tests 和 host-side correctness harness。
 
 下一步建议继续 Phase 25B/25C：增加 vector scale、multiply-add 或 reduction。原因是现在 copy/add 两类 kernel 已经验证了“纯 load/store”和“load/compute/store”两种基本形态，可以继续覆盖更接近真实 workload 的算子。
+## Phase 25B 架构更新
+
+当前 vector kernel surface 已经从单一的 `vector_add` 扩展到：
+
+```zc
+vector_add c, a, b, n;
+vector_copy c, a, n;
+vector_scale c, a, factor, n;
+```
+
+这三个语句在 frontend 层仍然是 target-independent AST，不直接暴露 RVV
+指令名。RVV 相关选择只发生在 MLIR lowering 和 target backend 层：
+
+```text
+Vector*StmtAST
+  -> masked MLIR vector loop
+  -> direct RVV reference assembly
+```
+
+`vector_scale` 复用 Phase 25A 提取出的 masked vector loop/read/write helper，
+只在计算部分增加 `vector.broadcast` 和 `arith.muli`。这保持了扩展新 kernel
+时的模块边界：parser 只负责语法，AST 只表达语义，MLIRGen 负责 target-neutral
+vector IR，RISC-V backend 负责 `vmul.vx` 这类目标指令选择。

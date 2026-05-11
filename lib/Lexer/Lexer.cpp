@@ -212,6 +212,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorAdd;
   else if (text == "vector_copy")
     kind = TokenKind::KwVectorCopy;
+  else if (text == "vector_scale")
+    kind = TokenKind::KwVectorScale;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

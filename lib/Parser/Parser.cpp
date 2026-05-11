@@ -147,6 +147,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorAddStatement();
   if (check(TokenKind::KwVectorCopy))
     return parseVectorCopyStatement();
+  if (check(TokenKind::KwVectorScale))
+    return parseVectorScaleStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -231,6 +233,46 @@ std::unique_ptr<StmtAST> Parser::parseVectorCopyStatement() {
 
   return std::make_unique<VectorCopyStmtAST>(
       std::move(output), std::move(input), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorScaleStatement() {
+  advance();
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected output buffer after 'vector_scale'");
+    return nullptr;
+  }
+  std::string output = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_scale output"))
+    return nullptr;
+
+  if (!check(TokenKind::Identifier)) {
+    reportAtCurrent("expected input buffer in vector_scale");
+    return nullptr;
+  }
+  std::string input = advance().lexeme;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_scale input"))
+    return nullptr;
+
+  auto factor = parseExpression();
+  if (!factor)
+    return nullptr;
+
+  if (!expect(TokenKind::Comma, "expected ',' after vector_scale factor"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon, "expected ';' after vector_scale statement"))
+    return nullptr;
+
+  return std::make_unique<VectorScaleStmtAST>(
+      std::move(output), std::move(input), std::move(factor),
+      std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseStoreStatement() {

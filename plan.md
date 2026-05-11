@@ -530,6 +530,108 @@ One AI-assisted compiler proposal can be recorded, tested, compared, and marked
 accepted or rejected.
 ```
 
+## Phase 23: Machine-Readable Accelerator Profile
+
+Goal: make RVV target assumptions explicit and reusable by compiler tests,
+benchmarks, and AI experiment records.
+
+Deliverables:
+
+- `profiles/rvv-default.json`.
+- Documentation for target triple, `march`, `mabi`, SEW/LMUL policy, and
+  tail/mask policy.
+- Benchmark metadata that cites the active profile.
+
+Exit criteria:
+
+```text
+Generated benchmark and correctness records cite the active accelerator profile.
+```
+
+## Phase 24: Correctness Harness
+
+Goal: validate vector semantics independently from golden text diffs.
+
+Deliverables:
+
+- Host-side scalar reference models.
+- Host-side masked vector chunk models.
+- Generated JSON correctness records.
+- CTest integration.
+
+Exit criteria:
+
+```text
+Vector operations have semantic checks for normal and tail lengths.
+```
+
+## Phase 25: Vector Kernel Surface Expansion
+
+Goal: grow from one vector operation into a small family of kernels while
+preserving clean module boundaries.
+
+Completed slices:
+
+- Phase 25A: `vector_copy c, a, n;`
+- Phase 25B: `vector_scale c, a, factor, n;`
+
+Deliverables:
+
+- Source examples for each kernel.
+- Lexer, parser, AST, MLIR, RVV assembly, assembler, objdump, and correctness
+  coverage for each kernel.
+- Shared MLIR masked vector loop/read/write helpers.
+- Accelerator profile updates whenever the supported operation set changes.
+
+Architecture constraints:
+
+- Keep source syntax target-independent.
+- Keep RVV instruction selection in target/lowering code.
+- Reuse helper APIs for common vector memory/tail behavior.
+
+Exit criteria:
+
+```text
+At least three vector kernels compile through MLIR vector dialect and direct
+RVV reference assembly, with semantic tail checks.
+```
+
+## Phase 26: Formal MLIR RVV Lowering Unblock
+
+Goal: align the local LLVM/MLIR toolchain so masked vector dialect IR can lower
+through LLVM to RISC-V RVV assembly without the temporary direct assembly path.
+
+Deliverables:
+
+- Toolchain alignment plan for local LLVM 23 MLIR and RISC-V-enabled `llc`.
+- Re-run of `scripts/probe-formal-rvv-lowering.sh`.
+- Updated formal lowering notes and tests if the blocker is removed.
+
+Exit criteria:
+
+```text
+The formal MLIR vector-to-LLVM-to-RISC-V path reaches RVV assembly in the local
+environment, or the remaining blocker is precisely documented.
+```
+
+## Phase 27: AI-Guided Kernel Optimization Records
+
+Goal: use the AI workflow to compare kernel-lowering alternatives under the
+active accelerator profile.
+
+Deliverables:
+
+- Prompt/result records for at least one kernel-lowering proposal.
+- Profile-aware comparison metadata.
+- Test and benchmark references for accepted or rejected changes.
+
+Exit criteria:
+
+```text
+One vector-kernel optimization proposal is recorded with profile, tests,
+generated IR/assembly, and accept/reject result.
+```
+
 ## Engineering Rules For All Future Phases
 
 - Think through the core architecture first and document it before coding.
@@ -545,12 +647,10 @@ accepted or rejected.
 
 ## Immediate Next Tasks
 
-The next implementation steps after the current Phase 22A state:
+The next implementation steps after Phase 25B:
 
-1. Phase 25B: add another compute kernel such as `vector_scale` or
-   multiply-add, reusing the masked vector helper path.
-2. Phase 25C: add a first reduction kernel and document the lowering strategy.
-3. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
+1. Phase 25C: add a first reduction kernel and document the lowering strategy.
+2. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
    vector-to-RVV lowering path can reach RISC-V assembly.
-4. Phase 27A: start using accelerator profiles in AI experiment records and
+3. Phase 27A: start using accelerator profiles in AI experiment records and
    optimization proposal comparisons.

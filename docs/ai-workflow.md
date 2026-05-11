@@ -52,6 +52,8 @@ accepted:
 - Suggest lowering patterns from `zc` operations to MLIR dialects.
 - Summarize benchmark differences.
 - Create new tests for parser, lowering, LLVM IR, and RISC-V assembly.
+- Propose new vector kernel forms only when paired with parser, MLIR, RVV
+  assembly, correctness, and profile updates.
 
 ## Phase Roadmap
 
@@ -121,3 +123,17 @@ The first prompt record is:
 ```text
 experiments/prompts/vector_add_rvv_001.md
 ```
+
+## Current Acceptance Standard For Vector Kernels
+
+For Phase 25 and later vector-kernel work, an accepted compiler change must
+include:
+
+- Source example under `examples/`.
+- Lexer and parser golden coverage.
+- MLIR golden coverage with masked tail behavior when memory is touched.
+- Direct RVV reference assembly coverage when the operation has an RVV mapping.
+- Host-side correctness record or a documented executable test.
+- Accelerator profile update when the supported operation set changes.
+
+This standard was applied to `vector_add`, `vector_copy`, and `vector_scale`.

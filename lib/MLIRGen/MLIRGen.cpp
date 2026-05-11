@@ -201,6 +201,9 @@ private:
     case StmtKind::VectorCopy:
       emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));
       return;
+    case StmtKind::VectorScale:
+      emitVectorScale(static_cast<const VectorScaleStmtAST &>(statement));
+      return;
     }
   }
 
@@ -334,6 +337,35 @@ private:
 
     Value inputVector = emitVectorRead(input->second, access);
     emitVectorWrite(inputVector, output->second, access);
+  }
+
+  void emitVectorScale(const VectorScaleStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    if (output == variables.end() || input == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_scale statement");
+      return;
+    }
+
+    Value factor = emitExpression(statement.getFactor());
+    Value upperBound = ensureIndex(emitExpression(statement.getLength()));
+    if (!factor || !upperBound)
+      return;
+
+    Value step;
+    auto forOp = createMaskedVectorLoop(upperBound, step);
+
+    OpBuilder::InsertionGuard guard(builder);
+    builder.setInsertionPointToStart(forOp.getBody());
+    MaskedVectorAccess access =
+        createMaskedVectorAccess(upperBound, step, forOp.getInductionVar());
+
+    Value inputVector = emitVectorRead(input->second, access);
+    Value factorVector = builder.create<vector::BroadcastOp>(
+        access.loc, access.vectorType, factor);
+    Value scaled =
+        builder.create<arith::MulIOp>(access.loc, inputVector, factorVector);
+    emitVectorWrite(scaled, output->second, access);
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

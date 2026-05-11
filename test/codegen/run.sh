@@ -86,6 +86,23 @@ if grep -q "vadd.vv" "$tmp_dir/vector_copy.riscv"; then
   exit 1
 fi
 
+"$zc_bin" "$source_root/examples/vector_scale.zc" --emit-mlir \
+  > "$tmp_dir/vector_scale.mlir"
+diff -u -B "$source_root/test/codegen/vector_scale.mlir" \
+  "$tmp_dir/vector_scale.mlir"
+
+"$zc_bin" "$source_root/examples/vector_scale.zc" --emit-riscv-asm \
+  > "$tmp_dir/vector_scale.riscv"
+diff -u "$source_root/test/codegen/vector_scale.riscv" \
+  "$tmp_dir/vector_scale.riscv"
+for instruction in vsetvli vle32.v vmul.vx vse32.v; do
+  grep -q "$instruction" "$tmp_dir/vector_scale.riscv"
+done
+if grep -q "vadd.vv" "$tmp_dir/vector_scale.riscv"; then
+  echo "vector_scale unexpectedly contains vadd.vv" >&2
+  exit 1
+fi
+
 "$zc_bin" "$source_root/examples/control.zc" --emit-llvm \
   > "$tmp_dir/control.ll"
 diff -u "$source_root/test/codegen/control.ll" "$tmp_dir/control.ll"
@@ -105,6 +122,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/vector_add.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_copy.mlir" \
     -o "$tmp_dir/vector_copy.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_scale.mlir" \
+    -o "$tmp_dir/vector_scale.opt.mlir"
 fi
 
 if [ -x /home/zyz/mlir/build/bin/llvm-as ]; then
@@ -140,6 +159,17 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   done
   if grep -q "vadd.vv" "$tmp_dir/vector_copy.objdump"; then
     echo "vector_copy objdump unexpectedly contains vadd.vv" >&2
+    exit 1
+  fi
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/vector_scale.riscv" -o "$tmp_dir/vector_scale.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/vector_scale.o" \
+    > "$tmp_dir/vector_scale.objdump"
+  for instruction in vsetvli vle32.v vmul.vx vse32.v; do
+    grep -q "$instruction" "$tmp_dir/vector_scale.objdump"
+  done
+  if grep -q "vadd.vv" "$tmp_dir/vector_scale.objdump"; then
+    echo "vector_scale objdump unexpectedly contains vadd.vv" >&2
     exit 1
   fi
 fi

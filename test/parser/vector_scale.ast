@@ -1,0 +1,14 @@
+Module
+  Function name=vscale return=i32
+    Params
+      Param name=a type=ptr<i32>
+      Param name=c type=ptr<i32>
+      Param name=factor type=i32
+      Param name=n type=i32
+    VectorScaleStmt output=c input=a
+      Factor
+        VariableExpr name=factor
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

@@ -57,6 +57,35 @@ The test writes:
 build/correctness/vector_copy_host.json
 ```
 
+## Phase 25B Vector Scale Host Harness
+
+The third host harness is:
+
+```text
+test/correctness/vector_scale_host.py
+```
+
+It validates masked chunk behavior for:
+
+```zc
+vector_scale c, a, factor, n;
+```
+
+The MLIR check requires:
+
+- `vector.create_mask`
+- `vector.transfer_read`
+- `vector.transfer_write`
+- `vector.broadcast`
+- `arith.muli`
+- `arith.minui`
+
+The test writes:
+
+```text
+build/correctness/vector_scale_host.json
+```
+
 ## Why Host-Side First
 
 The current WSL environment does not provide `qemu-riscv64`, so Phase 24A starts
@@ -70,4 +99,5 @@ code into a runnable program.
 ctest --test-dir build --output-on-failure
 python3 -m json.tool build/correctness/vector_add_host.json
 python3 -m json.tool build/correctness/vector_copy_host.json
+python3 -m json.tool build/correctness/vector_scale_host.json
 ```

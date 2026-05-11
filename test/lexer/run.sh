@@ -28,6 +28,11 @@ diff -u "$source_root/test/lexer/vector_add.tokens" \
 diff -u "$source_root/test/lexer/vector_copy.tokens" \
   "$tmp_dir/vector_copy.tokens"
 
+"$zc_bin" "$source_root/examples/vector_scale.zc" --emit-tokens \
+  > "$tmp_dir/vector_scale.tokens"
+diff -u "$source_root/test/lexer/vector_scale.tokens" \
+  "$tmp_dir/vector_scale.tokens"
+
 set +e
 "$zc_bin" "$source_root/test/lexer/invalid.zc" --emit-tokens \
   > "$tmp_dir/invalid.out" 2> "$tmp_dir/invalid.err"

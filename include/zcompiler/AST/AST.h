@@ -27,6 +27,7 @@ enum class StmtKind {
   While,
   VectorAdd,
   VectorCopy,
+  VectorScale,
 };
 
 class ParameterAST final {
@@ -204,6 +205,27 @@ public:
 private:
   std::string output;
   std::string input;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorScaleStmtAST final : public StmtAST {
+public:
+  VectorScaleStmtAST(std::string output, std::string input,
+                     std::unique_ptr<ExprAST> factor,
+                     std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        factor(std::move(factor)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorScale; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const ExprAST &getFactor() const { return *factor; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::unique_ptr<ExprAST> factor;
   std::unique_ptr<ExprAST> length;
 };
 
