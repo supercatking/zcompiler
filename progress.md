@@ -504,6 +504,40 @@ python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
 
+## Phase 24A: Host-Side Vector Add Correctness Harness
+
+### Execution Target
+
+Add a correctness-oriented test that validates masked vector-add tail semantics,
+even before a RISC-V emulator is available in the WSL environment.
+
+### Execution Summary
+
+- Added [docs/correctness-testing.md](docs/correctness-testing.md).
+- Added `test/correctness/vector_add_host.py`.
+- Added `test/correctness/run.sh`.
+- Registered a new `correctness` CTest target.
+- The host harness checks generated MLIR for:
+  - `vector.create_mask`
+  - `vector.transfer_read`
+  - `vector.transfer_write`
+  - `arith.minui`
+- The host harness compares scalar semantics with masked `vector<4xi32>`
+  chunk semantics for lengths `0`, `1`, `3`, `4`, `5`, `7`, `16`, and `17`.
+
+### Execution Result
+
+Completed as a host-side semantic correctness baseline. Emulator-backed RISC-V
+execution remains a future extension because `qemu-riscv64` is not installed in
+the current WSL environment.
+
+Validated commands:
+
+```bash
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_add_host.json
+```
+
 ## Phase 22A: First AI-Assisted Experiment Record
 
 ### Execution Target

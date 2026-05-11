@@ -31,3 +31,11 @@ add_test(
           $<TARGET_FILE:zc-opt>
           ${CMAKE_SOURCE_DIR}
 )
+
+add_test(
+  NAME correctness
+  COMMAND ${BASH_PROGRAM}
+          ${CMAKE_CURRENT_SOURCE_DIR}/correctness/run.sh
+          $<TARGET_FILE:zc>
+          ${CMAKE_SOURCE_DIR}
+)

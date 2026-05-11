@@ -403,4 +403,6 @@ profiles/rvv-default.json
 
 这样 benchmark、AI experiment、codegen probe 都可以引用同一个 profile，避免后续比较结果时目标假设不一致。
 
-下一步建议优先做 Phase 24：给 vector-add 输出增加 correctness-oriented execution test。原因是现在代码生成、RVV artifact、benchmark metadata 都已经有了，需要进一步验证“生成的结果真的算对”，而不只是汇编里包含目标指令。
+Phase 24A 已经补充 host-side correctness harness，用来验证 masked `vector_add` 在 `n=0/1/3/4/5/7/16/17` 等长度下的语义和 tail lane 行为。
+
+下一步建议优先做 Phase 25：把 vector kernel surface 从 `vector_add` 扩展到 copy、scale、multiply-add、reduction。原因是现在单一 kernel 的语法、MLIR lowering、RVV artifact、benchmark metadata、profile、correctness harness 都已经形成闭环，可以开始扩展 kernel 覆盖面。

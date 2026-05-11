@@ -346,6 +346,8 @@ The current roadmap status:
   baseline metadata.
 - Phase 22: completed first AI-assisted experiment record.
 - Phase 23: completed the first machine-readable RVV accelerator profile.
+- Phase 24: completed host-side correctness tests for masked vector-add tails.
 
-The next implementation priority is correctness-oriented vector execution
-testing, followed by expanding the vector kernel surface beyond `vector_add`.
+The next implementation priority is expanding the vector kernel surface beyond
+`vector_add`, followed by emulator-backed correctness tests when a suitable
+RISC-V environment is available.

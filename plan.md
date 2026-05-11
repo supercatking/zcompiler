@@ -547,11 +547,11 @@ accepted or rejected.
 
 The next implementation steps after the current Phase 22A state:
 
-1. Phase 24A: add correctness-oriented executable tests for vector-add outputs
-   through an emulator or a host-side reference harness when available.
-2. Phase 25A: generalize the vector kernel surface beyond `vector_add` toward
+1. Phase 25A: generalize the vector kernel surface beyond `vector_add` toward
    copy, scale, multiply-add, and reduction kernels.
-3. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
+2. Phase 26A: rebuild or align the LLVM toolchain so the formal masked
    vector-to-RVV lowering path can reach RISC-V assembly.
-4. Phase 27A: start using accelerator profiles in AI experiment records and
+3. Phase 27A: start using accelerator profiles in AI experiment records and
    optimization proposal comparisons.
+4. Phase 28A: add emulator-backed correctness tests when `qemu-riscv64` or
+   another RVV-capable execution environment is available.

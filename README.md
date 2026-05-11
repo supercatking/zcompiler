@@ -43,6 +43,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector add.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
+- Host-side correctness harness for masked vector-add tails.
 
 Example target input:
 
@@ -145,6 +146,7 @@ Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
 - [docs/accelerator-profile.md](docs/accelerator-profile.md)
+- [docs/correctness-testing.md](docs/correctness-testing.md)
 - [docs/ai-workflow.md](docs/ai-workflow.md)
 - [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md)
 - [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)
