@@ -30,6 +30,33 @@
       9,
       16,
       17
+    ],
+    "kernel_checks": [
+      {
+        "kernel": "vector_add",
+        "function": "complex_vector_pipeline",
+        "check": "tmp[i] == a[i] + b[i]"
+      },
+      {
+        "kernel": "vector_scale",
+        "function": "complex_vector_pipeline",
+        "check": "out[i] == (a[i] + b[i]) * factor"
+      },
+      {
+        "kernel": "vector_reduce_add",
+        "function": "complex_vector_pipeline and copy_then_sum",
+        "check": "returned scalar equals sum of checked output elements"
+      },
+      {
+        "kernel": "vector_copy",
+        "function": "copy_then_sum",
+        "check": "copied[i] == a[i]"
+      },
+      {
+        "kernel": "vector_mul",
+        "function": "vmul",
+        "check": "multiplied[i] == a[i] * b[i]"
+      }
     ]
   }
 }

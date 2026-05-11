@@ -9,32 +9,8 @@ trap 'rm -rf "$tmp_dir"' EXIT
 manifest="$source_root/test/qemu/rvv_execution_manifest.json"
 manifest_env="$tmp_dir/qemu_manifest.env"
 
-python3 - "$manifest" "$manifest_env" <<'PY'
-import json
-import shlex
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    data = json.load(handle)
-
-rvv = data["rvv_execution"]
-print_i32 = data["print_i32"]
-lengths = rvv["lengths"]
-if not lengths:
-    raise SystemExit("rvv_execution.lengths must not be empty")
-capacity = max(max(lengths), 1)
-
-with open(sys.argv[2], "w", encoding="utf-8") as handle:
-    handle.write(f"qemu_cpu={shlex.quote(data.get('qemu_cpu', 'max'))}\n")
-    handle.write(
-        f"print_expected_stdout={shlex.quote(print_i32['expected_stdout'])}\n"
-    )
-    handle.write(f"print_expected_status={int(print_i32['expected_exit_status'])}\n")
-    handle.write(
-        "rvv_lengths_c=" + shlex.quote(", ".join(str(length) for length in lengths)) + "\n"
-    )
-    handle.write(f"rvv_capacity={capacity}\n")
-PY
+python3 "$source_root/test/qemu/manifest.py" "$manifest" \
+  --emit-shell-env "$manifest_env"
 # shellcheck disable=SC1090
 . "$manifest_env"
 

@@ -1616,3 +1616,32 @@ python3 -m json.tool /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json >
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
 ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
 ```
+
+
+## Phase 30C: QEMU Kernel Descriptors
+
+### Execution Target
+
+Add validated per-kernel descriptors to the QEMU execution manifest and move
+manifest parsing out of `test/qemu/run.sh`.
+
+### Execution Summary
+
+- Added `test/qemu/manifest.py`.
+- Extended `test/qemu/rvv_execution_manifest.json` with `kernel_checks`.
+- Updated `test/qemu/run.sh` to call the helper instead of embedding Python.
+- Added [docs/phase30c-qemu-kernel-descriptors.md](docs/phase30c-qemu-kernel-descriptors.md).
+- Updated README and plan.
+
+### Execution Result
+
+Completed as validated metadata for QEMU runtime kernel coverage. Generated C
+check fragments remain planned for Phase 30D.
+
+Validated commands:
+
+```bash
+python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+```
