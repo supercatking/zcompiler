@@ -1,121 +1,199 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="930" viewBox="0 0 1280 930" role="img" aria-labelledby="title desc">
-  <title id="title">zcompiler architecture</title>
-  <desc id="desc">Architecture diagram for the zcompiler toy compiler, from source language through lexer, parser, AST, code generation, MLIR, LLVM IR, RISC-V assembly, accelerator profiles, RVV planning, and AI-assisted workflow.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1060" viewBox="0 0 1500 1060" role="img" aria-labelledby="title desc">
+  <title id="title">zcompiler current software architecture</title>
+  <desc id="desc">Current zcompiler architecture from .zc source through lexer, parser, AST, MLIR generation, direct RISC-V and RVV reference code generation, RISC-V toolchain validation, QEMU execution, tests, documents, accelerator profiles, benchmarks, and AI workflow.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#243447"/>
+    </marker>
+    <marker id="softArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
     </marker>
     <style>
-      .bg { fill: #f8fafc; }
-      .title { font: 700 30px Arial, sans-serif; fill: #0f172a; }
-      .subtitle { font: 16px Arial, sans-serif; fill: #475569; }
-      .lane-title { font: 700 18px Arial, sans-serif; fill: #0f172a; }
-      .box-title { font: 700 16px Arial, sans-serif; fill: #0f172a; }
-      .box-text { font: 13px Arial, sans-serif; fill: #334155; }
-      .small { font: 12px Arial, sans-serif; fill: #475569; }
-      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; rx: 10; }
-      .frontend { fill: #e0f2fe; stroke: #0284c7; }
-      .ast { fill: #ecfccb; stroke: #65a30d; }
-      .codegen { fill: #fef3c7; stroke: #d97706; }
+      .bg { fill: #f7fafc; }
+      .title { font: 700 32px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .subtitle { font: 15px Arial, Helvetica, sans-serif; fill: #475569; }
+      .lane { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.4; rx: 8; }
+      .laneHead { font: 700 16px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.4; rx: 8; }
+      .source { fill: #e0f2fe; stroke: #0284c7; }
+      .front { fill: #dcfce7; stroke: #16a34a; }
+      .model { fill: #fef9c3; stroke: #ca8a04; }
       .mlir { fill: #ede9fe; stroke: #7c3aed; }
-      .target { fill: #fee2e2; stroke: #dc2626; }
-      .future { fill: #f1f5f9; stroke: #64748b; stroke-dasharray: 5 4; }
-      .line { stroke: #334155; stroke-width: 2; fill: none; marker-end: url(#arrow); }
-      .dash { stroke-dasharray: 6 5; }
-      .label { font: 12px Arial, sans-serif; fill: #334155; }
+      .backend { fill: #ffe4e6; stroke: #e11d48; }
+      .verify { fill: #e0f2fe; stroke: #2563eb; }
+      .control { fill: #f1f5f9; stroke: #64748b; stroke-dasharray: 6 5; }
+      .future { fill: #fff7ed; stroke: #ea580c; stroke-dasharray: 6 5; }
+      .boxTitle { font: 700 15px Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .boxText { font: 12.5px Arial, Helvetica, sans-serif; fill: #334155; }
+      .small { font: 11.5px Arial, Helvetica, sans-serif; fill: #475569; }
+      .pill { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; rx: 8; }
+      .pillText { font: 11px Arial, Helvetica, sans-serif; fill: #334155; }
+      .arrow { stroke: #243447; stroke-width: 2.1; fill: none; marker-end: url(#arrow); }
+      .softArrow { stroke: #64748b; stroke-width: 1.7; fill: none; marker-end: url(#softArrow); stroke-dasharray: 6 5; }
+      .note { font: 12px Arial, Helvetica, sans-serif; fill: #475569; }
+      .mono { font: 12px Consolas, Menlo, monospace; fill: #334155; }
     </style>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1280" height="930"/>
+  <rect class="bg" x="0" y="0" width="1500" height="1060"/>
 
-  <text class="title" x="56" y="58">zcompiler Architecture</text>
-  <text class="subtitle" x="56" y="86">A small MLIR-inspired toy compiler growing toward an AI-assisted RISC-V RVV compiler.</text>
+  <text class="title" x="48" y="54">zcompiler Current Software Architecture</text>
+  <text class="subtitle" x="48" y="82">Toy compiler foundation for an AI self made compiler based on RISC-V RVV accelerator workloads.</text>
 
-  <text class="lane-title" x="78" y="140">Frontend</text>
-  <text class="lane-title" x="350" y="140">Program Model</text>
-  <text class="lane-title" x="615" y="140">Code Generation</text>
-  <text class="lane-title" x="898" y="140">Backends and Future Direction</text>
+  <rect class="lane" x="40" y="112" width="236" height="660"/>
+  <text class="laneHead" x="62" y="142">Inputs and CLI</text>
 
-  <rect class="box frontend" x="60" y="170" width="210" height="86"/>
-  <text class="box-title" x="82" y="202">Source .zc</text>
-  <text class="box-text" x="82" y="226">examples/hello.zc</text>
-  <text class="box-text" x="82" y="246">control.zc / while.zc</text>
+  <rect class="box source" x="64" y="170" width="188" height="112"/>
+  <text class="boxTitle" x="84" y="202">.zc Source</text>
+  <text class="boxText" x="84" y="226">examples/*.zc</text>
+  <text class="boxText" x="84" y="246">functions, i32, ptr&lt;i32&gt;</text>
+  <text class="boxText" x="84" y="266">scalar and vector kernels</text>
 
-  <rect class="box frontend" x="60" y="305" width="210" height="104"/>
-  <text class="box-title" x="82" y="337">Lexer</text>
-  <text class="box-text" x="82" y="361">keywords, identifiers</text>
-  <text class="box-text" x="82" y="381">integers, operators</text>
-  <text class="small" x="82" y="401">--emit-tokens</text>
+  <rect class="box source" x="64" y="326" width="188" height="118"/>
+  <text class="boxTitle" x="84" y="358">zc Driver</text>
+  <text class="boxText" x="84" y="382">tools/zc</text>
+  <text class="boxText" x="84" y="402">--emit-tokens</text>
+  <text class="boxText" x="84" y="422">--emit-ast / --emit-mlir</text>
 
-  <rect class="box frontend" x="60" y="460" width="210" height="118"/>
-  <text class="box-title" x="82" y="492">Parser</text>
-  <text class="box-text" x="82" y="516">recursive descent</text>
-  <text class="box-text" x="82" y="536">operator precedence</text>
-  <text class="box-text" x="82" y="556">if / else / while</text>
+  <rect class="box source" x="64" y="488" width="188" height="110"/>
+  <text class="boxTitle" x="84" y="520">Examples and Tests</text>
+  <text class="boxText" x="84" y="544">examples/current_max_demo.zc</text>
+  <text class="boxText" x="84" y="564">test/lexer, test/parser</text>
+  <text class="boxText" x="84" y="584">CTest entry points</text>
 
-  <rect class="box ast" x="335" y="305" width="230" height="150"/>
-  <text class="box-title" x="360" y="337">AST</text>
-  <text class="box-text" x="360" y="361">ModuleAST</text>
-  <text class="box-text" x="360" y="381">FunctionAST</text>
-  <text class="box-text" x="360" y="401">Let / Return / If / While</text>
-  <text class="box-text" x="360" y="421">Integer / Variable / Binary</text>
-  <text class="small" x="360" y="445">--emit-ast</text>
+  <rect class="lane" x="300" y="112" width="260" height="660"/>
+  <text class="laneHead" x="322" y="142">Frontend</text>
 
-  <rect class="box codegen" x="610" y="240" width="230" height="120"/>
-  <text class="box-title" x="635" y="272">CodeGen Module</text>
-  <text class="box-text" x="635" y="296">walks AST</text>
-  <text class="box-text" x="635" y="316">tracks SSA values</text>
-  <text class="box-text" x="635" y="336">emits text targets</text>
+  <rect class="box front" x="324" y="170" width="212" height="104"/>
+  <text class="boxTitle" x="344" y="202">Lexer</text>
+  <text class="boxText" x="344" y="226">keywords and identifiers</text>
+  <text class="boxText" x="344" y="246">operators and delimiters</text>
+  <text class="small" x="344" y="266">include/zcompiler/Lexer</text>
 
-  <rect class="box mlir" x="610" y="410" width="230" height="100"/>
-  <text class="box-title" x="635" y="442">zc MLIR Surface</text>
-  <text class="box-text" x="635" y="466">zc.func, zc.add</text>
-  <text class="box-text" x="635" y="486">ODS scaffold exists</text>
+  <rect class="box front" x="324" y="318" width="212" height="126"/>
+  <text class="boxTitle" x="344" y="350">Parser</text>
+  <text class="boxText" x="344" y="374">recursive descent</text>
+  <text class="boxText" x="344" y="394">operator precedence</text>
+  <text class="boxText" x="344" y="414">if / while / load / store</text>
+  <text class="small" x="344" y="434">include/zcompiler/Parser</text>
 
-  <rect class="box mlir" x="610" y="560" width="230" height="112"/>
-  <text class="box-title" x="635" y="592">Standard MLIR</text>
-  <text class="box-text" x="635" y="616">func.func</text>
-  <text class="box-text" x="635" y="636">arith.constant</text>
-  <text class="box-text" x="635" y="656">arith.addi / muli</text>
+  <rect class="box model" x="324" y="488" width="212" height="152"/>
+  <text class="boxTitle" x="344" y="520">AST Program Model</text>
+  <text class="boxText" x="344" y="544">ModuleAST, FunctionAST</text>
+  <text class="boxText" x="344" y="564">Let, Assign, Return</text>
+  <text class="boxText" x="344" y="584">If, While, Load, Store</text>
+  <text class="boxText" x="344" y="604">Vector and mask statements</text>
+  <text class="small" x="344" y="626">include/zcompiler/AST</text>
 
-  <rect class="box target" x="920" y="230" width="240" height="104"/>
-  <text class="box-title" x="945" y="262">LLVM IR</text>
-  <text class="box-text" x="945" y="286">define i32 @main()</text>
-  <text class="box-text" x="945" y="306">branches and icmp</text>
-  <text class="small" x="945" y="326">--emit-llvm</text>
+  <rect class="lane" x="584" y="112" width="352" height="660"/>
+  <text class="laneHead" x="606" y="142">Compiler Middle and Backends</text>
 
-  <rect class="box target" x="920" y="390" width="240" height="104"/>
-  <text class="box-title" x="945" y="422">RISC-V Assembly</text>
-  <text class="box-text" x="945" y="446">Target/RiscV backend</text>
-  <text class="box-text" x="945" y="466">llc + riscv64 triple</text>
-  <text class="small" x="945" y="486">--emit-riscv-asm</text>
+  <rect class="box mlir" x="608" y="170" width="292" height="132"/>
+  <text class="boxTitle" x="628" y="202">MLIRGen Path</text>
+  <text class="boxText" x="628" y="226">AST to in-memory MLIR</text>
+  <text class="boxText" x="628" y="246">func / arith / memref / scf</text>
+  <text class="boxText" x="628" y="266">vector dialect for vector kernels</text>
+  <text class="small" x="628" y="288">lib/MLIRGen</text>
 
-  <rect class="box future" x="920" y="555" width="240" height="118"/>
-  <text class="box-title" x="945" y="587">RVV Direction</text>
-  <text class="box-text" x="945" y="611">zc vector ops</text>
-  <text class="box-text" x="945" y="631">MLIR vector dialect</text>
-  <text class="box-text" x="945" y="651">RVV instructions</text>
+  <rect class="box backend" x="608" y="346" width="292" height="142"/>
+  <text class="boxTitle" x="628" y="378">Direct Text CodeGen</text>
+  <text class="boxText" x="628" y="402">scalar RV64 assembly</text>
+  <text class="boxText" x="628" y="422">print_i32 Linux syscall helper</text>
+  <text class="boxText" x="628" y="442">direct RVV reference backend</text>
+  <text class="small" x="628" y="464">lib/CodeGen</text>
 
-  <rect class="box future" x="60" y="705" width="1100" height="116"/>
-  <text class="box-title" x="86" y="737">AI-Assisted Compiler Workflow</text>
-  <text class="box-text" x="86" y="761">Record prompts, optimization experiments, generated IR/assembly, benchmark results, and human review notes.</text>
-  <text class="box-text" x="86" y="781">AI can suggest changes, but compiler changes must pass tests and reproducible validation.</text>
-  <text class="box-text" x="86" y="801">Accelerator profiles record target assumptions such as rv64gcv, SEW/LMUL, tail/mask policy, and backend strategy.</text>
+  <rect class="box backend" x="608" y="532" width="292" height="154"/>
+  <text class="boxTitle" x="628" y="564">Current RVV Kernel Surface</text>
+  <text class="boxText" x="628" y="588">copy, add, scale, mul</text>
+  <text class="boxText" x="628" y="608">reduce_add</text>
+  <text class="boxText" x="628" y="628">signed and unsigned select</text>
+  <text class="boxText" x="628" y="648">masked add/sub/mul/store/load</text>
+  <text class="small" x="628" y="670">i32, LMUL m1, unit-stride subset</text>
 
-  <path class="line" d="M 165 256 L 165 305"/>
-  <path class="line" d="M 165 409 L 165 460"/>
-  <path class="line" d="M 270 520 C 300 520, 300 380, 335 380"/>
-  <path class="line" d="M 565 380 C 590 380, 585 300, 610 300"/>
-  <path class="line" d="M 725 360 L 725 410"/>
-  <path class="line" d="M 725 510 L 725 560"/>
-  <path class="line" d="M 840 615 C 875 615, 885 282, 920 282"/>
-  <path class="line" d="M 840 615 C 875 615, 885 442, 920 442"/>
-  <path class="line dash" d="M 840 615 C 880 615, 885 615, 920 615"/>
-  <path class="line dash" d="M 1040 673 L 1040 705"/>
-  <path class="line dash" d="M 610 753 C 520 690, 460 520, 450 455"/>
+  <rect class="lane" x="960" y="112" width="246" height="660"/>
+  <text class="laneHead" x="982" y="142">Toolchain and Runtime</text>
 
-  <text class="label" x="292" y="503">tokens -> tree</text>
-  <text class="label" x="845" y="266">validated by llvm-as</text>
-  <text class="label" x="845" y="428">validated by assembler when available</text>
-  <text class="label" x="845" y="600">future accelerator path</text>
+  <rect class="box verify" x="984" y="170" width="198" height="122"/>
+  <text class="boxTitle" x="1004" y="202">MLIR Tools</text>
+  <text class="boxText" x="1004" y="226">mlir-opt validation</text>
+  <text class="boxText" x="1004" y="246">LLVM IR emission</text>
+  <text class="small" x="1004" y="270">/home/zyz/mlir/build</text>
+
+  <rect class="box verify" x="984" y="338" width="198" height="126"/>
+  <text class="boxTitle" x="1004" y="370">RISC-V Toolchain</text>
+  <text class="boxText" x="1004" y="394">riscv64-linux-gnu-as</text>
+  <text class="boxText" x="1004" y="414">ld and objdump</text>
+  <text class="boxText" x="1004" y="434">rv64gcv / lp64d</text>
+
+  <rect class="box verify" x="984" y="510" width="198" height="130"/>
+  <text class="boxTitle" x="1004" y="542">QEMU RVV Runtime</text>
+  <text class="boxText" x="1004" y="566">qemu-riscv64 -cpu max</text>
+  <text class="boxText" x="1004" y="586">stdout and exit checks</text>
+  <text class="boxText" x="1004" y="606">RVV correctness harness</text>
+  <text class="small" x="1004" y="628">/home/qemu/qemu</text>
+
+  <rect class="lane" x="1230" y="112" width="230" height="660"/>
+  <text class="laneHead" x="1252" y="142">Control Plane</text>
+
+  <rect class="box control" x="1254" y="170" width="182" height="126"/>
+  <text class="boxTitle" x="1274" y="202">Documentation</text>
+  <text class="boxText" x="1274" y="226">README, arch, plan</text>
+  <text class="boxText" x="1274" y="246">progress and phase docs</text>
+  <text class="boxText" x="1274" y="266">known_issue tracking</text>
+
+  <rect class="box control" x="1254" y="338" width="182" height="126"/>
+  <text class="boxTitle" x="1274" y="370">Profiles</text>
+  <text class="boxText" x="1274" y="394">profiles/*.json</text>
+  <text class="boxText" x="1274" y="414">RVV spec version</text>
+  <text class="boxText" x="1274" y="434">SEW, LMUL, policies</text>
+
+  <rect class="box control" x="1254" y="510" width="182" height="130"/>
+  <text class="boxTitle" x="1274" y="542">AI Workflow</text>
+  <text class="boxText" x="1274" y="566">experiments/prompts</text>
+  <text class="boxText" x="1274" y="586">experiments/results</text>
+  <text class="boxText" x="1274" y="606">benchmarks/vector_add</text>
+  <text class="small" x="1274" y="628">human-reviewed changes</text>
+
+  <rect class="box future" x="158" y="820" width="1184" height="150"/>
+  <text class="boxTitle" x="188" y="856">Long-Term Target</text>
+  <text class="boxText" x="188" y="884">AI self made compiler based on RISC-V RVV accelerator.</text>
+  <text class="boxText" x="188" y="908">Near-term state: executable RVV 1.0-compatible subset for i32 unit-stride kernels, validated through assembler, objdump, CTest, and QEMU.</text>
+  <text class="boxText" x="188" y="932">Major gaps: full RVV 1.0 coverage, richer element widths, LMUL policy, strided/indexed memory, formal LLVM RVV lowering, and matrix/tensor kernels.</text>
+
+  <rect class="pill" x="84" y="638" width="148" height="32"/>
+  <text class="pillText" x="103" y="659">current_max_demo.zc</text>
+  <rect class="pill" x="629" y="708" width="250" height="32"/>
+  <text class="pillText" x="652" y="729">RVV subset, not full RVV 1.0 yet</text>
+  <rect class="pill" x="1004" y="682" width="158" height="32"/>
+  <text class="pillText" x="1025" y="703">runtime validation</text>
+  <rect class="pill" x="1274" y="682" width="142" height="32"/>
+  <text class="pillText" x="1294" y="703">roadmap feedback</text>
+
+  <path class="arrow" d="M 252 226 C 284 226, 292 222, 324 222"/>
+  <path class="arrow" d="M 430 274 L 430 318"/>
+  <path class="arrow" d="M 430 444 L 430 488"/>
+  <path class="arrow" d="M 536 564 C 578 564, 574 236, 608 236"/>
+  <path class="arrow" d="M 536 564 C 578 564, 574 418, 608 418"/>
+  <path class="arrow" d="M 900 236 C 944 236, 940 231, 984 231"/>
+  <path class="arrow" d="M 900 418 C 944 418, 940 401, 984 401"/>
+  <path class="arrow" d="M 900 609 C 940 609, 942 575, 984 575"/>
+  <path class="arrow" d="M 1083 464 L 1083 510"/>
+  <path class="softArrow" d="M 1182 231 C 1218 231, 1218 232, 1254 232"/>
+  <path class="softArrow" d="M 1182 401 C 1218 401, 1218 401, 1254 401"/>
+  <path class="softArrow" d="M 1182 575 C 1218 575, 1218 575, 1254 575"/>
+  <path class="softArrow" d="M 1345 640 C 1345 774, 1184 798, 1060 820"/>
+  <path class="softArrow" d="M 754 686 C 754 752, 754 780, 754 820"/>
+  <path class="softArrow" d="M 158 598 C 158 716, 210 762, 330 820"/>
+
+  <text class="note" x="278" y="210">tokens</text>
+  <text class="note" x="460" y="472">tree</text>
+  <text class="note" x="554" y="222">structured IR</text>
+  <text class="note" x="914" y="218">MLIR/LLVM path</text>
+  <text class="note" x="914" y="391">direct asm path</text>
+  <text class="note" x="912" y="562">RVV execution path</text>
+  <text class="note" x="1196" y="220">records</text>
+  <text class="note" x="1198" y="389">constrains</text>
+  <text class="note" x="1198" y="563">measures</text>
+
+  <text class="mono" x="48" y="1016">Manual smoke test: ./build/tools/zc/zc examples/current_max_demo.zc --emit-riscv-asm &gt; /tmp/current_max_demo.s</text>
 </svg>

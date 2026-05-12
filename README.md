@@ -10,6 +10,12 @@ not the final product. It is the bootstrapping path for learning, validating the
 architecture, and gradually adding RISC-V Vector Extension (RVV) oriented
 optimization passes.
 
+## Architecture Overview
+
+![zcompiler current software architecture](arch.svg)
+
+The diagram shows the current end-to-end shape: `.zc` source enters the lexer, parser, and AST frontend; the AST then feeds both the MLIR generation path and the direct RISC-V/RVV reference code generator; generated artifacts are validated with MLIR tools, the RISC-V toolchain, CTest, and QEMU. Documentation, accelerator profiles, benchmarks, and AI workflow records form the control plane for future RVV and accelerator work.
+
 ## Long-Term Vision
 
 The final system should become a compiler stack that combines:
