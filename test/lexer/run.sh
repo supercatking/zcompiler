@@ -23,6 +23,11 @@ diff -u "$source_root/test/lexer/arrays.tokens" "$tmp_dir/arrays.tokens"
 diff -u "$source_root/test/lexer/matrix_multiply.tokens" \
   "$tmp_dir/matrix_multiply.tokens"
 
+"$zc_bin" "$source_root/examples/matrix_multiply_packed_b.zc" --emit-tokens \
+  > "$tmp_dir/matrix_multiply_packed_b.tokens"
+diff -u "$source_root/test/lexer/matrix_multiply_packed_b.tokens" \
+  "$tmp_dir/matrix_multiply_packed_b.tokens"
+
 "$zc_bin" "$source_root/examples/vector_add.zc" --emit-tokens \
   > "$tmp_dir/vector_add.tokens"
 diff -u "$source_root/test/lexer/vector_add.tokens" \

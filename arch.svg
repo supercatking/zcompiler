@@ -102,14 +102,15 @@
   <text class="boxText" x="628" y="442">direct RVV reference backend</text>
   <text class="small" x="628" y="464">lib/CodeGen</text>
 
-  <rect class="box backend" x="608" y="532" width="292" height="176"/>
+  <rect class="box backend" x="608" y="532" width="292" height="200"/>
   <text class="boxTitle" x="628" y="564">Current Kernel Surface</text>
   <text class="boxText" x="628" y="588">copy, add, scale, mul</text>
   <text class="boxText" x="628" y="608">reduce_add</text>
   <text class="boxText" x="628" y="628">signed and unsigned select</text>
   <text class="boxText" x="628" y="648">masked add/sub/mul/store/load</text>
   <text class="boxText" x="628" y="668">matrix_multiply scalar v1</text>
-  <text class="small" x="628" y="690">i32 vectors: LMUL m1, unit-stride subset</text>
+  <text class="boxText" x="628" y="688">packed-B RVV matrix path</text>
+  <text class="small" x="628" y="710">i32 vectors: LMUL m1, unit-stride subset</text>
 
   <rect class="lane" x="960" y="112" width="246" height="660"/>
   <text class="laneHead" x="982" y="142">Toolchain and Runtime</text>

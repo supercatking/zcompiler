@@ -31,6 +31,11 @@ diff -u "$source_root/test/parser/arrays.ast" "$tmp_dir/arrays.ast"
 diff -u "$source_root/test/parser/matrix_multiply.ast" \
   "$tmp_dir/matrix_multiply.ast"
 
+"$zc_bin" "$source_root/examples/matrix_multiply_packed_b.zc" --emit-ast \
+  > "$tmp_dir/matrix_multiply_packed_b.ast"
+diff -u "$source_root/test/parser/matrix_multiply_packed_b.ast" \
+  "$tmp_dir/matrix_multiply_packed_b.ast"
+
 "$zc_bin" "$source_root/examples/vector_add.zc" --emit-ast \
   > "$tmp_dir/vector_add.ast"
 diff -u "$source_root/test/parser/vector_add.ast" \

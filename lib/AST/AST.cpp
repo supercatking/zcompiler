@@ -42,6 +42,16 @@ const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op) {
   return "unknown";
 }
 
+const char *getMatrixRHSLayoutName(MatrixRHSLayout layout) {
+  switch (layout) {
+  case MatrixRHSLayout::RowMajor:
+    return "row_major";
+  case MatrixRHSLayout::PackedColumns:
+    return "packed_columns";
+  }
+  return "unknown";
+}
+
 namespace {
 
 void writeIndent(raw_ostream &os, unsigned indent) {
@@ -120,7 +130,8 @@ void PrintI32StmtAST::dump(raw_ostream &os, unsigned indent) const {
 void MatrixMultiplyStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "MatrixMultiplyStmt output=" << output << " lhs=" << lhs
-     << " rhs=" << rhs << '\n';
+     << " rhs=" << rhs << " rhs_layout=" << getMatrixRHSLayoutName(rhsLayout)
+     << '\n';
   writeIndent(os, indent + 1);
   os << "Rows\n";
   rows->dump(os, indent + 2);

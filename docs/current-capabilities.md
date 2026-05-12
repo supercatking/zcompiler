@@ -243,3 +243,28 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_mul
 This is correct scalar matrix multiply support, not RVV-optimized matmul yet.
 Future phases should add transposed/packed-B or strided/indexed RVV memory forms
 before marking matrix multiply as an RVV accelerator kernel.
+
+
+## Phase 31U Capability Addendum
+
+The compiler now supports an RVV-friendly packed-B matrix multiply operation:
+
+```zc
+func matmul_packed_b_i32(c: ptr<i32>, a: ptr<i32>, packed_b: ptr<i32>, rows: i32, cols: i32, inner: i32) -> i32 {
+  matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;
+  return 0;
+}
+```
+
+`packed_b` has shape `cols x inner` and stores each original `B` column as a
+contiguous row. The direct RVV backend lowers each output dot product with
+unit-stride `vle32.v` loads, `vmul.vv`, and `vredsum.vs`. Token, AST, MLIR,
+assembler/objdump, and QEMU runtime validation are covered.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

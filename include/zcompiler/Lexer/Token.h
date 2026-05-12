@@ -24,6 +24,7 @@ enum class TokenKind {
   KwStore,
   KwPrintI32,
   KwMatrixMultiply,
+  KwMatrixMultiplyPackedB,
   KwVectorAdd,
   KwVectorCopy,
   KwVectorScale,

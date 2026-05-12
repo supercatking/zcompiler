@@ -731,13 +731,16 @@ Completed slices:
 - Phase 31T: scalar `matrix_multiply c, a, b, rows, cols, inner;` with lexer,
   parser, AST, MLIR nested `scf.for`, direct RISC-V assembly, goldens, assembler
   checks, phase docs, and QEMU runtime correctness validation.
+- Phase 31U: `matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;`
+  with explicit RHS layout in AST, MLIR packed-column indexing, direct RVV
+  dot-product lowering, objdump checks, docs, and QEMU validation.
 
 Planned slices:
 
-- Phase 31U: transposed-B or packed-B workflow so dot products can use
-  unit-stride vector loads.
-- Phase 31V: formal dot-product kernel surface with QEMU and objdump checks.
-- Phase 31W: RVV matrix multiply over packed-B rows.
+- Phase 31V: add compiler-owned pack/transpose-B operation so callers do not
+  need to pre-pack B manually.
+- Phase 31W: factor reusable RVV dot-product lowering and broaden matrix shape
+  validation.
 - Phase 31X: tiled matrix multiply with explicit tile policy in the accelerator
   profile.
 
@@ -766,7 +769,7 @@ optimized for RVV.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 31U with transposed-B or packed-B layout support for RVV-friendly matrix dot products.
+1. Start Phase 31V with a compiler-owned pack/transpose-B operation.
 2. Start Phase 30T with mask logical operations so masks become more composable.
 3. Start Phase 29C/29E work: LMUL policy and the first non-`i32` typed-buffer vector path.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when

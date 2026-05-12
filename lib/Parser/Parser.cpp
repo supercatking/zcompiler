@@ -145,7 +145,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseStoreStatement();
   if (check(TokenKind::KwPrintI32))
     return parsePrintI32Statement();
-  if (check(TokenKind::KwMatrixMultiply))
+  if (check(TokenKind::KwMatrixMultiply) ||
+      check(TokenKind::KwMatrixMultiplyPackedB))
     return parseMatrixMultiplyStatement();
   if (check(TokenKind::KwVectorAdd))
     return parseVectorAddStatement();
@@ -537,7 +538,13 @@ std::unique_ptr<StmtAST> Parser::parsePrintI32Statement() {
 }
 
 std::unique_ptr<StmtAST> Parser::parseMatrixMultiplyStatement() {
-  advance();
+  TokenKind keywordKind = advance().kind;
+  MatrixRHSLayout rhsLayout = keywordKind == TokenKind::KwMatrixMultiplyPackedB
+                                  ? MatrixRHSLayout::PackedColumns
+                                  : MatrixRHSLayout::RowMajor;
+  StringRef keyword = keywordKind == TokenKind::KwMatrixMultiplyPackedB
+                          ? "matrix_multiply_packed_b"
+                          : "matrix_multiply";
 
   auto parseBuffer = [this](StringRef diagnostic) -> std::string {
     if (!check(TokenKind::Identifier)) {
@@ -548,33 +555,36 @@ std::unique_ptr<StmtAST> Parser::parseMatrixMultiplyStatement() {
   };
 
   std::string output =
-      parseBuffer("expected output buffer after matrix_multiply");
+      parseBuffer("expected output buffer after " + keyword.str());
   if (output.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after matrix_multiply output"))
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " output"))
     return nullptr;
 
   std::string lhs =
-      parseBuffer("expected lhs matrix buffer in matrix_multiply");
+      parseBuffer("expected lhs matrix buffer in " + keyword.str());
   if (lhs.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after matrix_multiply lhs"))
+      !expect(TokenKind::Comma, "expected ',' after " + keyword.str() + " lhs"))
     return nullptr;
 
   std::string rhs =
-      parseBuffer("expected rhs matrix buffer in matrix_multiply");
+      parseBuffer("expected rhs matrix buffer in " + keyword.str());
   if (rhs.empty() ||
-      !expect(TokenKind::Comma, "expected ',' after matrix_multiply rhs"))
+      !expect(TokenKind::Comma, "expected ',' after " + keyword.str() + " rhs"))
     return nullptr;
 
   auto rows = parseExpression();
   if (!rows)
     return nullptr;
-  if (!expect(TokenKind::Comma, "expected ',' after matrix_multiply rows"))
+  if (!expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " rows"))
     return nullptr;
 
   auto cols = parseExpression();
   if (!cols)
     return nullptr;
-  if (!expect(TokenKind::Comma, "expected ',' after matrix_multiply cols"))
+  if (!expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " cols"))
     return nullptr;
 
   auto inner = parseExpression();
@@ -582,12 +592,12 @@ std::unique_ptr<StmtAST> Parser::parseMatrixMultiplyStatement() {
     return nullptr;
 
   if (!expect(TokenKind::Semicolon,
-              "expected ';' after matrix_multiply statement"))
+              "expected ';' after " + keyword.str() + " statement"))
     return nullptr;
 
   return std::make_unique<MatrixMultiplyStmtAST>(
-      std::move(output), std::move(lhs), std::move(rhs), std::move(rows),
-      std::move(cols), std::move(inner));
+      std::move(output), std::move(lhs), std::move(rhs), rhsLayout,
+      std::move(rows), std::move(cols), std::move(inner));
 }
 
 std::unique_ptr<StmtAST> Parser::parseAssignStatement() {

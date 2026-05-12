@@ -35,8 +35,8 @@ For the current RVV work, the important assumptions include:
 - default vector element type: `i32`
 - current compiler vector element width: `32`
 - current LMUL support: `m1`
-- current source operations: `vector_add`, `vector_copy`, `vector_scale`,
-  `vector_mul`, `vector_reduce_add`
+- current source operations include vector add/copy/scale/mul/reduce,
+  compare/select, masked operations, and `matrix_multiply_packed_b`
 - default MLIR vector type: `vector<4xi32>`
 - tail handling: `vector.create_mask` plus masked transfer ops
 - current backend: direct RVV reference assembly
@@ -105,3 +105,10 @@ vector_mul c, a, b, n;
 The MLIR path lowers to masked `vector.transfer_read`, `arith.muli`, and
 `vector.transfer_write`. The direct RVV reference backend maps this to
 `vle32.v`, `vmul.vv`, and `vse32.v` inside the standard `vsetvli` loop policy.
+
+## Phase 31U Update
+
+`matrix_multiply_packed_b` is now part of the default profile as the first RVV
+matrix path. It keeps the current `i32`, `e32`, LMUL `m1`, and `ta, ma` policy,
+but requires RHS memory to be column-packed so each dot product can use
+unit-stride vector loads.

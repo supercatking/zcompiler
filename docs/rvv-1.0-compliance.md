@@ -126,6 +126,7 @@ The current QEMU test covers the length set above for:
 - `vector_masked_mul_gt`
 - `vector_masked_store_gt`
 - `vector_masked_load_gt`
+- `matrix_multiply_packed_b`
 
 ## Acceptance Rule
 
@@ -164,3 +165,12 @@ yet. Phase 31T adds correct scalar row-major `i32` matrix multiply lowering and
 QEMU validation. It becomes part of the RVV compliance matrix only after a future
 phase lowers it to RVV instructions with documented memory/tile policy, objdump
 checks, and QEMU correctness coverage.
+
+## Phase 31U Packed-B MMA Compliance Note
+
+`matrix_multiply_packed_b` is compatible with the current RVV 1.0 subset for
+`i32`, LMUL `m1`, and unit-stride packed-B memory. The direct backend emits legal
+RVV 1.0 `vsetvli`, `vle32.v`, `vmul.vv`, `vredsum.vs`, and `vmv.x.s` sequences,
+validated by objdump checks and QEMU execution. It is not full matrix-kernel
+coverage yet because the compiler still expects the caller or a future pack phase
+to provide `packed_b`.

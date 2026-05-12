@@ -1,13 +1,13 @@
 Module
-  Function name=matmul_i32 return=i32
+  Function name=matmul_packed_b_i32 return=i32
     Params
       Param name=c type=ptr<i32>
       Param name=a type=ptr<i32>
-      Param name=b type=ptr<i32>
+      Param name=packed_b type=ptr<i32>
       Param name=rows type=i32
       Param name=cols type=i32
       Param name=inner type=i32
-    MatrixMultiplyStmt output=c lhs=a rhs=b rhs_layout=row_major
+    MatrixMultiplyStmt output=c lhs=a rhs=packed_b rhs_layout=packed_columns
       Rows
         VariableExpr name=rows
       Cols

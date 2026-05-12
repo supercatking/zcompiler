@@ -2154,3 +2154,43 @@ Visible QEMU demo output:
 matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
 qemu_exit=0
 ```
+
+
+## Phase 31U: Packed-B RVV Matrix Multiply
+
+### Execution Target
+
+Add a packed/transposed-B matrix multiply path so each dot product can use
+unit-stride RVV loads for both operands.
+
+### Execution Summary
+
+- Added `matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;`.
+- Added `MatrixRHSLayout` to keep row-major and packed-column RHS layouts under
+  one matrix AST node.
+- Extended lexer, parser, AST dump, MLIR generation, and direct RISC-V lowering.
+- MLIR uses `packed_b[col * inner + k]` indexing for the RHS operand.
+- Direct RISC-V emits an RVV dot-product loop with `vsetvli`, unit-stride
+  `vle32.v`, `vmul.vv`, `vredsum.vs`, and `vmv.x.s`.
+- Added packed-B example, lexer/parser/codegen goldens, assembler/objdump
+  checks, phase documentation, profile updates, and QEMU runtime validation.
+
+### Execution Result
+
+Completed the first RVV matrix multiply path for `i32`, LMUL `m1`, and
+column-packed B. A future phase still needs compiler-owned B packing so callers
+do not need to prepare `packed_b` manually.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```
+
+Visible QEMU demo output:
+
+```text
+matrix_multiply_packed_b demo 2x3 * 3x2 = [58 64; 139 154]
+qemu_exit=0
+```

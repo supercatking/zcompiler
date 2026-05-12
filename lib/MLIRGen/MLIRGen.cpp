@@ -313,8 +313,19 @@ private:
 
       Value lhsRowOffset = builder.create<arith::MulIOp>(loc, row, inner);
       Value lhsIndex = builder.create<arith::AddIOp>(loc, lhsRowOffset, k);
-      Value rhsRowOffset = builder.create<arith::MulIOp>(loc, k, cols);
-      Value rhsIndex = builder.create<arith::AddIOp>(loc, rhsRowOffset, col);
+
+      Value rhsMajor = k;
+      Value rhsStride = cols;
+      Value rhsMinor = col;
+      if (statement.getRHSLayout() == MatrixRHSLayout::PackedColumns) {
+        rhsMajor = col;
+        rhsStride = inner;
+        rhsMinor = k;
+      }
+      Value rhsRowOffset =
+          builder.create<arith::MulIOp>(loc, rhsMajor, rhsStride);
+      Value rhsIndex =
+          builder.create<arith::AddIOp>(loc, rhsRowOffset, rhsMinor);
 
       Value lhsValue = builder.create<memref::LoadOp>(loc, lhs->second,
                                                       ValueRange(lhsIndex));

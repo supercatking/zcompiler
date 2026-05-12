@@ -62,6 +62,13 @@ enum class VectorMaskedBinaryOp {
 
 const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op);
 
+enum class MatrixRHSLayout {
+  RowMajor,
+  PackedColumns,
+};
+
+const char *getMatrixRHSLayoutName(MatrixRHSLayout layout);
+
 class ParameterAST final {
 public:
   ParameterAST(std::string name, std::string type)
@@ -217,16 +224,19 @@ private:
 class MatrixMultiplyStmtAST final : public StmtAST {
 public:
   MatrixMultiplyStmtAST(std::string output, std::string lhs, std::string rhs,
+                        MatrixRHSLayout rhsLayout,
                         std::unique_ptr<ExprAST> rows,
                         std::unique_ptr<ExprAST> cols,
                         std::unique_ptr<ExprAST> inner)
       : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
-        rows(std::move(rows)), cols(std::move(cols)), inner(std::move(inner)) {}
+        rhsLayout(rhsLayout), rows(std::move(rows)), cols(std::move(cols)),
+        inner(std::move(inner)) {}
   StmtKind getKind() const override { return StmtKind::MatrixMultiply; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
   const std::string &getOutput() const { return output; }
   const std::string &getLHS() const { return lhs; }
   const std::string &getRHS() const { return rhs; }
+  MatrixRHSLayout getRHSLayout() const { return rhsLayout; }
   const ExprAST &getRows() const { return *rows; }
   const ExprAST &getCols() const { return *cols; }
   const ExprAST &getInner() const { return *inner; }
@@ -235,6 +245,7 @@ private:
   std::string output;
   std::string lhs;
   std::string rhs;
+  MatrixRHSLayout rhsLayout;
   std::unique_ptr<ExprAST> rows;
   std::unique_ptr<ExprAST> cols;
   std::unique_ptr<ExprAST> inner;

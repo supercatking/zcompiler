@@ -122,4 +122,12 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   -o "$tmp_dir/matrix_multiply"
 "$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/matrix_multiply"
 
+"$zc_bin" "$source_root/examples/matrix_multiply_packed_b.zc" \
+  --emit-riscv-asm > "$tmp_dir/matrix_multiply_packed_b.s"
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
+  "$tmp_dir/matrix_multiply_packed_b.s" \
+  "$source_root/test/qemu/matrix_multiply_packed_b_harness.c" \
+  -o "$tmp_dir/matrix_multiply_packed_b"
+"$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/matrix_multiply_packed_b"
+
 echo "qemu-riscv64 validation passed"

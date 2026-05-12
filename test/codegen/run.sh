@@ -70,6 +70,19 @@ for instruction in "mulw" "addw" "lw" "sw" "sd s0" "ld s11"; do
   grep -q "$instruction" "$tmp_dir/matrix_multiply.riscv"
 done
 
+"$zc_bin" "$source_root/examples/matrix_multiply_packed_b.zc" --emit-mlir \
+  > "$tmp_dir/matrix_multiply_packed_b.mlir"
+diff -u -B "$source_root/test/codegen/matrix_multiply_packed_b.mlir" \
+  "$tmp_dir/matrix_multiply_packed_b.mlir"
+
+"$zc_bin" "$source_root/examples/matrix_multiply_packed_b.zc" --emit-riscv-asm \
+  > "$tmp_dir/matrix_multiply_packed_b.riscv"
+diff -u "$source_root/test/codegen/matrix_multiply_packed_b.riscv" \
+  "$tmp_dir/matrix_multiply_packed_b.riscv"
+for instruction in vsetvli vle32.v vmul.vv vredsum.vs vmv.x.s sw; do
+  grep -q "$instruction" "$tmp_dir/matrix_multiply_packed_b.riscv"
+done
+
 "$zc_bin" "$source_root/examples/vector_add.zc" --emit-mlir \
   > "$tmp_dir/vector_add.mlir"
 diff -u -B "$source_root/test/codegen/vector_add.mlir" \
@@ -340,6 +353,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/arrays.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/matrix_multiply.mlir" \
     -o "$tmp_dir/matrix_multiply.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/matrix_multiply_packed_b.mlir" \
+    -o "$tmp_dir/matrix_multiply_packed_b.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_add.mlir" \
     -o "$tmp_dir/vector_add.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_copy.mlir" \
@@ -397,6 +412,14 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
     > "$tmp_dir/matrix_multiply.objdump"
   for instruction in mulw addw lw sw; do
     grep -q "$instruction" "$tmp_dir/matrix_multiply.objdump"
+  done
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/matrix_multiply_packed_b.riscv" \
+    -o "$tmp_dir/matrix_multiply_packed_b.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/matrix_multiply_packed_b.o" \
+    > "$tmp_dir/matrix_multiply_packed_b.objdump"
+  for instruction in vsetvli vle32.v vmul.vv vredsum.vs vmv.x.s sw; do
+    grep -q "$instruction" "$tmp_dir/matrix_multiply_packed_b.objdump"
   done
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/vector_add.riscv" -o "$tmp_dir/vector_add.o"

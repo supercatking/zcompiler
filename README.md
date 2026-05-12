@@ -42,6 +42,7 @@ tutorial. It currently supports:
 - `ptr<i32>` buffer parameters.
 - Scalar indexed `load` / `store`.
 - Target-independent `matrix_multiply c, a, b, rows, cols, inner;` syntax for row-major `i32` MMA v1.
+- RVV-friendly `matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;` syntax for column-packed `B`.
 - Target-independent `vector_add` syntax.
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
@@ -60,6 +61,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
 - Direct scalar RISC-V assembly for `matrix_multiply` with QEMU correctness validation.
+- Direct RVV assembly for packed-B matrix multiply using unit-stride vector dot products.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -193,6 +195,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply_packed_b.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -220,6 +223,21 @@ Expected output includes:
 matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
 ```
 
+Manual visible packed-B matrix-multiply QEMU demo:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm > /tmp/matrix_multiply_packed_b.s
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply_packed_b.s test/qemu/matrix_multiply_packed_b_harness.c -o /tmp/matrix_multiply_packed_b
+/home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply_packed_b
+```
+
+Expected output includes:
+
+```text
+matrix_multiply_packed_b demo 2x3 * 3x2 = [58 64; 139 154]
+```
+
 Planning documents for the accelerator direction:
 
 - [docs/rvv.md](docs/rvv.md)
@@ -229,6 +247,7 @@ Planning documents for the accelerator direction:
 - [docs/correctness-testing.md](docs/correctness-testing.md)
 - [docs/ai-workflow.md](docs/ai-workflow.md)
 - [docs/phase18-vector-syntax.md](docs/phase18-vector-syntax.md)
+- [docs/phase31u-packed-b.md](docs/phase31u-packed-b.md)
 - [docs/phase19-vector-mlir.md](docs/phase19-vector-mlir.md)
 - [docs/phase20-rvv-lowering.md](docs/phase20-rvv-lowering.md)
 - [docs/phase20c-formal-rvv-lowering.md](docs/phase20c-formal-rvv-lowering.md)

@@ -49,11 +49,9 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_mul
 
 ## Current Boundary
 
-This phase is correct scalar MMA support, not RVV-optimized matrix multiply yet.
-The next optimization phases should add one of these paths:
-
-1. `B` transpose or packed-B workflow so each dot product can use unit-stride
-   vector loads.
-2. Strided/indexed RVV loads for direct row-by-column dot products.
-3. Tiled matmul lowering with explicit cache/vector tile policy in the
-   accelerator profile.
+This phase is correct scalar MMA support, not RVV-optimized matrix multiply by
+itself. Phase 31U builds on this node with `matrix_multiply_packed_b`, where the
+right-hand matrix is column-packed so direct RVV dot-product lowering can use
+unit-stride vector loads. Remaining optimization paths include compiler-owned
+B packing, reusable dot-product lowering, strided/indexed alternatives, and tiled
+matmul policy in the accelerator profile.

@@ -221,6 +221,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwPrintI32;
   else if (text == "matrix_multiply")
     kind = TokenKind::KwMatrixMultiply;
+  else if (text == "matrix_multiply_packed_b")
+    kind = TokenKind::KwMatrixMultiplyPackedB;
   else if (text == "vector_add")
     kind = TokenKind::KwVectorAdd;
   else if (text == "vector_copy")

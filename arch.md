@@ -21,6 +21,8 @@ The diagram shows the current project shape after the toy compiler phases:
   `rv64gcv`, SEW/LMUL policy, tail/mask policy, and current backend strategy.
 - Phase 31T adds `matrix_multiply` as a dedicated AST/kernel statement so matrix
   semantics have a clean hook for future RVV tiling and packed-memory lowering.
+- Phase 31U adds `matrix_multiply_packed_b`, making RHS layout explicit and
+  enabling direct RVV dot-product lowering over unit-stride packed columns.
 
 ## 1. Design Principles
 

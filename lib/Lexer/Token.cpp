@@ -36,6 +36,8 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_print_i32";
   case TokenKind::KwMatrixMultiply:
     return "kw_matrix_multiply";
+  case TokenKind::KwMatrixMultiplyPackedB:
+    return "kw_matrix_multiply_packed_b";
   case TokenKind::KwVectorAdd:
     return "kw_vector_add";
   case TokenKind::KwVectorCopy:
