@@ -1,0 +1,33 @@
+Module
+  Function name=vector_mask_logical_demo return=i32
+    Params
+      Param name=out type=ptr<i32>
+      Param name=lhs type=ptr<i32>
+      Param name=rhs type=ptr<i32>
+      Param name=x type=ptr<i32>
+      Param name=y type=ptr<i32>
+      Param name=passthrough type=ptr<i32>
+      Param name=n type=i32
+    VectorMaskStmt predicate=gt mask=m0 lhs=lhs rhs=rhs
+      Length
+        VariableExpr name=n
+    VectorMaskStmt predicate=eq mask=m1 lhs=lhs rhs=rhs
+      Length
+        VariableExpr name=n
+    VectorMaskLogicalStmt op=not result=m2 lhs=m1
+      Length
+        VariableExpr name=n
+    VectorMaskLogicalStmt op=and result=m3 lhs=m0 rhs=m2
+      Length
+        VariableExpr name=n
+    VectorMaskLogicalStmt op=or result=m4 lhs=m3 rhs=m1
+      Length
+        VariableExpr name=n
+    VectorMaskLogicalStmt op=xor result=m5 lhs=m4 rhs=m1
+      Length
+        VariableExpr name=n
+    VectorMaskedBinaryStmt op=add output=out lhs=x rhs=y mask=m5 passthrough=passthrough
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

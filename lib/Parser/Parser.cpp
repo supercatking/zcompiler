@@ -93,17 +93,40 @@ std::unique_ptr<FunctionAST> Parser::parseFunction() {
 }
 
 bool Parser::parseType(std::string &type) {
-  if (match(TokenKind::KwI32)) {
-    type = "i32";
+  auto parseIntegerType = [this](std::string &parsedType) -> bool {
+    if (match(TokenKind::KwI8)) {
+      parsedType = "i8";
+      return true;
+    }
+    if (match(TokenKind::KwI16)) {
+      parsedType = "i16";
+      return true;
+    }
+    if (match(TokenKind::KwI32)) {
+      parsedType = "i32";
+      return true;
+    }
+    if (match(TokenKind::KwI64)) {
+      parsedType = "i64";
+      return true;
+    }
+    return false;
+  };
+
+  if (parseIntegerType(type))
     return true;
-  }
 
   if (match(TokenKind::KwPtr)) {
-    if (!expect(TokenKind::Less, "expected '<' after 'ptr'") ||
-        !expect(TokenKind::KwI32, "expected pointee type 'i32'") ||
-        !expect(TokenKind::Greater, "expected '>' after pointer type"))
+    if (!expect(TokenKind::Less, "expected '<' after 'ptr'"))
       return false;
-    type = "ptr<i32>";
+    std::string elementType;
+    if (!parseIntegerType(elementType)) {
+      reportAtCurrent("expected pointee type 'i8', 'i16', 'i32', or 'i64'");
+      return false;
+    }
+    if (!expect(TokenKind::Greater, "expected '>' after pointer type"))
+      return false;
+    type = "ptr<" + elementType + ">";
     return true;
   }
 
@@ -145,17 +168,26 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseStoreStatement();
   if (check(TokenKind::KwPrintI32))
     return parsePrintI32Statement();
+  if (check(TokenKind::KwMatrixPackB))
+    return parseMatrixPackBStatement();
   if (check(TokenKind::KwMatrixMultiply) ||
       check(TokenKind::KwMatrixMultiplyPackedB))
     return parseMatrixMultiplyStatement();
-  if (check(TokenKind::KwVectorAdd))
+  if (check(TokenKind::KwVectorAdd) || check(TokenKind::KwVectorAddM2) ||
+      check(TokenKind::KwVectorAddM4))
     return parseVectorAddStatement();
+  if (check(TokenKind::KwVectorStridedLoad))
+    return parseVectorStridedLoadStatement();
+  if (check(TokenKind::KwVectorIndexedLoad))
+    return parseVectorIndexedLoadStatement();
   if (check(TokenKind::KwVectorCopy))
     return parseVectorCopyStatement();
   if (check(TokenKind::KwVectorScale))
     return parseVectorScaleStatement();
   if (check(TokenKind::KwVectorMul))
     return parseVectorMulStatement();
+  if (check(TokenKind::KwVectorWidenAddI16I32))
+    return parseVectorWidenAddI16I32Statement();
   if (check(TokenKind::KwVectorReduceAdd))
     return parseVectorReduceAddStatement();
   if (check(TokenKind::KwVectorSelectLT))
@@ -218,6 +250,18 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
   if (check(TokenKind::KwVectorMaskUGE))
     return parseVectorMaskStatement(VectorSelectPredicate::UGE,
                                     "vector_mask_uge");
+  if (check(TokenKind::KwVectorMaskAnd))
+    return parseVectorMaskLogicalStatement(VectorMaskLogicalOp::And,
+                                           "vector_mask_and");
+  if (check(TokenKind::KwVectorMaskOr))
+    return parseVectorMaskLogicalStatement(VectorMaskLogicalOp::Or,
+                                           "vector_mask_or");
+  if (check(TokenKind::KwVectorMaskXor))
+    return parseVectorMaskLogicalStatement(VectorMaskLogicalOp::Xor,
+                                           "vector_mask_xor");
+  if (check(TokenKind::KwVectorMaskNot))
+    return parseVectorMaskLogicalStatement(VectorMaskLogicalOp::Not,
+                                           "vector_mask_not");
   if (check(TokenKind::KwVectorMaskedAdd))
     return parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp::Add,
                                             "vector_masked_add");
@@ -245,7 +289,12 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorAddStatement() {
-  advance();
+  TokenKind keywordKind = advance().kind;
+  VectorLMUL lmul = VectorLMUL::M1;
+  if (keywordKind == TokenKind::KwVectorAddM2)
+    lmul = VectorLMUL::M2;
+  if (keywordKind == TokenKind::KwVectorAddM4)
+    lmul = VectorLMUL::M4;
 
   if (!check(TokenKind::Identifier)) {
     reportAtCurrent("expected output buffer after 'vector_add'");
@@ -282,7 +331,94 @@ std::unique_ptr<StmtAST> Parser::parseVectorAddStatement() {
     return nullptr;
 
   return std::make_unique<VectorAddStmtAST>(std::move(output), std::move(lhs),
-                                            std::move(rhs), std::move(length));
+                                            std::move(rhs), std::move(length),
+                                            lmul);
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorStridedLoadStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_strided_load");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_strided_load output"))
+    return nullptr;
+
+  std::string input = parseName("expected input buffer in vector_strided_load");
+  if (input.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_strided_load input"))
+    return nullptr;
+
+  auto stride = parseExpression();
+  if (!stride)
+    return nullptr;
+  if (!expect(TokenKind::Comma,
+              "expected ',' after vector_strided_load stride"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_strided_load statement"))
+    return nullptr;
+
+  return std::make_unique<VectorStridedLoadStmtAST>(
+      std::move(output), std::move(input), std::move(stride),
+      std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorIndexedLoadStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_indexed_load");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_indexed_load output"))
+    return nullptr;
+
+  std::string input = parseName("expected input buffer in vector_indexed_load");
+  if (input.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_indexed_load input"))
+    return nullptr;
+
+  std::string indices =
+      parseName("expected index buffer in vector_indexed_load");
+  if (indices.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_indexed_load indices"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_indexed_load statement"))
+    return nullptr;
+
+  return std::make_unique<VectorIndexedLoadStmtAST>(
+      std::move(output), std::move(input), std::move(indices),
+      std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorCopyStatement() {
@@ -397,6 +533,50 @@ std::unique_ptr<StmtAST> Parser::parseVectorMulStatement() {
 
   return std::make_unique<VectorMulStmtAST>(std::move(output), std::move(lhs),
                                             std::move(rhs), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorWidenAddI16I32Statement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_widen_add_i16_i32");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_widen_add_i16_i32 output"))
+    return nullptr;
+
+  std::string lhs =
+      parseName("expected left input buffer in vector_widen_add_i16_i32");
+  if (lhs.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_widen_add_i16_i32 left input"))
+    return nullptr;
+
+  std::string rhs =
+      parseName("expected right input buffer in vector_widen_add_i16_i32");
+  if (rhs.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_widen_add_i16_i32 right input"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_widen_add_i16_i32 statement"))
+    return nullptr;
+
+  return std::make_unique<VectorWidenAddStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
@@ -535,6 +715,47 @@ std::unique_ptr<StmtAST> Parser::parsePrintI32Statement() {
     return nullptr;
 
   return std::make_unique<PrintI32StmtAST>(std::move(value));
+}
+
+std::unique_ptr<StmtAST> Parser::parseMatrixPackBStatement() {
+  advance();
+
+  auto parseBuffer = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseBuffer("expected packed output buffer after matrix_pack_b");
+  if (output.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after matrix_pack_b output"))
+    return nullptr;
+
+  std::string input =
+      parseBuffer("expected input matrix buffer in matrix_pack_b");
+  if (input.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after matrix_pack_b input"))
+    return nullptr;
+
+  auto cols = parseExpression();
+  if (!cols)
+    return nullptr;
+  if (!expect(TokenKind::Comma, "expected ',' after matrix_pack_b cols"))
+    return nullptr;
+
+  auto inner = parseExpression();
+  if (!inner)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after matrix_pack_b statement"))
+    return nullptr;
+
+  return std::make_unique<MatrixPackBStmtAST>(
+      std::move(output), std::move(input), std::move(cols), std::move(inner));
 }
 
 std::unique_ptr<StmtAST> Parser::parseMatrixMultiplyStatement() {
@@ -677,6 +898,57 @@ Parser::parseVectorMaskStatement(VectorSelectPredicate predicate,
   return std::make_unique<VectorMaskStmtAST>(predicate, std::move(mask),
                                              std::move(lhs), std::move(rhs),
                                              std::move(length));
+}
+
+std::unique_ptr<StmtAST>
+Parser::parseVectorMaskLogicalStatement(VectorMaskLogicalOp op,
+                                        StringRef keyword) {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string result = parseName("expected result mask after " + keyword.str());
+  if (result.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after " + keyword.str() + " result"))
+    return nullptr;
+
+  std::string lhs = parseName("expected input mask in " + keyword.str());
+  if (lhs.empty())
+    return nullptr;
+
+  std::string rhs;
+  if (op == VectorMaskLogicalOp::Not) {
+    if (!expect(TokenKind::Comma,
+                "expected ',' after " + keyword.str() + " input"))
+      return nullptr;
+  } else {
+    if (!expect(TokenKind::Comma,
+                "expected ',' after " + keyword.str() + " left input"))
+      return nullptr;
+    rhs = parseName("expected right input mask in " + keyword.str());
+    if (rhs.empty() ||
+        !expect(TokenKind::Comma,
+                "expected ',' after " + keyword.str() + " right input"))
+      return nullptr;
+  }
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after " + keyword.str() + " statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskLogicalStmtAST>(
+      op, std::move(result), std::move(lhs), std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST>

@@ -1,0 +1,23 @@
+  .option nopic
+  .text
+  .globl vadd_i16
+vadd_i16:
+  li t0, 0
+.Lvector_add.0:
+  bgeu t0, a3, .Lvector_add_end.1
+  sub t1, a3, t0
+  vsetvli t1, t1, e16, m1, ta, ma
+  slli t2, t0, 1
+  add t3, a1, t2
+  add t4, a2, t2
+  add t5, a0, t2
+  vle16.v v0, 0(t3)
+  vle16.v v1, 0(t4)
+  vadd.vv v2, v0, v1
+  vse16.v v2, 0(t5)
+  add t0, t0, t1
+  j .Lvector_add.0
+.Lvector_add_end.1:
+  li t6, 0
+  mv a0, t6
+  ret

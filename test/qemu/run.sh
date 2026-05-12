@@ -130,4 +130,38 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   -o "$tmp_dir/matrix_multiply_packed_b"
 "$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/matrix_multiply_packed_b"
 
+
+"$zc_bin" "$source_root/examples/matrix_pack_b_then_multiply.zc" \
+  --emit-riscv-asm > "$tmp_dir/matrix_pack_b_then_multiply.s"
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
+  "$tmp_dir/matrix_pack_b_then_multiply.s" \
+  "$source_root/test/qemu/matrix_pack_b_harness.c" \
+  -o "$tmp_dir/matrix_pack_b_then_multiply"
+"$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/matrix_pack_b_then_multiply"
+
+"$zc_bin" "$source_root/examples/vector_add_i16.zc" \
+  --emit-riscv-asm > "$tmp_dir/vector_add_i16.s"
+"$zc_bin" "$source_root/examples/vector_add_i16_m2.zc" \
+  --emit-riscv-asm > "$tmp_dir/vector_add_i16_m2.s"
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
+  "$tmp_dir/vector_add_i16.s" \
+  "$tmp_dir/vector_add_i16_m2.s" \
+  "$source_root/test/qemu/vector_add_i16_harness.c" \
+  -o "$tmp_dir/vector_add_i16"
+"$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/vector_add_i16"
+
+for example in vector_strided_load vector_indexed_load vector_mask_logical \
+  vector_widen_add_i16_i32; do
+  "$zc_bin" "$source_root/examples/${example}.zc" \
+    --emit-riscv-asm > "$tmp_dir/${example}.s"
+done
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
+  "$tmp_dir/vector_strided_load.s" \
+  "$tmp_dir/vector_indexed_load.s" \
+  "$tmp_dir/vector_mask_logical.s" \
+  "$tmp_dir/vector_widen_add_i16_i32.s" \
+  "$source_root/test/qemu/vector_memory_mask_widen_harness.c" \
+  -o "$tmp_dir/vector_memory_mask_widen"
+"$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/vector_memory_mask_widen"
+
 echo "qemu-riscv64 validation passed"

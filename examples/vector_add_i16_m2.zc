@@ -1,0 +1,4 @@
+func vadd_i16_m2(c: ptr<i16>, a: ptr<i16>, b: ptr<i16>, n: i32) -> i32 {
+  vector_add_m2 c, a, b, n;
+  return 0;
+}

@@ -774,3 +774,28 @@ The next implementation steps after Phase 29A compliance baseline:
 3. Start Phase 29C/29E work: LMUL policy and the first non-`i32` typed-buffer vector path.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.
+
+
+## Phase 32-37 RVV Compatibility Iteration
+
+Completed slices:
+
+- Phase 31V: compiler-owned `matrix_pack_b` feeding packed-B RVV matrix multiply.
+- Phase 32A: machine-readable RVV 1.0 compliance matrix and generated markdown.
+- Phase 32B/32C: typed integer buffer parsing plus direct-RVV `vector_add` SEW selection; `i16` path validated by QEMU.
+- Phase 33A: first LMUL policy slice with `vector_add_m2` validated by QEMU; `m4` syntax/backend is present but still needs dedicated runtime coverage.
+- Phase 34A: `vector_strided_load` using `vlse32.v`.
+- Phase 34B: `vector_indexed_load` using `vluxei32.v` with i32 element indices.
+- Phase 35A: `vector_mask_and/or/xor/not` logical mask composition.
+- Phase 36A: `vector_widen_add_i16_i32` signed widening add.
+- Phase 37A: formal MLIR vector -> LLVM -> RVV probe; MLIR reaches LLVM bitcode, but RISC-V RVV `llc` assembly remains blocked by available toolchain configuration.
+
+Next long-range phases:
+
+- Phase 38A: add dedicated `vector_add_m4` QEMU validation and expand LMUL policy documentation for register grouping and ABI clobbers.
+- Phase 39A: add strided/indexed stores plus masked strided/indexed memory forms.
+- Phase 40A: broaden SEW coverage with i8/i64 arithmetic and load/store slices.
+- Phase 41A: add more widening/narrowing operations and unsigned widening variants.
+- Phase 42A: introduce a reusable RVV lowering helper layer so direct assembly emitters stop duplicating loop skeletons.
+- Phase 43A: build or select a same-version LLVM/MLIR toolchain with RISC-V target enabled, then rerun Phase 37A until formal RVV assembly is produced.
+- Phase 44A: add architecture-level RVV compliance tests beyond QEMU smoke checks, including disassembly legality checks per instruction family.

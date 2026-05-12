@@ -268,3 +268,38 @@ cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+
+## Phase 37A Capability Addendum
+
+Additional programs now compile and run through the direct RISC-V/RVV backend:
+
+- `examples/matrix_pack_b_then_multiply.zc`
+- `examples/vector_add_i16.zc`
+- `examples/vector_add_i16_m2.zc`
+- `examples/vector_strided_load.zc`
+- `examples/vector_indexed_load.zc`
+- `examples/vector_mask_logical.zc`
+- `examples/vector_widen_add_i16_i32.zc`
+
+The most useful manual runtime check for the newest slice is:
+
+```bash
+cd /home/zyz/zcomipler
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```
+
+The new QEMU harness prints:
+
+```text
+vector memory/mask/widen demo passed n=17
+```
+
+Phase 37A also provides a repeatable formal lowering probe:
+
+```bash
+cd /home/zyz/zcomipler
+MLIR_BUILD=/home/zyz/mlir/build ./scripts/probe-formal-rvv-lowering.sh
+```
+
+Current probe status: `blocked_at_riscv_llc`.

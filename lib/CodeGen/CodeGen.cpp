@@ -24,16 +24,72 @@ struct EmittedValue {
   std::string type;
 };
 
+unsigned getIntegerTypeWidth(StringRef sourceType) {
+  if (sourceType == "i8" || sourceType == "ptr<i8>")
+    return 8;
+  if (sourceType == "i16" || sourceType == "ptr<i16>")
+    return 16;
+  if (sourceType == "i64" || sourceType == "ptr<i64>")
+    return 64;
+  return 32;
+}
+
 StringRef getLLVMType(StringRef sourceType) {
+  if (sourceType == "ptr<i8>")
+    return "i8*";
+  if (sourceType == "ptr<i16>")
+    return "i16*";
   if (sourceType == "ptr<i32>")
     return "i32*";
+  if (sourceType == "ptr<i64>")
+    return "i64*";
+  if (sourceType == "i8")
+    return "i8";
+  if (sourceType == "i16")
+    return "i16";
+  if (sourceType == "i64")
+    return "i64";
   return "i32";
 }
 
 StringRef getMLIRType(StringRef sourceType) {
+  if (sourceType == "ptr<i8>")
+    return "memref<?xi8>";
+  if (sourceType == "ptr<i16>")
+    return "memref<?xi16>";
   if (sourceType == "ptr<i32>")
     return "memref<?xi32>";
+  if (sourceType == "ptr<i64>")
+    return "memref<?xi64>";
+  if (sourceType == "i8")
+    return "i8";
+  if (sourceType == "i16")
+    return "i16";
+  if (sourceType == "i64")
+    return "i64";
   return "i32";
+}
+
+unsigned getByteShiftForWidth(unsigned width) {
+  if (width == 16)
+    return 1;
+  if (width == 32)
+    return 2;
+  if (width == 64)
+    return 3;
+  return 0;
+}
+
+StringRef getVectorLMULAssemblyName(VectorLMUL lmul) {
+  switch (lmul) {
+  case VectorLMUL::M1:
+    return "m1";
+  case VectorLMUL::M2:
+    return "m2";
+  case VectorLMUL::M4:
+    return "m4";
+  }
+  return "m1";
 }
 
 class FunctionEmitter {
@@ -45,6 +101,7 @@ public:
     nextValueID = 0;
     variables.clear();
     masks.clear();
+    logicalMasks.clear();
 
     if (dialect == TextDialect::LLVMIR) {
       os << "define i32 @" << function.getName() << "(";
@@ -290,6 +347,9 @@ private:
     case StmtKind::PrintI32:
       emitPrintI32(static_cast<const PrintI32StmtAST &>(statement));
       return;
+    case StmtKind::MatrixPackB:
+      emitMatrixPackB(static_cast<const MatrixPackBStmtAST &>(statement));
+      return;
     case StmtKind::MatrixMultiply:
       emitMatrixMultiply(static_cast<const MatrixMultiplyStmtAST &>(statement));
       return;
@@ -305,6 +365,14 @@ private:
     case StmtKind::VectorAdd:
       emitVectorAdd(static_cast<const VectorAddStmtAST &>(statement));
       return;
+    case StmtKind::VectorStridedLoad:
+      emitVectorStridedLoad(
+          static_cast<const VectorStridedLoadStmtAST &>(statement));
+      return;
+    case StmtKind::VectorIndexedLoad:
+      emitVectorIndexedLoad(
+          static_cast<const VectorIndexedLoadStmtAST &>(statement));
+      return;
     case StmtKind::VectorCopy:
       emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));
       return;
@@ -313,6 +381,9 @@ private:
       return;
     case StmtKind::VectorMul:
       emitVectorMul(static_cast<const VectorMulStmtAST &>(statement));
+      return;
+    case StmtKind::VectorWidenAdd:
+      emitVectorWidenAdd(static_cast<const VectorWidenAddStmtAST &>(statement));
       return;
     case StmtKind::VectorReduceAdd:
       emitVectorReduceAdd(
@@ -323,6 +394,10 @@ private:
       return;
     case StmtKind::VectorMask:
       rememberVectorMask(static_cast<const VectorMaskStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskLogical:
+      rememberVectorMaskLogical(
+          static_cast<const VectorMaskLogicalStmtAST &>(statement));
       return;
     case StmtKind::VectorMaskedBinary:
       emitVectorMaskedBinary(
@@ -409,6 +484,72 @@ private:
       return;
 
     emitPrintI32CallWithRegisterSave(value.name);
+  }
+
+  void emitMatrixPackB(const MatrixPackBStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("matrix_pack_b text lowering is only available "
+                           "for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    if (output == variables.end() || input == variables.end()) {
+      result.addDiagnostic("unknown buffer in matrix_pack_b statement");
+      return;
+    }
+
+    EmittedValue cols = emitExpression(statement.getCols());
+    EmittedValue inner = emitExpression(statement.getInner());
+    if (cols.name.empty() || inner.name.empty())
+      return;
+
+    std::string colLabel = nextLabel(".Lmatrix_pack_b_col");
+    std::string innerLabel = nextLabel(".Lmatrix_pack_b_inner");
+    std::string nextColLabel = nextLabel(".Lmatrix_pack_b_next_col");
+    std::string endLabel = nextLabel(".Lmatrix_pack_b_end");
+
+    os << "  addi sp, sp, -48\n";
+    os << "  sd s0, 0(sp)\n";
+    os << "  sd s1, 8(sp)\n";
+    os << "  sd s2, 16(sp)\n";
+    os << "  sd s3, 24(sp)\n";
+    os << "  sd s4, 32(sp)\n";
+    os << "  sd s5, 40(sp)\n";
+    os << "  mv s0, " << output->second.name << "\n";
+    os << "  mv s1, " << input->second.name << "\n";
+    os << "  mv s2, " << cols.name << "\n";
+    os << "  mv s3, " << inner.name << "\n";
+    os << "  li s4, 0\n";
+    os << colLabel << ":\n";
+    os << "  bgeu s4, s2, " << endLabel << "\n";
+    os << "  li s5, 0\n";
+    os << innerLabel << ":\n";
+    os << "  bgeu s5, s3, " << nextColLabel << "\n";
+    os << "  mul t0, s5, s2\n";
+    os << "  add t0, t0, s4\n";
+    os << "  slli t0, t0, 2\n";
+    os << "  add t0, s1, t0\n";
+    os << "  lw t1, 0(t0)\n";
+    os << "  mul t2, s4, s3\n";
+    os << "  add t2, t2, s5\n";
+    os << "  slli t2, t2, 2\n";
+    os << "  add t2, s0, t2\n";
+    os << "  sw t1, 0(t2)\n";
+    os << "  addi s5, s5, 1\n";
+    os << "  j " << innerLabel << "\n";
+    os << nextColLabel << ":\n";
+    os << "  addi s4, s4, 1\n";
+    os << "  j " << colLabel << "\n";
+    os << endLabel << ":\n";
+    os << "  ld s0, 0(sp)\n";
+    os << "  ld s1, 8(sp)\n";
+    os << "  ld s2, 16(sp)\n";
+    os << "  ld s3, 24(sp)\n";
+    os << "  ld s4, 32(sp)\n";
+    os << "  ld s5, 40(sp)\n";
+    os << "  addi sp, sp, 48\n";
   }
 
   void emitMatrixMultiply(const MatrixMultiplyStmtAST &statement) {
@@ -616,6 +757,26 @@ private:
     if (length.name.empty())
       return;
 
+    unsigned elementWidth = getIntegerTypeWidth(output->second.type);
+    unsigned lhsWidth = getIntegerTypeWidth(lhs->second.type);
+    unsigned rhsWidth = getIntegerTypeWidth(rhs->second.type);
+    if (lhsWidth != elementWidth || rhsWidth != elementWidth) {
+      result.addDiagnostic("vector_add requires matching element widths");
+      return;
+    }
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
+
+    const char *lhsVector = "v0";
+    const char *rhsVector = "v1";
+    const char *sumVector = "v2";
+    if (statement.getLMUL() == VectorLMUL::M2) {
+      rhsVector = "v2";
+      sumVector = "v4";
+    } else if (statement.getLMUL() == VectorLMUL::M4) {
+      rhsVector = "v4";
+      sumVector = "v8";
+    }
+
     std::string index = nextTempRegister();
     std::string vl = nextTempRegister();
     std::string offset = nextTempRegister();
@@ -629,18 +790,149 @@ private:
     os << loopLabel << ":\n";
     os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
-    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
-    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth << ", "
+       << getVectorLMULAssemblyName(statement.getLMUL()) << ", ta, ma\n";
+    if (byteShift == 0)
+      os << "  mv " << offset << ", " << index << "\n";
+    else
+      os << "  slli " << offset << ", " << index << ", " << byteShift << "\n";
     os << "  add " << lhsAddress << ", " << lhs->second.name << ", " << offset
        << "\n";
     os << "  add " << rhsAddress << ", " << rhs->second.name << ", " << offset
        << "\n";
     os << "  add " << outputAddress << ", " << output->second.name << ", "
        << offset << "\n";
-    os << "  vle32.v v0, 0(" << lhsAddress << ")\n";
-    os << "  vle32.v v1, 0(" << rhsAddress << ")\n";
-    os << "  vadd.vv v2, v0, v1\n";
-    os << "  vse32.v v2, 0(" << outputAddress << ")\n";
+    os << "  vle" << elementWidth << ".v " << lhsVector << ", 0(" << lhsAddress
+       << ")\n";
+    os << "  vle" << elementWidth << ".v " << rhsVector << ", 0(" << rhsAddress
+       << ")\n";
+    os << "  vadd.vv " << sumVector << ", " << lhsVector << ", " << rhsVector
+       << "\n";
+    os << "  vse" << elementWidth << ".v " << sumVector << ", 0("
+       << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorStridedLoad(const VectorStridedLoadStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_strided_load text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    if (output == variables.end() || input == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_strided_load statement");
+      return;
+    }
+
+    unsigned elementWidth = getIntegerTypeWidth(output->second.type);
+    if (getIntegerTypeWidth(input->second.type) != elementWidth) {
+      result.addDiagnostic(
+          "vector_strided_load requires matching element widths");
+      return;
+    }
+
+    EmittedValue stride = emitExpression(statement.getStride());
+    EmittedValue length = emitExpression(statement.getLength());
+    if (stride.name.empty() || length.name.empty())
+      return;
+
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string outputOffset = nextTempRegister();
+    std::string inputOffset = nextTempRegister();
+    std::string byteStride = nextTempRegister();
+    std::string inputAddress = nextTempRegister();
+    std::string outputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_strided_load");
+    std::string endLabel = nextLabel(".Lvector_strided_load_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth
+       << ", m1, ta, ma\n";
+    if (byteShift == 0) {
+      os << "  mv " << outputOffset << ", " << index << "\n";
+      os << "  mv " << byteStride << ", " << stride.name << "\n";
+    } else {
+      os << "  slli " << outputOffset << ", " << index << ", " << byteShift
+         << "\n";
+      os << "  slli " << byteStride << ", " << stride.name << ", " << byteShift
+         << "\n";
+    }
+    os << "  mul " << inputOffset << ", " << index << ", " << stride.name
+       << "\n";
+    if (byteShift != 0)
+      os << "  slli " << inputOffset << ", " << inputOffset << ", " << byteShift
+         << "\n";
+    os << "  add " << inputAddress << ", " << input->second.name << ", "
+       << inputOffset << "\n";
+    os << "  add " << outputAddress << ", " << output->second.name << ", "
+       << outputOffset << "\n";
+    os << "  vlse" << elementWidth << ".v v0, (" << inputAddress << "), "
+       << byteStride << "\n";
+    os << "  vse" << elementWidth << ".v v0, 0(" << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorIndexedLoad(const VectorIndexedLoadStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_indexed_load text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    auto indices = variables.find(statement.getIndices());
+    if (output == variables.end() || input == variables.end() ||
+        indices == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_indexed_load statement");
+      return;
+    }
+    if (getIntegerTypeWidth(output->second.type) != 32 ||
+        getIntegerTypeWidth(input->second.type) != 32 ||
+        getIntegerTypeWidth(indices->second.type) != 32) {
+      result.addDiagnostic(
+          "vector_indexed_load currently requires ptr<i32> data and indices");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string indexAddress = nextTempRegister();
+    std::string outputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_indexed_load");
+    std::string endLabel = nextLabel(".Lvector_indexed_load_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << indexAddress << ", " << indices->second.name << ", "
+       << offset << "\n";
+    os << "  add " << outputAddress << ", " << output->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v0, 0(" << indexAddress << ")\n";
+    os << "  vsll.vi v0, v0, 2\n";
+    os << "  vluxei32.v v1, (" << input->second.name << "), v0\n";
+    os << "  vse32.v v1, 0(" << outputAddress << ")\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
@@ -784,6 +1076,66 @@ private:
     os << endLabel << ":\n";
   }
 
+  void emitVectorWidenAdd(const VectorWidenAddStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_widen_add_i16_i32 text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic(
+          "unknown buffer in vector_widen_add_i16_i32 statement");
+      return;
+    }
+    if (getIntegerTypeWidth(output->second.type) != 32 ||
+        getIntegerTypeWidth(lhs->second.type) != 16 ||
+        getIntegerTypeWidth(rhs->second.type) != 16) {
+      result.addDiagnostic(
+          "vector_widen_add_i16_i32 requires ptr<i32>, ptr<i16>, ptr<i16>");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string inputOffset = nextTempRegister();
+    std::string outputOffset = nextTempRegister();
+    std::string lhsAddress = nextTempRegister();
+    std::string rhsAddress = nextTempRegister();
+    std::string outputAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_widen_add_i16_i32");
+    std::string endLabel = nextLabel(".Lvector_widen_add_i16_i32_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e16, m1, ta, ma\n";
+    os << "  slli " << inputOffset << ", " << index << ", 1\n";
+    os << "  slli " << outputOffset << ", " << index << ", 2\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
+       << inputOffset << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
+       << inputOffset << "\n";
+    os << "  add " << outputAddress << ", " << output->second.name << ", "
+       << outputOffset << "\n";
+    os << "  vle16.v v0, 0(" << lhsAddress << ")\n";
+    os << "  vle16.v v1, 0(" << rhsAddress << ")\n";
+    os << "  vwadd.vv v2, v0, v1\n";
+    os << "  vse32.v v2, 0(" << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
   StringRef getVectorSelectSourceName(VectorSelectPredicate predicate) {
     switch (predicate) {
     case VectorSelectPredicate::LT:
@@ -810,39 +1162,55 @@ private:
     return "vector_select_unknown";
   }
 
-  void emitVectorSelectCompare(VectorSelectPredicate predicate) {
+  void emitVectorSelectCompareTo(VectorSelectPredicate predicate,
+                                 StringRef destMask, StringRef lhsVector,
+                                 StringRef rhsVector) {
     switch (predicate) {
     case VectorSelectPredicate::LT:
-      os << "  vmslt.vv v0, v1, v2\n";
+      os << "  vmslt.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::LE:
-      os << "  vmsle.vv v0, v1, v2\n";
+      os << "  vmsle.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::GT:
-      os << "  vmslt.vv v0, v2, v1\n";
+      os << "  vmslt.vv " << destMask << ", " << rhsVector << ", " << lhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::GE:
-      os << "  vmsle.vv v0, v2, v1\n";
+      os << "  vmsle.vv " << destMask << ", " << rhsVector << ", " << lhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::EQ:
-      os << "  vmseq.vv v0, v1, v2\n";
+      os << "  vmseq.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::NE:
-      os << "  vmsne.vv v0, v1, v2\n";
+      os << "  vmsne.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::ULT:
-      os << "  vmsltu.vv v0, v1, v2\n";
+      os << "  vmsltu.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::ULE:
-      os << "  vmsleu.vv v0, v1, v2\n";
+      os << "  vmsleu.vv " << destMask << ", " << lhsVector << ", " << rhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::UGT:
-      os << "  vmsltu.vv v0, v2, v1\n";
+      os << "  vmsltu.vv " << destMask << ", " << rhsVector << ", " << lhsVector
+         << "\n";
       return;
     case VectorSelectPredicate::UGE:
-      os << "  vmsleu.vv v0, v2, v1\n";
+      os << "  vmsleu.vv " << destMask << ", " << rhsVector << ", " << lhsVector
+         << "\n";
       return;
     }
+  }
+
+  void emitVectorSelectCompare(VectorSelectPredicate predicate) {
+    emitVectorSelectCompareTo(predicate, "v0", "v1", "v2");
   }
 
   void emitVectorSelect(const VectorSelectStmtAST &statement) {
@@ -921,12 +1289,96 @@ private:
   }
 
   void rememberVectorMask(const VectorMaskStmtAST &statement) {
-    if (masks.count(statement.getMask())) {
+    if (masks.count(statement.getMask()) ||
+        logicalMasks.count(statement.getMask())) {
       result.addDiagnostic("duplicate vector mask '" + statement.getMask() +
                            "'");
       return;
     }
     masks[statement.getMask()] = &statement;
+  }
+
+  void rememberVectorMaskLogical(const VectorMaskLogicalStmtAST &statement) {
+    if (masks.count(statement.getResult()) ||
+        logicalMasks.count(statement.getResult())) {
+      result.addDiagnostic("duplicate vector mask '" + statement.getResult() +
+                           "'");
+      return;
+    }
+    logicalMasks[statement.getResult()] = &statement;
+  }
+
+  bool emitCompareMaskInto(const VectorMaskStmtAST &statement,
+                           StringRef destMask, StringRef offset,
+                           StringRef address0, StringRef address1) {
+    auto maskLHS = variables.find(statement.getLHS());
+    auto maskRHS = variables.find(statement.getRHS());
+    if (maskLHS == variables.end() || maskRHS == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector mask '" +
+                           statement.getMask() + "'");
+      return false;
+    }
+
+    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
+       << "\n";
+    os << "  vle32.v v8, 0(" << address0 << ")\n";
+    os << "  vle32.v v9, 0(" << address1 << ")\n";
+    emitVectorSelectCompareTo(statement.getPredicate(), destMask, "v8", "v9");
+    return true;
+  }
+
+  bool emitMaskIntoVectorRegister(StringRef maskName, StringRef destMask,
+                                  StringRef offset, StringRef address0,
+                                  StringRef address1) {
+    auto compareMask = masks.find(maskName.str());
+    if (compareMask != masks.end())
+      return emitCompareMaskInto(*compareMask->second, destMask, offset,
+                                 address0, address1);
+
+    auto logicalMask = logicalMasks.find(maskName.str());
+    if (logicalMask == logicalMasks.end()) {
+      result.addDiagnostic("unknown vector mask '" + maskName.str() + "'");
+      return false;
+    }
+
+    const VectorMaskLogicalStmtAST &statement = *logicalMask->second;
+    if (statement.getOp() == VectorMaskLogicalOp::Not) {
+      if (!emitMaskIntoVectorRegister(statement.getLHS(), destMask, offset,
+                                      address0, address1))
+        return false;
+      os << "  vmnand.mm " << destMask << ", " << destMask << ", " << destMask
+         << "\n";
+      return true;
+    }
+
+    StringRef scratchMask =
+        destMask == "v1" ? StringRef("v2") : StringRef("v1");
+    if (!emitMaskIntoVectorRegister(statement.getLHS(), destMask, offset,
+                                    address0, address1))
+      return false;
+    if (!emitMaskIntoVectorRegister(statement.getRHS(), scratchMask, offset,
+                                    address0, address1))
+      return false;
+
+    switch (statement.getOp()) {
+    case VectorMaskLogicalOp::And:
+      os << "  vmand.mm " << destMask << ", " << destMask << ", " << scratchMask
+         << "\n";
+      return true;
+    case VectorMaskLogicalOp::Or:
+      os << "  vmor.mm " << destMask << ", " << destMask << ", " << scratchMask
+         << "\n";
+      return true;
+    case VectorMaskLogicalOp::Xor:
+      os << "  vmxor.mm " << destMask << ", " << destMask << ", " << scratchMask
+         << "\n";
+      return true;
+    case VectorMaskLogicalOp::Not:
+      return true;
+    }
+    return false;
   }
 
   void emitVectorMaskedBinary(const VectorMaskedBinaryStmtAST &statement) {
@@ -936,22 +1388,12 @@ private:
       return;
     }
 
-    auto maskDefinition = masks.find(statement.getMask());
-    if (maskDefinition == masks.end()) {
-      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
-      return;
-    }
-
-    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
     auto output = variables.find(statement.getOutput());
     auto lhs = variables.find(statement.getLHS());
     auto rhs = variables.find(statement.getRHS());
     auto passthrough = variables.find(statement.getPassthrough());
-    auto maskLHS = variables.find(maskStatement.getLHS());
-    auto maskRHS = variables.find(maskStatement.getRHS());
     if (output == variables.end() || lhs == variables.end() ||
-        rhs == variables.end() || passthrough == variables.end() ||
-        maskLHS == variables.end() || maskRHS == variables.end()) {
+        rhs == variables.end() || passthrough == variables.end()) {
       result.addDiagnostic(
           "unknown buffer in vector_masked_" +
           std::string(getVectorMaskedBinaryOpName(statement.getOp())) +
@@ -980,13 +1422,9 @@ private:
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
-       << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
-       << "\n";
-    os << "  vle32.v v1, 0(" << address0 << ")\n";
-    os << "  vle32.v v2, 0(" << address1 << ")\n";
-    emitVectorSelectCompare(maskStatement.getPredicate());
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
 
     os << "  add " << address0 << ", " << lhs->second.name << ", " << offset
        << "\n";
@@ -1015,19 +1453,9 @@ private:
       return;
     }
 
-    auto maskDefinition = masks.find(statement.getMask());
-    if (maskDefinition == masks.end()) {
-      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
-      return;
-    }
-
-    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
     auto output = variables.find(statement.getOutput());
     auto input = variables.find(statement.getInput());
-    auto maskLHS = variables.find(maskStatement.getLHS());
-    auto maskRHS = variables.find(maskStatement.getRHS());
-    if (output == variables.end() || input == variables.end() ||
-        maskLHS == variables.end() || maskRHS == variables.end()) {
+    if (output == variables.end() || input == variables.end()) {
       result.addDiagnostic("unknown buffer in vector_masked_store statement");
       return;
     }
@@ -1051,13 +1479,9 @@ private:
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
-       << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
-       << "\n";
-    os << "  vle32.v v1, 0(" << address0 << ")\n";
-    os << "  vle32.v v2, 0(" << address1 << ")\n";
-    emitVectorSelectCompare(maskStatement.getPredicate());
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
 
     os << "  add " << address0 << ", " << input->second.name << ", " << offset
        << "\n";
@@ -1077,21 +1501,11 @@ private:
       return;
     }
 
-    auto maskDefinition = masks.find(statement.getMask());
-    if (maskDefinition == masks.end()) {
-      result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
-      return;
-    }
-
-    const VectorMaskStmtAST &maskStatement = *maskDefinition->second;
     auto output = variables.find(statement.getOutput());
     auto input = variables.find(statement.getInput());
     auto passthrough = variables.find(statement.getPassthrough());
-    auto maskLHS = variables.find(maskStatement.getLHS());
-    auto maskRHS = variables.find(maskStatement.getRHS());
     if (output == variables.end() || input == variables.end() ||
-        passthrough == variables.end() || maskLHS == variables.end() ||
-        maskRHS == variables.end()) {
+        passthrough == variables.end()) {
       result.addDiagnostic("unknown buffer in vector_masked_load statement");
       return;
     }
@@ -1115,13 +1529,9 @@ private:
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
-       << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
-       << "\n";
-    os << "  vle32.v v1, 0(" << address0 << ")\n";
-    os << "  vle32.v v2, 0(" << address1 << ")\n";
-    emitVectorSelectCompare(maskStatement.getPredicate());
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
 
     os << "  add " << address0 << ", " << input->second.name << ", " << offset
        << "\n";
@@ -1504,6 +1914,7 @@ private:
   bool blockTerminated = false;
   std::map<std::string, EmittedValue> variables;
   std::map<std::string, const VectorMaskStmtAST *> masks;
+  std::map<std::string, const VectorMaskLogicalStmtAST *> logicalMasks;
 };
 
 bool statementUsesPrintI32(const StmtAST &statement) {

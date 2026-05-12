@@ -387,3 +387,23 @@ vector_masked_load out, input, m0, passthrough, n
   -> RVV vmerge.vvm passthrough
   -> RVV vse32.v
 ```
+
+
+## Phase 37A Architecture Update
+
+The direct RVV reference backend now has a broader but still modular kernel
+surface:
+
+- typed-buffer vector add selects SEW from `ptr<i16>` or `ptr<i32>`;
+- LMUL-specific vector add syntax is represented in AST by `VectorLMUL`;
+- memory-form statements model unit-stride, strided, and indexed loads as
+  separate AST nodes;
+- compare masks and logical masks are separate transient symbol tables in the
+  backend, so masked consumers request a final `v0` mask without knowing how it
+  was produced;
+- widening arithmetic is explicit in the operation name and validates mixed
+  input/output pointer widths before emitting RVV.
+
+The formal MLIR path is intentionally kept separate from the direct RVV backend.
+Phase 37A records that MLIR vector IR can lower to LLVM IR and bitcode, while
+RISC-V RVV assembly from `llc` remains a toolchain blocker.

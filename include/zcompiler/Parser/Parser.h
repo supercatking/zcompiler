@@ -37,11 +37,15 @@ private:
   std::unique_ptr<StmtAST> parseAssignStatement();
   std::unique_ptr<StmtAST> parseStoreStatement();
   std::unique_ptr<StmtAST> parsePrintI32Statement();
+  std::unique_ptr<StmtAST> parseMatrixPackBStatement();
   std::unique_ptr<StmtAST> parseMatrixMultiplyStatement();
   std::unique_ptr<StmtAST> parseVectorAddStatement();
+  std::unique_ptr<StmtAST> parseVectorStridedLoadStatement();
+  std::unique_ptr<StmtAST> parseVectorIndexedLoadStatement();
   std::unique_ptr<StmtAST> parseVectorCopyStatement();
   std::unique_ptr<StmtAST> parseVectorScaleStatement();
   std::unique_ptr<StmtAST> parseVectorMulStatement();
+  std::unique_ptr<StmtAST> parseVectorWidenAddI16I32Statement();
   std::unique_ptr<StmtAST> parseVectorReduceAddStatement();
   std::unique_ptr<StmtAST>
   parseVectorSelectStatement(VectorSelectPredicate predicate,
@@ -49,6 +53,9 @@ private:
   std::unique_ptr<StmtAST>
   parseVectorMaskStatement(VectorSelectPredicate predicate,
                            llvm::StringRef keyword);
+  std::unique_ptr<StmtAST>
+  parseVectorMaskLogicalStatement(VectorMaskLogicalOp op,
+                                  llvm::StringRef keyword);
   std::unique_ptr<StmtAST>
   parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp op,
                                    llvm::StringRef keyword);

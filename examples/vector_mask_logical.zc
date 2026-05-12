@@ -1,0 +1,10 @@
+func vector_mask_logical_demo(out: ptr<i32>, lhs: ptr<i32>, rhs: ptr<i32>, x: ptr<i32>, y: ptr<i32>, passthrough: ptr<i32>, n: i32) -> i32 {
+  vector_mask_gt m0, lhs, rhs, n;
+  vector_mask_eq m1, lhs, rhs, n;
+  vector_mask_not m2, m1, n;
+  vector_mask_and m3, m0, m2, n;
+  vector_mask_or m4, m3, m1, n;
+  vector_mask_xor m5, m4, m1, n;
+  vector_masked_add out, x, y, m5, passthrough, n;
+  return 0;
+}

@@ -42,6 +42,32 @@ const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op) {
   return "unknown";
 }
 
+const char *getVectorMaskLogicalOpName(VectorMaskLogicalOp op) {
+  switch (op) {
+  case VectorMaskLogicalOp::And:
+    return "and";
+  case VectorMaskLogicalOp::Or:
+    return "or";
+  case VectorMaskLogicalOp::Xor:
+    return "xor";
+  case VectorMaskLogicalOp::Not:
+    return "not";
+  }
+  return "unknown";
+}
+
+const char *getVectorLMULName(VectorLMUL lmul) {
+  switch (lmul) {
+  case VectorLMUL::M1:
+    return "m1";
+  case VectorLMUL::M2:
+    return "m2";
+  case VectorLMUL::M4:
+    return "m4";
+  }
+  return "unknown";
+}
+
 const char *getMatrixRHSLayoutName(MatrixRHSLayout layout) {
   switch (layout) {
   case MatrixRHSLayout::RowMajor:
@@ -127,6 +153,17 @@ void PrintI32StmtAST::dump(raw_ostream &os, unsigned indent) const {
   value->dump(os, indent + 1);
 }
 
+void MatrixPackBStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "MatrixPackBStmt output=" << output << " input=" << input << '\n';
+  writeIndent(os, indent + 1);
+  os << "Cols\n";
+  cols->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Inner\n";
+  inner->dump(os, indent + 2);
+}
+
 void MatrixMultiplyStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "MatrixMultiplyStmt output=" << output << " lhs=" << lhs
@@ -146,7 +183,27 @@ void MatrixMultiplyStmtAST::dump(raw_ostream &os, unsigned indent) const {
 void VectorAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorAddStmt output=" << output << " lhs=" << lhs << " rhs=" << rhs
-     << '\n';
+     << " lmul=" << getVectorLMULName(lmul) << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorStridedLoadStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorStridedLoadStmt output=" << output << " input=" << input << '\n';
+  writeIndent(os, indent + 1);
+  os << "Stride\n";
+  stride->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorIndexedLoadStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorIndexedLoadStmt output=" << output << " input=" << input
+     << " indices=" << indices << '\n';
   writeIndent(os, indent + 1);
   os << "Length\n";
   length->dump(os, indent + 2);
@@ -180,6 +237,15 @@ void VectorMulStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorWidenAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorWidenAddStmt output=" << output << " lhs=" << lhs
+     << " rhs=" << rhs << " source=i16 dest=i32" << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void VectorReduceAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorReduceAddStmt result=" << result << " input=" << input << '\n';
@@ -202,6 +268,18 @@ void VectorMaskStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorMaskStmt predicate=" << getVectorSelectPredicateName(predicate)
      << " mask=" << mask << " lhs=" << lhs << " rhs=" << rhs << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorMaskLogicalStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskLogicalStmt op=" << getVectorMaskLogicalOpName(op)
+     << " result=" << result << " lhs=" << lhs;
+  if (op != VectorMaskLogicalOp::Not)
+    os << " rhs=" << rhs;
+  os << '\n';
   writeIndent(os, indent + 1);
   os << "Length\n";
   length->dump(os, indent + 2);

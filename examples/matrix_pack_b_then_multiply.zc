@@ -1,0 +1,5 @@
+func matmul_with_pack_i32(c: ptr<i32>, a: ptr<i32>, b: ptr<i32>, packed_b: ptr<i32>, rows: i32, cols: i32, inner: i32) -> i32 {
+  matrix_pack_b packed_b, b, cols, inner;
+  matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;
+  return 0;
+}

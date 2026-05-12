@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "title": "zcompiler RVV 1.0 compliance matrix",
+  "status_levels": [
+    "supported",
+    "partial",
+    "planned",
+    "blocked"
+  ],
+  "features": [
+    {
+      "area": "target",
+      "feature": "rv64gcv_lp64d",
+      "status": "supported",
+      "phase": "29A",
+      "validation": [
+        "assembler",
+        "qemu"
+      ]
+    },
+    {
+      "area": "sew",
+      "feature": "i32_e32",
+      "status": "supported",
+      "phase": "29A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "sew",
+      "feature": "i8_i16_i64",
+      "status": "partial",
+      "phase": "32B/32C",
+      "validation": [
+        "lexer",
+        "parser",
+        "qemu_i16"
+      ]
+    },
+    {
+      "area": "lmul",
+      "feature": "m1",
+      "status": "supported",
+      "phase": "29A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "lmul",
+      "feature": "m2_m4_policy",
+      "status": "partial",
+      "phase": "33A",
+      "validation": [
+        "objdump",
+        "qemu_m2"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "unit_stride_load_store",
+      "status": "supported",
+      "phase": "20A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "strided_load",
+      "status": "supported",
+      "phase": "34A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "indexed_load",
+      "status": "supported",
+      "phase": "34B",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "integer",
+      "feature": "add_sub_mul",
+      "status": "supported",
+      "phase": "30Q",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "reduction",
+      "feature": "sum",
+      "status": "supported",
+      "phase": "25C",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "mask",
+      "feature": "compare_masks",
+      "status": "supported",
+      "phase": "30P",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "mask",
+      "feature": "mask_logical",
+      "status": "supported",
+      "phase": "35A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "matrix",
+      "feature": "packed_b_matmul",
+      "status": "supported",
+      "phase": "31U",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "matrix",
+      "feature": "compiler_owned_pack_b",
+      "status": "supported",
+      "phase": "31V",
+      "validation": [
+        "qemu"
+      ]
+    },
+    {
+      "area": "widening",
+      "feature": "widen_add",
+      "status": "supported",
+      "phase": "36A",
+      "validation": [
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "formal_lowering",
+      "feature": "mlir_vector_to_llvm_to_rvv",
+      "status": "blocked",
+      "phase": "37A",
+      "validation": [
+        "probe"
+      ]
+    }
+  ]
+}

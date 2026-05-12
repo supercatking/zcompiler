@@ -43,7 +43,7 @@ tutorial. It currently supports:
 - Scalar indexed `load` / `store`.
 - Target-independent `matrix_multiply c, a, b, rows, cols, inner;` syntax for row-major `i32` MMA v1.
 - RVV-friendly `matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;` syntax for column-packed `B`.
-- Target-independent `vector_add` syntax.
+- Target-independent `vector_add` syntax, including a validated `ptr<i16>` path and `vector_add_m2` LMUL slice.
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
 - Target-independent `vector_mul` syntax.
@@ -55,16 +55,17 @@ tutorial. It currently supports:
 - MLIR emission.
 - Lowering to LLVM-compatible IR.
 - RISC-V assembly generation through LLVM's RISC-V backend.
-- Direct RVV reference assembly for vector add.
+- Direct RVV reference assembly for vector add across the current typed-buffer subset.
 - Direct RVV reference assembly for vector copy, vector scale, and vector
   multiply.
 - Direct RVV reference assembly for vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
+- Direct RVV reference assembly for strided i32 loads, indexed i32 loads, logical mask composition, and signed i16-to-i32 widening add.
 - Direct scalar RISC-V assembly for `matrix_multiply` with QEMU correctness validation.
-- Direct RVV assembly for packed-B matrix multiply using unit-stride vector dot products.
+- Direct RISC-V `matrix_pack_b` plus RVV assembly for packed-B matrix multiply using unit-stride vector dot products.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
-- Host-side correctness harnesses for masked vector tails.
+- Host-side and QEMU correctness harnesses for masked vector tails, strided/indexed loads, i16 widening add, and packed-B matrix workflows.
 
 Example target input:
 

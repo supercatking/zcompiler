@@ -276,3 +276,34 @@ vector_masked_load out, input, m0, passthrough, n;
 ```
 
 Semantics: active true lanes read `input[i]`; active false lanes write `passthrough[i]`; tail lanes outside `n` preserve the existing output memory. Direct RVV uses masked `vle32.v ..., v0.t`, then `vmerge.vvm` to make false-lane passthrough explicit under the current `ta, ma` policy.
+
+
+## Phase 37A Implemented RVV Surface Update
+
+The source-level RVV surface now additionally includes:
+
+```zc
+matrix_pack_b packed_b, b, cols, inner;
+vector_add_m2 c, a, b, n;
+vector_add_m4 c, a, b, n;
+vector_strided_load out, input, stride, n;
+vector_indexed_load out, input, indices, n;
+vector_mask_and m2, m0, m1, n;
+vector_mask_or m3, m0, m1, n;
+vector_mask_xor m4, m0, m1, n;
+vector_mask_not m5, m0, n;
+vector_widen_add_i16_i32 out, a, b, n;
+```
+
+Direct RVV/RISC-V mappings added in this iteration:
+
+- `vector_add` chooses `vle{SEW}.v`, `vadd.vv`, and `vse{SEW}.v` from typed pointer operands for the current validated `i16` and `i32` slices.
+- `vector_add_m2` emits `vsetvli ..., e16, m2, ta, ma` for the validated i16 LMUL slice.
+- `vector_strided_load` emits `vlse32.v` and unit-stride output stores.
+- `vector_indexed_load` emits `vle32.v` for element indices, shifts to byte offsets, then emits `vluxei32.v`.
+- `vector_mask_and/or/xor/not` emits RVV mask logical instructions and feeds the final mask into `v0` for masked consumers.
+- `vector_widen_add_i16_i32` emits `vle16.v`, signed `vwadd.vv`, and `vse32.v`.
+
+The formal MLIR vector-to-LLVM probe is reproducible through
+`scripts/probe-formal-rvv-lowering.sh`; Phase 37A currently records the final
+blocker as `blocked_at_riscv_llc`.

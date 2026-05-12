@@ -1,0 +1,24 @@
+  .option nopic
+  .text
+  .globl vector_widen_add_i16_i32_demo
+vector_widen_add_i16_i32_demo:
+  li t0, 0
+.Lvector_widen_add_i16_i32.0:
+  bgeu t0, a3, .Lvector_widen_add_i16_i32_end.1
+  sub t1, a3, t0
+  vsetvli t1, t1, e16, m1, ta, ma
+  slli t2, t0, 1
+  slli t3, t0, 2
+  add t4, a1, t2
+  add t5, a2, t2
+  add t6, a0, t3
+  vle16.v v0, 0(t4)
+  vle16.v v1, 0(t5)
+  vwadd.vv v2, v0, v1
+  vse32.v v2, 0(t6)
+  add t0, t0, t1
+  j .Lvector_widen_add_i16_i32.0
+.Lvector_widen_add_i16_i32_end.1:
+  li t0, 0
+  mv a0, t0
+  ret

@@ -42,6 +42,7 @@ private:
   void emitFunction(const FunctionAST &function) {
     variables.clear();
     masks.clear();
+    logicalMasks.clear();
     Location loc = builder.getUnknownLoc();
     SmallVector<Type, 4> inputTypes;
     for (const ParameterAST &parameter : function.getParameters())
@@ -192,6 +193,9 @@ private:
           "MLIR API generation for print_i32 is planned after the RISC-V "
           "runtime slice");
       return;
+    case StmtKind::MatrixPackB:
+      emitMatrixPackB(static_cast<const MatrixPackBStmtAST &>(statement));
+      return;
     case StmtKind::MatrixMultiply:
       emitMatrixMultiply(static_cast<const MatrixMultiplyStmtAST &>(statement));
       return;
@@ -209,6 +213,12 @@ private:
     case StmtKind::VectorAdd:
       emitVectorAdd(static_cast<const VectorAddStmtAST &>(statement));
       return;
+    case StmtKind::VectorStridedLoad:
+    case StmtKind::VectorIndexedLoad:
+      result.addDiagnostic(
+          "MLIR API generation for strided/indexed RVV loads is planned after "
+          "the direct RISC-V reference slice");
+      return;
     case StmtKind::VectorCopy:
       emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));
       return;
@@ -217,6 +227,11 @@ private:
       return;
     case StmtKind::VectorMul:
       emitVectorMul(static_cast<const VectorMulStmtAST &>(statement));
+      return;
+    case StmtKind::VectorWidenAdd:
+      result.addDiagnostic(
+          "MLIR API generation for vector_widen_add_i16_i32 is planned after "
+          "the direct RISC-V reference slice");
       return;
     case StmtKind::VectorReduceAdd:
       emitVectorReduceAdd(
@@ -227,6 +242,10 @@ private:
       return;
     case StmtKind::VectorMask:
       rememberVectorMask(static_cast<const VectorMaskStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskLogical:
+      rememberVectorMaskLogical(
+          static_cast<const VectorMaskLogicalStmtAST &>(statement));
       return;
     case StmtKind::VectorMaskedBinary:
       emitVectorMaskedBinary(
@@ -270,6 +289,44 @@ private:
 
     builder.create<memref::StoreOp>(builder.getUnknownLoc(), value,
                                     found->second, ValueRange(index));
+  }
+
+  void emitMatrixPackB(const MatrixPackBStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    if (output == variables.end() || input == variables.end()) {
+      result.addDiagnostic("unknown buffer in matrix_pack_b statement");
+      return;
+    }
+
+    Value cols = ensureIndex(emitExpression(statement.getCols()));
+    Value inner = ensureIndex(emitExpression(statement.getInner()));
+    if (!cols || !inner)
+      return;
+
+    Location loc = builder.getUnknownLoc();
+    Value zeroIndex = builder.create<arith::ConstantIndexOp>(loc, 0);
+    Value oneIndex = builder.create<arith::ConstantIndexOp>(loc, 1);
+
+    auto colLoop = builder.create<scf::ForOp>(loc, zeroIndex, cols, oneIndex);
+    OpBuilder::InsertionGuard colGuard(builder);
+    builder.setInsertionPointToStart(colLoop.getBody());
+    Value col = colLoop.getInductionVar();
+
+    auto innerLoop =
+        builder.create<scf::ForOp>(loc, zeroIndex, inner, oneIndex);
+    OpBuilder::InsertionGuard innerGuard(builder);
+    builder.setInsertionPointToStart(innerLoop.getBody());
+    Value k = innerLoop.getInductionVar();
+
+    Value inputRowOffset = builder.create<arith::MulIOp>(loc, k, cols);
+    Value inputIndex = builder.create<arith::AddIOp>(loc, inputRowOffset, col);
+    Value outputRowOffset = builder.create<arith::MulIOp>(loc, col, inner);
+    Value outputIndex = builder.create<arith::AddIOp>(loc, outputRowOffset, k);
+    Value value = builder.create<memref::LoadOp>(loc, input->second,
+                                                 ValueRange(inputIndex));
+    builder.create<memref::StoreOp>(loc, value, output->second,
+                                    ValueRange(outputIndex));
   }
 
   void emitMatrixMultiply(const MatrixMultiplyStmtAST &statement) {
@@ -590,8 +647,25 @@ private:
     masks[statement.getMask()] = &statement;
   }
 
+  void rememberVectorMaskLogical(const VectorMaskLogicalStmtAST &statement) {
+    if (masks.count(statement.getResult()) ||
+        logicalMasks.count(statement.getResult())) {
+      result.addDiagnostic("duplicate vector mask '" + statement.getResult() +
+                           "'");
+      return;
+    }
+    logicalMasks[statement.getResult()] = &statement;
+  }
+
   void emitVectorMaskedBinary(const VectorMaskedBinaryStmtAST &statement) {
     auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end() &&
+        logicalMasks.count(statement.getMask())) {
+      result.addDiagnostic(
+          "MLIR API generation for logical vector masks is planned after the "
+          "direct RISC-V reference slice");
+      return;
+    }
     if (maskDefinition == masks.end()) {
       result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
       return;
@@ -643,6 +717,13 @@ private:
 
   void emitVectorMaskedStore(const VectorMaskedStoreStmtAST &statement) {
     auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end() &&
+        logicalMasks.count(statement.getMask())) {
+      result.addDiagnostic(
+          "MLIR API generation for logical vector masks is planned after the "
+          "direct RISC-V reference slice");
+      return;
+    }
     if (maskDefinition == masks.end()) {
       result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
       return;
@@ -687,6 +768,13 @@ private:
 
   void emitVectorMaskedLoad(const VectorMaskedLoadStmtAST &statement) {
     auto maskDefinition = masks.find(statement.getMask());
+    if (maskDefinition == masks.end() &&
+        logicalMasks.count(statement.getMask())) {
+      result.addDiagnostic(
+          "MLIR API generation for logical vector masks is planned after the "
+          "direct RISC-V reference slice");
+      return;
+    }
     if (maskDefinition == masks.end()) {
       result.addDiagnostic("unknown vector mask '" + statement.getMask() + "'");
       return;
@@ -776,8 +864,21 @@ private:
   }
 
   Type getType(StringRef sourceType) {
+    if (sourceType == "ptr<i8>")
+      return MemRefType::get({ShapedType::kDynamic}, builder.getIntegerType(8));
+    if (sourceType == "ptr<i16>")
+      return MemRefType::get({ShapedType::kDynamic},
+                             builder.getIntegerType(16));
     if (sourceType == "ptr<i32>")
       return MemRefType::get({ShapedType::kDynamic}, builder.getI32Type());
+    if (sourceType == "ptr<i64>")
+      return MemRefType::get({ShapedType::kDynamic}, builder.getI64Type());
+    if (sourceType == "i8")
+      return builder.getIntegerType(8);
+    if (sourceType == "i16")
+      return builder.getIntegerType(16);
+    if (sourceType == "i64")
+      return builder.getI64Type();
     return builder.getI32Type();
   }
 
@@ -798,6 +899,7 @@ private:
   MLIRGenResult &result;
   std::map<std::string, Value> variables;
   std::map<std::string, const VectorMaskStmtAST *> masks;
+  std::map<std::string, const VectorMaskLogicalStmtAST *> logicalMasks;
 };
 
 } // namespace

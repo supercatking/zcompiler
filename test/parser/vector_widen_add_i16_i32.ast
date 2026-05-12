@@ -1,0 +1,12 @@
+Module
+  Function name=vector_widen_add_i16_i32_demo return=i32
+    Params
+      Param name=out type=ptr<i32>
+      Param name=a type=ptr<i16>
+      Param name=b type=ptr<i16>
+      Param name=n type=i32
+    VectorWidenAddStmt output=out lhs=a rhs=b source=i16 dest=i32
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

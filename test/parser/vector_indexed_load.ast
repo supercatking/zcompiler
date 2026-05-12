@@ -1,0 +1,12 @@
+Module
+  Function name=vector_indexed_load_demo return=i32
+    Params
+      Param name=out type=ptr<i32>
+      Param name=input type=ptr<i32>
+      Param name=indices type=ptr<i32>
+      Param name=n type=i32
+    VectorIndexedLoadStmt output=out input=input indices=indices
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

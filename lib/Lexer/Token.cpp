@@ -24,8 +24,14 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_else";
   case TokenKind::KwWhile:
     return "kw_while";
+  case TokenKind::KwI8:
+    return "kw_i8";
+  case TokenKind::KwI16:
+    return "kw_i16";
   case TokenKind::KwI32:
     return "kw_i32";
+  case TokenKind::KwI64:
+    return "kw_i64";
   case TokenKind::KwPtr:
     return "kw_ptr";
   case TokenKind::KwLoad:
@@ -34,18 +40,30 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_store";
   case TokenKind::KwPrintI32:
     return "kw_print_i32";
+  case TokenKind::KwMatrixPackB:
+    return "kw_matrix_pack_b";
   case TokenKind::KwMatrixMultiply:
     return "kw_matrix_multiply";
   case TokenKind::KwMatrixMultiplyPackedB:
     return "kw_matrix_multiply_packed_b";
   case TokenKind::KwVectorAdd:
     return "kw_vector_add";
+  case TokenKind::KwVectorAddM2:
+    return "kw_vector_add_m2";
+  case TokenKind::KwVectorAddM4:
+    return "kw_vector_add_m4";
+  case TokenKind::KwVectorStridedLoad:
+    return "kw_vector_strided_load";
+  case TokenKind::KwVectorIndexedLoad:
+    return "kw_vector_indexed_load";
   case TokenKind::KwVectorCopy:
     return "kw_vector_copy";
   case TokenKind::KwVectorScale:
     return "kw_vector_scale";
   case TokenKind::KwVectorMul:
     return "kw_vector_mul";
+  case TokenKind::KwVectorWidenAddI16I32:
+    return "kw_vector_widen_add_i16_i32";
   case TokenKind::KwVectorReduceAdd:
     return "kw_vector_reduce_add";
   case TokenKind::KwVectorSelectLT:
@@ -88,6 +106,14 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_mask_ugt";
   case TokenKind::KwVectorMaskUGE:
     return "kw_vector_mask_uge";
+  case TokenKind::KwVectorMaskAnd:
+    return "kw_vector_mask_and";
+  case TokenKind::KwVectorMaskOr:
+    return "kw_vector_mask_or";
+  case TokenKind::KwVectorMaskXor:
+    return "kw_vector_mask_xor";
+  case TokenKind::KwVectorMaskNot:
+    return "kw_vector_mask_not";
   case TokenKind::KwVectorMaskedAdd:
     return "kw_vector_masked_add";
   case TokenKind::KwVectorMaskedSub:

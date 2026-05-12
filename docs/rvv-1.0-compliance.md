@@ -174,3 +174,23 @@ RVV 1.0 `vsetvli`, `vle32.v`, `vmul.vv`, `vredsum.vs`, and `vmv.x.s` sequences,
 validated by objdump checks and QEMU execution. It is not full matrix-kernel
 coverage yet because the compiler still expects the caller or a future pack phase
 to provide `packed_b`.
+
+
+## Phase 37A Compliance Update
+
+The current RVV 1.0-compatible subset now also includes:
+
+- `vector_add` for validated `ptr<i16>` and `ptr<i32>` slices.
+- `vector_add_m2` for validated `i16` LMUL `m2` addition.
+- `vector_strided_load` for i32 element-strided loads using `vlse32.v`.
+- `vector_indexed_load` for i32 indexed loads using `vluxei32.v`.
+- Logical mask composition with `vmand.mm`, `vmor.mm`, `vmxor.mm`, and
+  `vmnand.mm`.
+- Signed `vector_widen_add_i16_i32` using `vwadd.vv`.
+- Compiler-owned `matrix_pack_b` feeding the packed-B matrix multiply path.
+
+The generated coverage table is maintained in
+[rvv-1.0-compliance-generated.md](rvv-1.0-compliance-generated.md). Full RVV 1.0
+compatibility is still not achieved; the largest remaining areas are complete
+SEW/LMUL coverage, stores/gathers/scatters, floating point, fixed point,
+permutation, exception/ABI policy, and the formal MLIR/LLVM RVV backend path.

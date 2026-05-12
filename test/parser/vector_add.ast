@@ -5,7 +5,7 @@ Module
       Param name=b type=ptr<i32>
       Param name=c type=ptr<i32>
       Param name=n type=i32
-    VectorAddStmt output=c lhs=a rhs=b
+    VectorAddStmt output=c lhs=a rhs=b lmul=m1
       Length
         VariableExpr name=n
     ReturnStmt

@@ -102,6 +102,12 @@ diff -u "$source_root/test/parser/vector_masked_store_gt.ast" \
 diff -u "$source_root/test/parser/vector_masked_load_gt.ast" \
   "$tmp_dir/vector_masked_load_gt.ast"
 
+
+for example in matrix_pack_b_then_multiply vector_add_i16 vector_add_i16_m2   vector_strided_load vector_indexed_load vector_mask_logical   vector_widen_add_i16_i32; do
+  "$zc_bin" "$source_root/examples/${example}.zc" --emit-ast     > "$tmp_dir/${example}.ast"
+  diff -u "$source_root/test/parser/${example}.ast"     "$tmp_dir/${example}.ast"
+done
+
 "$zc_bin" "$source_root/examples/print_i32.zc" --emit-ast \
   > "$tmp_dir/print_i32.ast"
 diff -u "$source_root/test/parser/print_i32.ast" "$tmp_dir/print_i32.ast"

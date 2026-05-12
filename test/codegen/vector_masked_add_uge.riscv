@@ -10,9 +10,9 @@ masked_add_uge:
   slli t2, t0, 2
   add t3, a0, t2
   add t4, a1, t2
-  vle32.v v1, 0(t3)
-  vle32.v v2, 0(t4)
-  vmsleu.vv v0, v2, v1
+  vle32.v v8, 0(t3)
+  vle32.v v9, 0(t4)
+  vmsleu.vv v0, v9, v8
   add t3, a2, t2
   add t4, a3, t2
   add t5, a4, t2

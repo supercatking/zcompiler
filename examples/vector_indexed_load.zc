@@ -1,0 +1,4 @@
+func vector_indexed_load_demo(out: ptr<i32>, input: ptr<i32>, indices: ptr<i32>, n: i32) -> i32 {
+  vector_indexed_load out, input, indices, n;
+  return 0;
+}

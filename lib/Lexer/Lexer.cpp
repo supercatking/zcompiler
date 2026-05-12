@@ -209,8 +209,14 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwElse;
   else if (text == "while")
     kind = TokenKind::KwWhile;
+  else if (text == "i8")
+    kind = TokenKind::KwI8;
+  else if (text == "i16")
+    kind = TokenKind::KwI16;
   else if (text == "i32")
     kind = TokenKind::KwI32;
+  else if (text == "i64")
+    kind = TokenKind::KwI64;
   else if (text == "ptr")
     kind = TokenKind::KwPtr;
   else if (text == "load")
@@ -219,18 +225,30 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwStore;
   else if (text == "print_i32")
     kind = TokenKind::KwPrintI32;
+  else if (text == "matrix_pack_b")
+    kind = TokenKind::KwMatrixPackB;
   else if (text == "matrix_multiply")
     kind = TokenKind::KwMatrixMultiply;
   else if (text == "matrix_multiply_packed_b")
     kind = TokenKind::KwMatrixMultiplyPackedB;
   else if (text == "vector_add")
     kind = TokenKind::KwVectorAdd;
+  else if (text == "vector_add_m2")
+    kind = TokenKind::KwVectorAddM2;
+  else if (text == "vector_add_m4")
+    kind = TokenKind::KwVectorAddM4;
+  else if (text == "vector_strided_load")
+    kind = TokenKind::KwVectorStridedLoad;
+  else if (text == "vector_indexed_load")
+    kind = TokenKind::KwVectorIndexedLoad;
   else if (text == "vector_copy")
     kind = TokenKind::KwVectorCopy;
   else if (text == "vector_scale")
     kind = TokenKind::KwVectorScale;
   else if (text == "vector_mul")
     kind = TokenKind::KwVectorMul;
+  else if (text == "vector_widen_add_i16_i32")
+    kind = TokenKind::KwVectorWidenAddI16I32;
   else if (text == "vector_reduce_add")
     kind = TokenKind::KwVectorReduceAdd;
   else if (text == "vector_select_lt")
@@ -273,6 +291,14 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorMaskUGT;
   else if (text == "vector_mask_uge")
     kind = TokenKind::KwVectorMaskUGE;
+  else if (text == "vector_mask_and")
+    kind = TokenKind::KwVectorMaskAnd;
+  else if (text == "vector_mask_or")
+    kind = TokenKind::KwVectorMaskOr;
+  else if (text == "vector_mask_xor")
+    kind = TokenKind::KwVectorMaskXor;
+  else if (text == "vector_mask_not")
+    kind = TokenKind::KwVectorMaskNot;
   else if (text == "vector_masked_add")
     kind = TokenKind::KwVectorMaskedAdd;
   else if (text == "vector_masked_sub")

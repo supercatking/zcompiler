@@ -21,7 +21,8 @@
     "default_element_width_bits": 32,
     "default_lmul": "m1",
     "supported_lmul": [
-      "m1"
+      "m1",
+      "m2"
     ],
     "tail_policy": "ta",
     "mask_policy": "ma",
@@ -60,22 +61,34 @@
       "vector_masked_mul",
       "vector_masked_store",
       "vector_masked_load",
-      "matrix_multiply_packed_b"
+      "matrix_multiply_packed_b",
+      "matrix_pack_b",
+      "vector_add_m2",
+      "vector_add_m4",
+      "vector_strided_load",
+      "vector_indexed_load",
+      "vector_mask_and",
+      "vector_mask_or",
+      "vector_mask_xor",
+      "vector_mask_not",
+      "vector_widen_add_i16_i32"
     ],
-    "source_element_type": "i32",
+    "source_element_type": "typed integer buffers; production RVV kernels are i32 plus validated i16 add/widen slices",
     "source_element_width_bits": [
+      16,
       32
     ],
-    "source_memory_access": "unit-stride i32 buffers plus column-packed B for matrix_multiply_packed_b",
+    "source_memory_access": "unit-stride i32/i16 buffers, strided i32 loads, indexed i32 loads, and column-packed B for matrix_multiply_packed_b",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
-    "formal_mlir_llvm_rvv_pipeline": "blocked_at_riscv_llc_toolchain_mismatch",
+    "formal_mlir_llvm_rvv_pipeline": "phase37a_blocked_at_riscv_llc_after_successful_mlir_to_llvm_bitcode_probe",
     "compliance_status": "RVV 1.0 compatible subset, not full RVV 1.0 coverage",
     "source_element_width_contract": {
       "strategy": "typed_buffers_first",
       "operation_names": "width-neutral",
       "current_implemented_width_bits": [
+        16,
         32
       ],
       "planned_width_bits": [
@@ -85,7 +98,7 @@
         64
       ],
       "length_unit": "elements",
-      "mixed_width_kernel_policy": "reject unless a future operation explicitly documents widening or narrowing"
+      "mixed_width_kernel_policy": "reject unless an operation explicitly documents widening or narrowing; vector_widen_add_i16_i32 documents i16 inputs and i32 output"
     },
     "select_predicates": {
       "signed": [
@@ -102,7 +115,7 @@
         "ugt",
         "uge"
       ],
-      "first_class_masks": "transient_function_local_compare_masks",
+      "first_class_masks": "transient_function_local_compare_masks_and_logical_masks",
       "implemented_mask_producers": [
         "vector_mask_lt",
         "vector_mask_le",
@@ -114,6 +127,12 @@
         "vector_mask_ule",
         "vector_mask_ugt",
         "vector_mask_uge"
+      ],
+      "implemented_mask_logical_ops": [
+        "and",
+        "or",
+        "xor",
+        "not"
       ]
     },
     "masked_operations": {
@@ -124,7 +143,7 @@
         "vector_masked_store",
         "vector_masked_load"
       ],
-      "mask_source": "transient function-local vector_mask_* symbol",
+      "mask_source": "transient function-local vector_mask_* or vector_mask_and/or/xor/not symbol",
       "current_predicates": [
         "lt",
         "le",
@@ -137,7 +156,7 @@
         "ugt",
         "uge"
       ],
-      "direct_rvv_policy": "v0 compare mask plus masked vadd.vv/vsub.vv/vmul.vv for arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory; vector_masked_load uses masked vle32.v plus vmerge.vvm passthrough because the active policy is ta, ma",
+      "direct_rvv_policy": "v0 compare/logical mask plus masked arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory; vector_masked_load uses masked vle32.v plus vmerge.vvm passthrough because the active policy is ta, ma",
       "memory_consumers": [
         "vector_masked_load",
         "vector_masked_store"
@@ -145,10 +164,25 @@
     },
     "matrix_operations": {
       "implemented": [
+        "matrix_pack_b",
         "matrix_multiply_packed_b"
       ],
       "rhs_layout": "packed_b[col * inner + k] equals original_b[k * cols + col]",
-      "direct_rvv_policy": "per-output dot product with unit-stride vle32.v loads, vmul.vv, and vredsum.vs under e32,m1,ta,ma"
+      "direct_rvv_policy": "per-output dot product with unit-stride vle32.v loads, vmul.vv, and vredsum.vs under e32,m1,ta,ma",
+      "compiler_owned_pack_b": "matrix_pack_b packed_b, b, cols, inner; writes packed_b[col * inner + k] = b[k * cols + col] before packed-B RVV dot products"
+    },
+    "memory_operations": {
+      "implemented": [
+        "vector_strided_load",
+        "vector_indexed_load"
+      ],
+      "direct_rvv_policy": "vlse32.v for element-strided i32 reads; vluxei32.v with i32 element indices shifted to byte offsets for indexed reads"
+    },
+    "widening_operations": {
+      "implemented": [
+        "vector_widen_add_i16_i32"
+      ],
+      "direct_rvv_policy": "vle16.v inputs, vwadd.vv signed widening add, and vse32.v output under e16,m1"
     }
   },
   "current_execution_validation": {
@@ -198,7 +232,14 @@
       "vector_masked_mul_gt",
       "vector_masked_store_gt",
       "vector_masked_load_gt",
-      "matrix_multiply_packed_b"
+      "matrix_multiply_packed_b",
+      "matrix_pack_b_then_multiply",
+      "vector_add_i16",
+      "vector_add_i16_m2",
+      "vector_strided_load",
+      "vector_indexed_load",
+      "vector_mask_logical",
+      "vector_widen_add_i16_i32"
     ]
   },
   "toolchain": {

@@ -7,10 +7,11 @@ out_dir="$source_root/build/experiments/mlir-rvv"
 mkdir -p "$out_dir"
 
 zc_bin="$source_root/build/tools/zc/zc"
-mlir_opt="/home/zyz/mlir/build/bin/mlir-opt"
-mlir_translate="/home/zyz/mlir/build/bin/mlir-translate"
-llvm_as="/home/zyz/mlir/build/bin/llvm-as"
-local_llc="/home/zyz/mlir/build/bin/llc"
+mlir_build="${MLIR_BUILD:-/home/zyz/mlir/build}"
+mlir_opt="$mlir_build/bin/mlir-opt"
+mlir_translate="$mlir_build/bin/mlir-translate"
+llvm_as="$mlir_build/bin/llvm-as"
+local_llc="$mlir_build/bin/llc"
 system_llc="${LLC:-llc}"
 
 if [ ! -x "$zc_bin" ]; then
@@ -80,7 +81,7 @@ fi
 cat > "$out_dir/formal-rvv-lowering-result.json" <<EOF
 {
   "schema_version": 1,
-  "probe_id": "phase20c_formal_rvv_lowering",
+  "probe_id": "phase37a_formal_rvv_lowering",
   "source_program": "examples/vector_add.zc",
   "output_directory": "build/experiments/mlir-rvv",
   "pipeline": [
@@ -109,7 +110,7 @@ cat > "$out_dir/formal-rvv-lowering-result.json" <<EOF
 EOF
 
 cat > "$out_dir/formal-rvv-lowering-result.md" <<EOF
-# Formal RVV Lowering Probe
+# Formal RVV Lowering Probe (Phase 37A)
 
 Status: ${formal_status}
 
@@ -125,7 +126,7 @@ and LLVM bitcode. The LLVM IR contains \`llvm.masked.load\` and
 ## Reproduce
 
 \`\`\`bash
-./scripts/probe-formal-rvv-lowering.sh
+MLIR_BUILD=/home/zyz/mlir/build ./scripts/probe-formal-rvv-lowering.sh
 \`\`\`
 EOF
 

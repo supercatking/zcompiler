@@ -2194,3 +2194,111 @@ Visible QEMU demo output:
 matrix_multiply_packed_b demo 2x3 * 3x2 = [58 64; 139 154]
 qemu_exit=0
 ```
+
+
+## Phase 31V: Compiler-Owned Pack-B
+
+### Execution Target
+
+Let zcompiler prepare packed-B layout internally before the packed-B RVV matrix
+multiply kernel.
+
+### Execution Summary
+
+- Added `matrix_pack_b packed_b, b, cols, inner;`.
+- Added AST, parser, MLIR nested-loop lowering, direct RISC-V packing, example,
+  goldens, and QEMU harness.
+
+### Execution Result
+
+Completed and validated with `matrix_pack_b_then_multiply`; QEMU prints the
+expected packed layout and matrix product.
+
+## Phase 32A-33A: Compliance Matrix, SEW, and LMUL Slice
+
+### Execution Target
+
+Make RVV support measurable, add typed integer buffers, and validate a first
+non-default LMUL path.
+
+### Execution Summary
+
+- Added machine-readable RVV compliance matrix plus generator.
+- Parser/type handling now accepts `i8/i16/i32/i64` and `ptr<T>`.
+- Direct `vector_add` derives SEW and supports `vector_add_m2`/`vector_add_m4`.
+- QEMU validates `i16` m1 and m2 vector add.
+
+### Execution Result
+
+Marked SEW and LMUL as partial RVV coverage: `i16` and `m2` are executable; full
+width/LMUL matrix remains future work.
+
+## Phase 34A/34B: Strided and Indexed Loads
+
+### Execution Target
+
+Add RVV non-unit memory load forms.
+
+### Execution Summary
+
+- Added `vector_strided_load` -> `vlse32.v`.
+- Added `vector_indexed_load` -> `vluxei32.v` with i32 element indices shifted to
+  byte offsets.
+- Added examples, goldens, objdump checks, and QEMU validation.
+
+### Execution Result
+
+Completed supported RVV 1.0-compatible slices for i32 strided and indexed loads.
+
+## Phase 35A: Mask Logical Ops
+
+### Execution Target
+
+Compose transient compare masks before masked consumers.
+
+### Execution Summary
+
+- Added `vector_mask_and/or/xor/not` syntax and AST.
+- Added recursive direct-RVV mask resolution using `vmand.mm`, `vmor.mm`,
+  `vmxor.mm`, and `vmnand.mm`.
+- Updated masked add/store/load to consume either compare masks or logical masks.
+
+### Execution Result
+
+Completed and validated through `vector_mask_logical_demo` under QEMU.
+
+## Phase 36A: Widen Add
+
+### Execution Target
+
+Introduce the first mixed-width RVV arithmetic slice.
+
+### Execution Summary
+
+- Added `vector_widen_add_i16_i32 out, a, b, n;`.
+- Enforced `ptr<i16> + ptr<i16> -> ptr<i32>` in direct RISC-V lowering.
+- Emitted `vle16.v`, `vwadd.vv`, and `vse32.v`.
+
+### Execution Result
+
+Completed signed i16-to-i32 widening add slice with QEMU validation.
+
+## Phase 37A: Formal RVV Lowering Probe
+
+### Execution Target
+
+Make the MLIR vector -> LLVM -> RVV path repeatable and document the current
+blocker.
+
+### Execution Summary
+
+- Updated `scripts/probe-formal-rvv-lowering.sh` to use `MLIR_BUILD`.
+- Ran the probe for `examples/vector_add.zc`.
+- Captured the generated LLVM IR/bitcode status and `llc` result.
+
+### Execution Result
+
+Completed Phase 37A as a reproducible probe. Status remains
+`blocked_at_riscv_llc`: MLIR reaches LLVM bitcode with masked load/store
+intrinsics, but current local/system `llc` does not produce RISC-V RVV assembly.
+The direct RVV backend remains validated by CTest and QEMU.

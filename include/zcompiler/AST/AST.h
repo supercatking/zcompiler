@@ -23,17 +23,22 @@ enum class StmtKind {
   Assign,
   Store,
   PrintI32,
+  MatrixPackB,
   MatrixMultiply,
   Return,
   If,
   While,
   VectorAdd,
+  VectorStridedLoad,
+  VectorIndexedLoad,
   VectorCopy,
   VectorScale,
   VectorMul,
+  VectorWidenAdd,
   VectorReduceAdd,
   VectorSelect,
   VectorMask,
+  VectorMaskLogical,
   VectorMaskedBinary,
   VectorMaskedStore,
   VectorMaskedLoad,
@@ -61,6 +66,23 @@ enum class VectorMaskedBinaryOp {
 };
 
 const char *getVectorMaskedBinaryOpName(VectorMaskedBinaryOp op);
+
+enum class VectorMaskLogicalOp {
+  And,
+  Or,
+  Xor,
+  Not,
+};
+
+const char *getVectorMaskLogicalOpName(VectorMaskLogicalOp op);
+
+enum class VectorLMUL {
+  M1,
+  M2,
+  M4,
+};
+
+const char *getVectorLMULName(VectorLMUL lmul);
 
 enum class MatrixRHSLayout {
   RowMajor,
@@ -221,6 +243,27 @@ private:
   std::unique_ptr<ExprAST> value;
 };
 
+class MatrixPackBStmtAST final : public StmtAST {
+public:
+  MatrixPackBStmtAST(std::string output, std::string input,
+                     std::unique_ptr<ExprAST> cols,
+                     std::unique_ptr<ExprAST> inner)
+      : output(std::move(output)), input(std::move(input)),
+        cols(std::move(cols)), inner(std::move(inner)) {}
+  StmtKind getKind() const override { return StmtKind::MatrixPackB; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const ExprAST &getCols() const { return *cols; }
+  const ExprAST &getInner() const { return *inner; }
+
+private:
+  std::string output;
+  std::string input;
+  std::unique_ptr<ExprAST> cols;
+  std::unique_ptr<ExprAST> inner;
+};
+
 class MatrixMultiplyStmtAST final : public StmtAST {
 public:
   MatrixMultiplyStmtAST(std::string output, std::string lhs, std::string rhs,
@@ -254,20 +297,64 @@ private:
 class VectorAddStmtAST final : public StmtAST {
 public:
   VectorAddStmtAST(std::string output, std::string lhs, std::string rhs,
-                   std::unique_ptr<ExprAST> length)
+                   std::unique_ptr<ExprAST> length,
+                   VectorLMUL lmul = VectorLMUL::M1)
       : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
-        length(std::move(length)) {}
+        length(std::move(length)), lmul(lmul) {}
   StmtKind getKind() const override { return StmtKind::VectorAdd; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
   const std::string &getOutput() const { return output; }
   const std::string &getLHS() const { return lhs; }
   const std::string &getRHS() const { return rhs; }
   const ExprAST &getLength() const { return *length; }
+  VectorLMUL getLMUL() const { return lmul; }
 
 private:
   std::string output;
   std::string lhs;
   std::string rhs;
+  std::unique_ptr<ExprAST> length;
+  VectorLMUL lmul;
+};
+
+class VectorStridedLoadStmtAST final : public StmtAST {
+public:
+  VectorStridedLoadStmtAST(std::string output, std::string input,
+                           std::unique_ptr<ExprAST> stride,
+                           std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        stride(std::move(stride)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorStridedLoad; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const ExprAST &getStride() const { return *stride; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::unique_ptr<ExprAST> stride;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorIndexedLoadStmtAST final : public StmtAST {
+public:
+  VectorIndexedLoadStmtAST(std::string output, std::string input,
+                           std::string indices, std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        indices(std::move(indices)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorIndexedLoad; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const std::string &getIndices() const { return indices; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::string indices;
   std::unique_ptr<ExprAST> length;
 };
 
@@ -317,6 +404,26 @@ public:
       : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
         length(std::move(length)) {}
   StmtKind getKind() const override { return StmtKind::VectorMul; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorWidenAddStmtAST final : public StmtAST {
+public:
+  VectorWidenAddStmtAST(std::string output, std::string lhs, std::string rhs,
+                        std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorWidenAdd; }
   void dump(llvm::raw_ostream &os, unsigned indent) const override;
   const std::string &getOutput() const { return output; }
   const std::string &getLHS() const { return lhs; }
@@ -394,6 +501,29 @@ public:
 private:
   VectorSelectPredicate predicate;
   std::string mask;
+  std::string lhs;
+  std::string rhs;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskLogicalStmtAST final : public StmtAST {
+public:
+  VectorMaskLogicalStmtAST(VectorMaskLogicalOp op, std::string result,
+                           std::string lhs, std::string rhs,
+                           std::unique_ptr<ExprAST> length)
+      : op(op), result(std::move(result)), lhs(std::move(lhs)),
+        rhs(std::move(rhs)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorMaskLogical; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  VectorMaskLogicalOp getOp() const { return op; }
+  const std::string &getResult() const { return result; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  VectorMaskLogicalOp op;
+  std::string result;
   std::string lhs;
   std::string rhs;
   std::unique_ptr<ExprAST> length;

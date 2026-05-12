@@ -1,0 +1,4 @@
+func vector_strided_load_demo(out: ptr<i32>, input: ptr<i32>, stride: i32, n: i32) -> i32 {
+  vector_strided_load out, input, stride, n;
+  return 0;
+}
