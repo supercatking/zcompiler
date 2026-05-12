@@ -1,0 +1,21 @@
+func current_max_pipeline(a: ptr<i32>, b: ptr<i32>, passthrough: ptr<i32>, tmp0: ptr<i32>, tmp1: ptr<i32>, out: ptr<i32>, n: i32, factor: i32) -> i32 {
+  vector_copy out, a, n;
+  vector_add tmp0, a, b, n;
+  vector_mul tmp1, tmp0, a, n;
+  vector_scale out, tmp1, factor, n;
+  vector_select_ult tmp0, a, b, out, passthrough, n;
+  vector_mask_gt m0, a, b, n;
+  vector_masked_add tmp1, tmp0, b, m0, passthrough, n;
+  vector_masked_sub out, tmp1, a, m0, tmp0, n;
+  vector_masked_mul tmp0, out, b, m0, passthrough, n;
+  vector_masked_store out, tmp0, m0, n;
+  vector_masked_load tmp1, out, m0, passthrough, n;
+  let sum = 0;
+  vector_reduce_add sum, tmp1, n;
+  return sum;
+}
+
+func current_max_demo(a: ptr<i32>, b: ptr<i32>, passthrough: ptr<i32>, tmp0: ptr<i32>, tmp1: ptr<i32>, out: ptr<i32>, n: i32, factor: i32) -> i32 {
+  let result = current_max_pipeline(a, b, passthrough, tmp0, tmp1, out, n, factor);
+  return result;
+}
