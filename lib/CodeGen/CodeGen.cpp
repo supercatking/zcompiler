@@ -48,8 +48,7 @@ public:
 
     if (dialect == TextDialect::LLVMIR) {
       os << "define i32 @" << function.getName() << "(";
-      for (size_t index = 0; index < function.getParameters().size();
-           ++index) {
+      for (size_t index = 0; index < function.getParameters().size(); ++index) {
         if (index != 0)
           os << ", ";
         const ParameterAST &parameter = function.getParameters()[index];
@@ -64,17 +63,14 @@ public:
       os << "  .text\n";
       os << "  .globl " << function.getName() << "\n";
       os << function.getName() << ":\n";
-      for (size_t index = 0; index < function.getParameters().size();
-           ++index)
-        variables[function.getParameters()[index].getName()] =
-            {"a" + std::to_string(index),
-             function.getParameters()[index].getType()};
+      for (size_t index = 0; index < function.getParameters().size(); ++index)
+        variables[function.getParameters()[index].getName()] = {
+            "a" + std::to_string(index),
+            function.getParameters()[index].getType()};
     } else {
-      const char *funcOp =
-          dialect == TextDialect::ZC ? "zc.func" : "func.func";
+      const char *funcOp = dialect == TextDialect::ZC ? "zc.func" : "func.func";
       os << "  " << funcOp << " @" << function.getName() << "(";
-      for (size_t index = 0; index < function.getParameters().size();
-           ++index) {
+      for (size_t index = 0; index < function.getParameters().size(); ++index) {
         if (index != 0)
           os << ", ";
         const ParameterAST &parameter = function.getParameters()[index];
@@ -160,8 +156,9 @@ private:
 
     if (dialect == TextDialect::LLVMIR) {
       if (isComparisonOp(expression.getOp()))
-        os << "  " << value << " = icmp " << getLLVMCmpPredicate(expression.getOp())
-           << " i32 " << lhs.name << ", " << rhs.name << "\n";
+        os << "  " << value << " = icmp "
+           << getLLVMCmpPredicate(expression.getOp()) << " i32 " << lhs.name
+           << ", " << rhs.name << "\n";
       else
         os << "  " << value << " = " << getLLVMOpcode(expression.getOp())
            << " i32 " << lhs.name << ", " << rhs.name << "\n";
@@ -258,8 +255,8 @@ private:
       std::string offset = nextTempRegister();
       std::string address = nextTempRegister();
       os << "  slli " << offset << ", " << index.name << ", 2\n";
-      os << "  add " << address << ", " << found->second.name << ", "
-         << offset << "\n";
+      os << "  add " << address << ", " << found->second.name << ", " << offset
+         << "\n";
       std::string reg = nextTempRegister();
       os << "  lw " << reg << ", 0(" << address << ")\n";
       return {reg, "i32"};
@@ -292,6 +289,9 @@ private:
       return;
     case StmtKind::PrintI32:
       emitPrintI32(static_cast<const PrintI32StmtAST &>(statement));
+      return;
+    case StmtKind::MatrixMultiply:
+      emitMatrixMultiply(static_cast<const MatrixMultiplyStmtAST &>(statement));
       return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
@@ -378,23 +378,23 @@ private:
       std::string offset = nextTempRegister();
       std::string address = nextTempRegister();
       os << "  slli " << offset << ", " << index.name << ", 2\n";
-      os << "  add " << address << ", " << found->second.name << ", "
-         << offset << "\n";
+      os << "  add " << address << ", " << found->second.name << ", " << offset
+         << "\n";
       os << "  sw " << value.name << ", 0(" << address << ")\n";
       return;
     }
 
     if (dialect == TextDialect::ZC) {
-      os << "    zc.store " << value.name << ", " << found->second.name
-         << "[" << index.name << "] : i32\n";
+      os << "    zc.store " << value.name << ", " << found->second.name << "["
+         << index.name << "] : i32\n";
       return;
     }
 
     std::string indexValue = nextSSAValue();
     os << "    " << indexValue << " = arith.index_cast " << index.name
        << " : i32 to index\n";
-    os << "    memref.store " << value.name << ", " << found->second.name
-       << "[" << indexValue << "] : memref<?xi32>\n";
+    os << "    memref.store " << value.name << ", " << found->second.name << "["
+       << indexValue << "] : memref<?xi32>\n";
   }
 
   void emitPrintI32(const PrintI32StmtAST &statement) {
@@ -409,6 +409,106 @@ private:
       return;
 
     emitPrintI32CallWithRegisterSave(value.name);
+  }
+
+  void emitMatrixMultiply(const MatrixMultiplyStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("matrix_multiply text lowering is only available "
+                           "for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in matrix_multiply statement");
+      return;
+    }
+
+    EmittedValue rows = emitExpression(statement.getRows());
+    EmittedValue cols = emitExpression(statement.getCols());
+    EmittedValue inner = emitExpression(statement.getInner());
+    if (rows.name.empty() || cols.name.empty() || inner.name.empty())
+      return;
+
+    std::string rowLabel = nextLabel(".Lmatrix_multiply_row");
+    std::string colLabel = nextLabel(".Lmatrix_multiply_col");
+    std::string innerLabel = nextLabel(".Lmatrix_multiply_inner");
+    std::string storeLabel = nextLabel(".Lmatrix_multiply_store");
+    std::string nextRowLabel = nextLabel(".Lmatrix_multiply_next_row");
+    std::string endLabel = nextLabel(".Lmatrix_multiply_end");
+
+    os << "  addi sp, sp, -96\n";
+    os << "  sd s0, 0(sp)\n";
+    os << "  sd s1, 8(sp)\n";
+    os << "  sd s2, 16(sp)\n";
+    os << "  sd s3, 24(sp)\n";
+    os << "  sd s4, 32(sp)\n";
+    os << "  sd s5, 40(sp)\n";
+    os << "  sd s6, 48(sp)\n";
+    os << "  sd s7, 56(sp)\n";
+    os << "  sd s8, 64(sp)\n";
+    os << "  sd s9, 72(sp)\n";
+    os << "  sd s10, 80(sp)\n";
+    os << "  sd s11, 88(sp)\n";
+    os << "  mv s0, " << output->second.name << "\n";
+    os << "  mv s1, " << lhs->second.name << "\n";
+    os << "  mv s2, " << rhs->second.name << "\n";
+
+    os << "  mv s3, " << rows.name << "\n";
+    os << "  mv s4, " << cols.name << "\n";
+    os << "  mv s5, " << inner.name << "\n";
+    os << "  li s6, 0\n";
+    os << rowLabel << ":\n";
+    os << "  bgeu s6, s3, " << endLabel << "\n";
+    os << "  li s7, 0\n";
+    os << colLabel << ":\n";
+    os << "  bgeu s7, s4, " << nextRowLabel << "\n";
+    os << "  li s8, 0\n";
+    os << "  li s9, 0\n";
+    os << innerLabel << ":\n";
+    os << "  bgeu s8, s5, " << storeLabel << "\n";
+    os << "  mul s10, s6, s5\n";
+    os << "  add s10, s10, s8\n";
+    os << "  slli s10, s10, 2\n";
+    os << "  add s10, s1, s10\n";
+    os << "  lw t0, 0(s10)\n";
+    os << "  mul s11, s8, s4\n";
+    os << "  add s11, s11, s7\n";
+    os << "  slli s11, s11, 2\n";
+    os << "  add s11, s2, s11\n";
+    os << "  lw t1, 0(s11)\n";
+    os << "  mulw t2, t0, t1\n";
+    os << "  addw s9, s9, t2\n";
+    os << "  addi s8, s8, 1\n";
+    os << "  j " << innerLabel << "\n";
+    os << storeLabel << ":\n";
+    os << "  mul s10, s6, s4\n";
+    os << "  add s10, s10, s7\n";
+    os << "  slli s10, s10, 2\n";
+    os << "  add s10, s0, s10\n";
+    os << "  sw s9, 0(s10)\n";
+    os << "  addi s7, s7, 1\n";
+    os << "  j " << colLabel << "\n";
+    os << nextRowLabel << ":\n";
+    os << "  addi s6, s6, 1\n";
+    os << "  j " << rowLabel << "\n";
+    os << endLabel << ":\n";
+    os << "  ld s0, 0(sp)\n";
+    os << "  ld s1, 8(sp)\n";
+    os << "  ld s2, 16(sp)\n";
+    os << "  ld s3, 24(sp)\n";
+    os << "  ld s4, 32(sp)\n";
+    os << "  ld s5, 40(sp)\n";
+    os << "  ld s6, 48(sp)\n";
+    os << "  ld s7, 56(sp)\n";
+    os << "  ld s8, 64(sp)\n";
+    os << "  ld s9, 72(sp)\n";
+    os << "  ld s10, 80(sp)\n";
+    os << "  ld s11, 88(sp)\n";
+    os << "  addi sp, sp, 96\n";
   }
 
   void emitVectorAdd(const VectorAddStmtAST &statement) {
@@ -442,15 +542,14 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
-       << offset << "\n";
-    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
-       << offset << "\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", " << offset
+       << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", " << offset
+       << "\n";
     os << "  add " << outputAddress << ", " << output->second.name << ", "
        << offset << "\n";
     os << "  vle32.v v0, 0(" << lhsAddress << ")\n";
@@ -490,8 +589,7 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
@@ -535,8 +633,7 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
@@ -583,15 +680,14 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
-       << offset << "\n";
-    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
-       << offset << "\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", " << offset
+       << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", " << offset
+       << "\n";
     os << "  add " << outputAddress << ", " << output->second.name << ", "
        << offset << "\n";
     os << "  vle32.v v0, 0(" << lhsAddress << ")\n";
@@ -694,26 +790,25 @@ private:
     std::string rhsAddress = nextTempRegister();
     std::string trueAddress = nextTempRegister();
     std::string falseAddress = nextTempRegister();
-    std::string labelBase = ".L" + getVectorSelectSourceName(
-                                      statement.getPredicate()).str();
+    std::string labelBase =
+        ".L" + getVectorSelectSourceName(statement.getPredicate()).str();
     std::string loopLabel = nextLabel(labelBase);
     std::string endLabel = nextLabel(labelBase + "_end");
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << lhsAddress << ", " << lhs->second.name << ", "
-       << offset << "\n";
-    os << "  add " << rhsAddress << ", " << rhs->second.name << ", "
-       << offset << "\n";
+    os << "  add " << lhsAddress << ", " << lhs->second.name << ", " << offset
+       << "\n";
+    os << "  add " << rhsAddress << ", " << rhs->second.name << ", " << offset
+       << "\n";
     os << "  add " << trueAddress << ", " << trueValues->second.name << ", "
        << offset << "\n";
-    os << "  add " << falseAddress << ", " << falseValues->second.name
-       << ", " << offset << "\n";
+    os << "  add " << falseAddress << ", " << falseValues->second.name << ", "
+       << offset << "\n";
     os << "  vle32.v v1, 0(" << lhsAddress << ")\n";
     os << "  vle32.v v2, 0(" << rhsAddress << ")\n";
     os << "  vle32.v v3, 0(" << trueAddress << ")\n";
@@ -727,7 +822,6 @@ private:
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
   }
-
 
   StringRef getVectorMaskedBinaryInstruction(VectorMaskedBinaryOp op) const {
     switch (op) {
@@ -743,7 +837,8 @@ private:
 
   void rememberVectorMask(const VectorMaskStmtAST &statement) {
     if (masks.count(statement.getMask())) {
-      result.addDiagnostic("duplicate vector mask '" + statement.getMask() + "'");
+      result.addDiagnostic("duplicate vector mask '" + statement.getMask() +
+                           "'");
       return;
     }
     masks[statement.getMask()] = &statement;
@@ -751,8 +846,8 @@ private:
 
   void emitVectorMaskedBinary(const VectorMaskedBinaryStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
-      result.addDiagnostic(
-          "vector_masked binary text lowering is only available for RISC-V assembly");
+      result.addDiagnostic("vector_masked binary text lowering is only "
+                           "available for RISC-V assembly");
       return;
     }
 
@@ -772,10 +867,10 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || passthrough == variables.end() ||
         maskLHS == variables.end() || maskRHS == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_masked_" +
-                           std::string(getVectorMaskedBinaryOpName(
-                               statement.getOp())) +
-                           " statement");
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_" +
+          std::string(getVectorMaskedBinaryOpName(statement.getOp())) +
+          " statement");
       return;
     }
 
@@ -796,27 +891,26 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", "
-       << offset << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v1, 0(" << address0 << ")\n";
     os << "  vle32.v v2, 0(" << address1 << ")\n";
     emitVectorSelectCompare(maskStatement.getPredicate());
 
-    os << "  add " << address0 << ", " << lhs->second.name << ", "
-       << offset << "\n";
-    os << "  add " << address1 << ", " << rhs->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << lhs->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << rhs->second.name << ", " << offset
+       << "\n";
     os << "  add " << address2 << ", " << passthrough->second.name << ", "
        << offset << "\n";
-    os << "  add " << address3 << ", " << output->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address3 << ", " << output->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v3, 0(" << address0 << ")\n";
     os << "  vle32.v v4, 0(" << address1 << ")\n";
     os << "  vle32.v v5, 0(" << address2 << ")\n";
@@ -829,11 +923,10 @@ private:
     os << endLabel << ":\n";
   }
 
-
   void emitVectorMaskedStore(const VectorMaskedStoreStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
-      result.addDiagnostic(
-          "vector_masked_store text lowering is only available for RISC-V assembly");
+      result.addDiagnostic("vector_masked_store text lowering is only "
+                           "available for RISC-V assembly");
       return;
     }
 
@@ -869,23 +962,22 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", "
-       << offset << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v1, 0(" << address0 << ")\n";
     os << "  vle32.v v2, 0(" << address1 << ")\n";
     emitVectorSelectCompare(maskStatement.getPredicate());
 
-    os << "  add " << address0 << ", " << input->second.name << ", "
-       << offset << "\n";
-    os << "  add " << address2 << ", " << output->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << input->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address2 << ", " << output->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v3, 0(" << address0 << ")\n";
     os << "  vse32.v v3, 0(" << address2 << "), v0.t\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
@@ -895,8 +987,8 @@ private:
 
   void emitVectorMaskedLoad(const VectorMaskedLoadStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
-      result.addDiagnostic(
-          "vector_masked_load text lowering is only available for RISC-V assembly");
+      result.addDiagnostic("vector_masked_load text lowering is only available "
+                           "for RISC-V assembly");
       return;
     }
 
@@ -934,25 +1026,24 @@ private:
 
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
-    os << "  add " << address0 << ", " << maskLHS->second.name << ", "
-       << offset << "\n";
-    os << "  add " << address1 << ", " << maskRHS->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << maskLHS->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << maskRHS->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v1, 0(" << address0 << ")\n";
     os << "  vle32.v v2, 0(" << address1 << ")\n";
     emitVectorSelectCompare(maskStatement.getPredicate());
 
-    os << "  add " << address0 << ", " << input->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address0 << ", " << input->second.name << ", " << offset
+       << "\n";
     os << "  add " << address1 << ", " << passthrough->second.name << ", "
        << offset << "\n";
-    os << "  add " << address2 << ", " << output->second.name << ", "
-       << offset << "\n";
+    os << "  add " << address2 << ", " << output->second.name << ", " << offset
+       << "\n";
     os << "  vle32.v v3, 0(" << address0 << "), v0.t\n";
     os << "  vle32.v v4, 0(" << address1 << ")\n";
     os << "  vmerge.vvm v5, v4, v3, v0\n";
@@ -961,7 +1052,6 @@ private:
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
   }
-
 
   void emitVectorReduceAdd(const VectorReduceAddStmtAST &statement) {
     if (dialect != TextDialect::RiscVAssembly) {
@@ -991,12 +1081,10 @@ private:
     std::string loopLabel = nextLabel(".Lvector_reduce_add");
     std::string endLabel = nextLabel(".Lvector_reduce_add_end");
 
-    os << "  mv " << accumulator << ", " << resultVariable->second.name
-       << "\n";
+    os << "  mv " << accumulator << ", " << resultVariable->second.name << "\n";
     os << "  li " << index << ", 0\n";
     os << loopLabel << ":\n";
-    os << "  bgeu " << index << ", " << length.name << ", " << endLabel
-       << "\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
     os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
     os << "  slli " << offset << ", " << index << ", 2\n";
@@ -1026,8 +1114,7 @@ private:
       os << "  mv a0, " << value.name << "\n";
       os << "  ret\n";
       blockTerminated = true;
-    }
-    else if (dialect == TextDialect::ZC)
+    } else if (dialect == TextDialect::ZC)
       os << "    zc.return " << value.name << " : i32\n";
     else
       os << "    return " << value.name << " : i32\n";
@@ -1035,7 +1122,8 @@ private:
 
   void emitIf(const IfStmtAST &statement) {
     if (dialect == TextDialect::LLVMIR) {
-      EmittedValue condition = ensureI1(emitExpression(statement.getCondition()));
+      EmittedValue condition =
+          ensureI1(emitExpression(statement.getCondition()));
       std::string thenLabel = nextLabel("if.then");
       std::string elseLabel = nextLabel("if.else");
       std::string endLabel = nextLabel("if.end");
@@ -1097,7 +1185,8 @@ private:
       os << "  br label %" << condLabel << "\n";
       os << condLabel << ":\n";
       blockTerminated = false;
-      EmittedValue condition = ensureI1(emitExpression(statement.getCondition()));
+      EmittedValue condition =
+          ensureI1(emitExpression(statement.getCondition()));
       os << "  br i1 " << condition.name << ", label %" << bodyLabel
          << ", label %" << endLabel << "\n";
       os << bodyLabel << ":\n";

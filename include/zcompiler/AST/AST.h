@@ -23,6 +23,7 @@ enum class StmtKind {
   Assign,
   Store,
   PrintI32,
+  MatrixMultiply,
   Return,
   If,
   While,
@@ -213,6 +214,32 @@ private:
   std::unique_ptr<ExprAST> value;
 };
 
+class MatrixMultiplyStmtAST final : public StmtAST {
+public:
+  MatrixMultiplyStmtAST(std::string output, std::string lhs, std::string rhs,
+                        std::unique_ptr<ExprAST> rows,
+                        std::unique_ptr<ExprAST> cols,
+                        std::unique_ptr<ExprAST> inner)
+      : output(std::move(output)), lhs(std::move(lhs)), rhs(std::move(rhs)),
+        rows(std::move(rows)), cols(std::move(cols)), inner(std::move(inner)) {}
+  StmtKind getKind() const override { return StmtKind::MatrixMultiply; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getLHS() const { return lhs; }
+  const std::string &getRHS() const { return rhs; }
+  const ExprAST &getRows() const { return *rows; }
+  const ExprAST &getCols() const { return *cols; }
+  const ExprAST &getInner() const { return *inner; }
+
+private:
+  std::string output;
+  std::string lhs;
+  std::string rhs;
+  std::unique_ptr<ExprAST> rows;
+  std::unique_ptr<ExprAST> cols;
+  std::unique_ptr<ExprAST> inner;
+};
+
 class VectorAddStmtAST final : public StmtAST {
 public:
   VectorAddStmtAST(std::string output, std::string lhs, std::string rhs,
@@ -313,9 +340,8 @@ private:
 class VectorSelectStmtAST final : public StmtAST {
 public:
   VectorSelectStmtAST(VectorSelectPredicate predicate, std::string output,
-                      std::string lhs, std::string rhs,
-                      std::string trueValues, std::string falseValues,
-                      std::unique_ptr<ExprAST> length)
+                      std::string lhs, std::string rhs, std::string trueValues,
+                      std::string falseValues, std::unique_ptr<ExprAST> length)
       : predicate(predicate), output(std::move(output)), lhs(std::move(lhs)),
         rhs(std::move(rhs)), trueValues(std::move(trueValues)),
         falseValues(std::move(falseValues)), length(std::move(length)) {}
@@ -338,7 +364,6 @@ private:
   std::string falseValues;
   std::unique_ptr<ExprAST> length;
 };
-
 
 class VectorMaskStmtAST final : public StmtAST {
 public:
@@ -366,8 +391,8 @@ private:
 class VectorMaskedBinaryStmtAST final : public StmtAST {
 public:
   VectorMaskedBinaryStmtAST(VectorMaskedBinaryOp op, std::string output,
-                            std::string lhs, std::string rhs,
-                            std::string mask, std::string passthrough,
+                            std::string lhs, std::string rhs, std::string mask,
+                            std::string passthrough,
                             std::unique_ptr<ExprAST> length)
       : op(op), output(std::move(output)), lhs(std::move(lhs)),
         rhs(std::move(rhs)), mask(std::move(mask)),
@@ -395,8 +420,7 @@ private:
 class VectorMaskedStoreStmtAST final : public StmtAST {
 public:
   VectorMaskedStoreStmtAST(std::string output, std::string input,
-                           std::string mask,
-                           std::unique_ptr<ExprAST> length)
+                           std::string mask, std::unique_ptr<ExprAST> length)
       : output(std::move(output)), input(std::move(input)),
         mask(std::move(mask)), length(std::move(length)) {}
   StmtKind getKind() const override { return StmtKind::VectorMaskedStore; }

@@ -1,0 +1,4 @@
+func matmul_i32(c: ptr<i32>, a: ptr<i32>, b: ptr<i32>, rows: i32, cols: i32, inner: i32) -> i32 {
+  matrix_multiply c, a, b, rows, cols, inner;
+  return 0;
+}

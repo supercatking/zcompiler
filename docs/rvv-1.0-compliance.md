@@ -155,3 +155,12 @@ ctest --test-dir build --output-on-failure
 ## Phase 30S Compliance Note
 
 `vector_masked_load_gt` is compatible with the current RVV 1.0 subset as a unit-stride `i32` masked load slice. Because the active vtype policy is `ta, ma`, the direct RVV sequence explicitly merges the masked load result with the passthrough vector instead of relying on masked-off destination lanes.
+
+
+## Phase 31T MMA Note
+
+`matrix_multiply` is intentionally not counted as a new RVV 1.0 compliance row
+yet. Phase 31T adds correct scalar row-major `i32` matrix multiply lowering and
+QEMU validation. It becomes part of the RVV compliance matrix only after a future
+phase lowers it to RVV instructions with documented memory/tile policy, objdump
+checks, and QEMU correctness coverage.

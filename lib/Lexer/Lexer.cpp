@@ -29,7 +29,8 @@ std::vector<Token> Lexer::lexAll() {
     char value = advance();
     switch (value) {
     case '+':
-      tokens.push_back(makeToken(TokenKind::Plus, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::Plus, start, tokenLine, tokenColumn));
       break;
     case '-':
       if (peek() == '>') {
@@ -42,10 +43,12 @@ std::vector<Token> Lexer::lexAll() {
       }
       break;
     case '*':
-      tokens.push_back(makeToken(TokenKind::Star, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::Star, start, tokenLine, tokenColumn));
       break;
     case '/':
-      tokens.push_back(makeToken(TokenKind::Slash, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::Slash, start, tokenLine, tokenColumn));
       break;
     case '=':
       if (peek() == '=') {
@@ -87,16 +90,20 @@ std::vector<Token> Lexer::lexAll() {
       }
       break;
     case '(':
-      tokens.push_back(makeToken(TokenKind::LParen, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::LParen, start, tokenLine, tokenColumn));
       break;
     case ')':
-      tokens.push_back(makeToken(TokenKind::RParen, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::RParen, start, tokenLine, tokenColumn));
       break;
     case '{':
-      tokens.push_back(makeToken(TokenKind::LBrace, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::LBrace, start, tokenLine, tokenColumn));
       break;
     case '}':
-      tokens.push_back(makeToken(TokenKind::RBrace, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::RBrace, start, tokenLine, tokenColumn));
       break;
     case '[':
       tokens.push_back(
@@ -107,10 +114,12 @@ std::vector<Token> Lexer::lexAll() {
           makeToken(TokenKind::RBracket, start, tokenLine, tokenColumn));
       break;
     case ':':
-      tokens.push_back(makeToken(TokenKind::Colon, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::Colon, start, tokenLine, tokenColumn));
       break;
     case ',':
-      tokens.push_back(makeToken(TokenKind::Comma, start, tokenLine, tokenColumn));
+      tokens.push_back(
+          makeToken(TokenKind::Comma, start, tokenLine, tokenColumn));
       break;
     case ';':
       tokens.push_back(
@@ -210,6 +219,8 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwStore;
   else if (text == "print_i32")
     kind = TokenKind::KwPrintI32;
+  else if (text == "matrix_multiply")
+    kind = TokenKind::KwMatrixMultiply;
   else if (text == "vector_add")
     kind = TokenKind::KwVectorAdd;
   else if (text == "vector_copy")

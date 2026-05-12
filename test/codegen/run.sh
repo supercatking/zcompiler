@@ -56,6 +56,20 @@ diff -u "$source_root/test/codegen/arrays.ll" "$tmp_dir/arrays.ll"
   > "$tmp_dir/arrays.riscv"
 diff -u "$source_root/test/codegen/arrays.riscv" "$tmp_dir/arrays.riscv"
 
+
+"$zc_bin" "$source_root/examples/matrix_multiply.zc" --emit-mlir \
+  > "$tmp_dir/matrix_multiply.mlir"
+diff -u -B "$source_root/test/codegen/matrix_multiply.mlir" \
+  "$tmp_dir/matrix_multiply.mlir"
+
+"$zc_bin" "$source_root/examples/matrix_multiply.zc" --emit-riscv-asm \
+  > "$tmp_dir/matrix_multiply.riscv"
+diff -u "$source_root/test/codegen/matrix_multiply.riscv" \
+  "$tmp_dir/matrix_multiply.riscv"
+for instruction in "mulw" "addw" "lw" "sw" "sd s0" "ld s11"; do
+  grep -q "$instruction" "$tmp_dir/matrix_multiply.riscv"
+done
+
 "$zc_bin" "$source_root/examples/vector_add.zc" --emit-mlir \
   > "$tmp_dir/vector_add.mlir"
 diff -u -B "$source_root/test/codegen/vector_add.mlir" \
@@ -324,6 +338,8 @@ if [ -x /home/zyz/mlir/build/bin/mlir-opt ]; then
     -o "$tmp_dir/calls.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/arrays.mlir" \
     -o "$tmp_dir/arrays.opt.mlir"
+  /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/matrix_multiply.mlir" \
+    -o "$tmp_dir/matrix_multiply.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_add.mlir" \
     -o "$tmp_dir/vector_add.opt.mlir"
   /home/zyz/mlir/build/bin/mlir-opt "$tmp_dir/vector_copy.mlir" \
@@ -375,6 +391,13 @@ if command -v riscv64-linux-gnu-as >/dev/null; then
   riscv64-linux-gnu-as "$tmp_dir/hello.riscv" -o "$tmp_dir/hello.o"
   riscv64-linux-gnu-as "$tmp_dir/calls.riscv" -o "$tmp_dir/calls.o"
   riscv64-linux-gnu-as "$tmp_dir/arrays.riscv" -o "$tmp_dir/arrays.o"
+  riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
+    "$tmp_dir/matrix_multiply.riscv" -o "$tmp_dir/matrix_multiply.o"
+  riscv64-linux-gnu-objdump -d "$tmp_dir/matrix_multiply.o" \
+    > "$tmp_dir/matrix_multiply.objdump"
+  for instruction in mulw addw lw sw; do
+    grep -q "$instruction" "$tmp_dir/matrix_multiply.objdump"
+  done
   riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d \
     "$tmp_dir/vector_add.riscv" -o "$tmp_dir/vector_add.o"
   riscv64-linux-gnu-objdump -d "$tmp_dir/vector_add.o" \

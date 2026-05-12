@@ -2109,3 +2109,48 @@ Validated commands:
 cmake --build /home/zyz/zcomipler/build -j32
 ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
 ```
+
+
+## Phase 31T: MMA / Matrix Multiply v1
+
+### Execution Target
+
+Add the first compiler-owned matrix multiply operation with a stable source
+syntax and end-to-end validation.
+
+### Execution Summary
+
+- Added `matrix_multiply c, a, b, rows, cols, inner;` as a row-major `i32` MMA
+  statement.
+- Added `KwMatrixMultiply`, `MatrixMultiplyStmtAST`, parser support, AST dump,
+  and lexer/parser goldens.
+- Added MLIR API generation to nested `scf.for` loops with `memref.load`,
+  `arith.muli`, `arith.addi`, and `memref.store`.
+- Added direct scalar RISC-V assembly lowering using ABI-saved `s0`-`s11` loop
+  state plus `mulw`/`addw` wrapping `i32` accumulation.
+- Added `examples/matrix_multiply.zc`, codegen goldens, assembler/objdump
+  checks, phase documentation, README/current-capability updates, and a QEMU C
+  harness covering multiple matrix shapes.
+
+### Execution Result
+
+Completed scalar MMA v1 for row-major `i32` matrices. This is not yet an
+RVV-optimized matrix multiply; the next phases need packed/transpose or
+strided/indexed memory support before marking matmul as an RVV accelerator
+kernel.
+
+Validated commands:
+
+```bash
+cmake --build /home/zyz/zcomipler/build -j32
+./build/tools/zc/zc examples/matrix_multiply.zc --emit-mlir
+./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm
+ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+```
+
+Visible QEMU demo output:
+
+```text
+matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
+qemu_exit=0
+```

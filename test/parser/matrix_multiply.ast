@@ -1,0 +1,18 @@
+Module
+  Function name=matmul_i32 return=i32
+    Params
+      Param name=c type=ptr<i32>
+      Param name=a type=ptr<i32>
+      Param name=b type=ptr<i32>
+      Param name=rows type=i32
+      Param name=cols type=i32
+      Param name=inner type=i32
+    MatrixMultiplyStmt output=c lhs=a rhs=b
+      Rows
+        VariableExpr name=rows
+      Cols
+        VariableExpr name=cols
+      Inner
+        VariableExpr name=inner
+    ReturnStmt
+      IntegerExpr value=0

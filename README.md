@@ -41,6 +41,7 @@ tutorial. It currently supports:
 - Straight-line assignment.
 - `ptr<i32>` buffer parameters.
 - Scalar indexed `load` / `store`.
+- Target-independent `matrix_multiply c, a, b, rows, cols, inner;` syntax for row-major `i32` MMA v1.
 - Target-independent `vector_add` syntax.
 - Target-independent `vector_copy` syntax.
 - Target-independent `vector_scale` syntax.
@@ -58,6 +59,7 @@ tutorial. It currently supports:
   multiply.
 - Direct RVV reference assembly for vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
+- Direct scalar RISC-V assembly for `matrix_multiply` with QEMU correctness validation.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
 - Host-side correctness harnesses for masked vector tails.
@@ -190,6 +192,7 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
@@ -199,6 +202,22 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
 /home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
 ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+```
+
+
+Manual visible matrix-multiply QEMU demo:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm > /tmp/matrix_multiply.s
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply.s test/qemu/matrix_multiply_harness.c -o /tmp/matrix_multiply
+/home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply
+```
+
+Expected output includes:
+
+```text
+matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
 ```
 
 Planning documents for the accelerator direction:
@@ -239,3 +258,4 @@ Planning documents for the accelerator direction:
 - [docs/phase30q-masked-arithmetic.md](docs/phase30q-masked-arithmetic.md)
 - [docs/phase30r-masked-store.md](docs/phase30r-masked-store.md)
 - [docs/phase30s-masked-load.md](docs/phase30s-masked-load.md)
+- [docs/phase31t-mma.md](docs/phase31t-mma.md)

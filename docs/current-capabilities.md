@@ -211,3 +211,35 @@ func masked_load_gt(mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, input: ptr<i32>, pas
 ```
 
 The direct RVV path emits masked `vle32.v ..., v0.t`, then `vmerge.vvm` with the passthrough vector. This avoids relying on masked-off destination lane behavior while the active profile uses `ta, ma`.
+
+
+## Phase 31T Capability Addendum
+
+The compiler now supports the first compiler-owned matrix multiply operation:
+
+```zc
+func matmul_i32(c: ptr<i32>, a: ptr<i32>, b: ptr<i32>, rows: i32, cols: i32, inner: i32) -> i32 {
+  matrix_multiply c, a, b, rows, cols, inner;
+  return 0;
+}
+```
+
+This v1 MMA slice treats `a` as row-major `rows x inner`, `b` as row-major
+`inner x cols`, and `c` as row-major `rows x cols`. It overwrites `c` with
+wrapping `i32` dot products. Supported paths are token dump, AST dump, MLIR API
+generation with nested `scf.for`, direct scalar RISC-V assembly, assembler
+validation, and QEMU runtime correctness validation.
+
+Manual visible QEMU demo for `matrix_multiply`:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm > /tmp/matrix_multiply.s
+riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply.s test/qemu/matrix_multiply_harness.c -o /tmp/matrix_multiply
+/home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply
+# matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
+```
+
+This is correct scalar matrix multiply support, not RVV-optimized matmul yet.
+Future phases should add transposed/packed-B or strided/indexed RVV memory forms
+before marking matrix multiply as an RVV accelerator kernel.

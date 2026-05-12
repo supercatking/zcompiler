@@ -102,13 +102,14 @@
   <text class="boxText" x="628" y="442">direct RVV reference backend</text>
   <text class="small" x="628" y="464">lib/CodeGen</text>
 
-  <rect class="box backend" x="608" y="532" width="292" height="154"/>
-  <text class="boxTitle" x="628" y="564">Current RVV Kernel Surface</text>
+  <rect class="box backend" x="608" y="532" width="292" height="176"/>
+  <text class="boxTitle" x="628" y="564">Current Kernel Surface</text>
   <text class="boxText" x="628" y="588">copy, add, scale, mul</text>
   <text class="boxText" x="628" y="608">reduce_add</text>
   <text class="boxText" x="628" y="628">signed and unsigned select</text>
   <text class="boxText" x="628" y="648">masked add/sub/mul/store/load</text>
-  <text class="small" x="628" y="670">i32, LMUL m1, unit-stride subset</text>
+  <text class="boxText" x="628" y="668">matrix_multiply scalar v1</text>
+  <text class="small" x="628" y="690">i32 vectors: LMUL m1, unit-stride subset</text>
 
   <rect class="lane" x="960" y="112" width="246" height="660"/>
   <text class="laneHead" x="982" y="142">Toolchain and Runtime</text>
@@ -158,7 +159,7 @@
   <text class="boxTitle" x="188" y="856">Long-Term Target</text>
   <text class="boxText" x="188" y="884">AI self made compiler based on RISC-V RVV accelerator.</text>
   <text class="boxText" x="188" y="908">Near-term state: executable RVV 1.0-compatible subset for i32 unit-stride kernels, validated through assembler, objdump, CTest, and QEMU.</text>
-  <text class="boxText" x="188" y="932">Major gaps: full RVV 1.0 coverage, richer element widths, LMUL policy, strided/indexed memory, formal LLVM RVV lowering, and matrix/tensor kernels.</text>
+  <text class="boxText" x="188" y="932">Major gaps: full RVV 1.0 coverage, richer element widths, LMUL policy, strided/indexed memory, formal LLVM RVV lowering, and RVV matrix/tensor kernels.</text>
 
   <rect class="pill" x="84" y="638" width="148" height="32"/>
   <text class="pillText" x="103" y="659">current_max_demo.zc</text>

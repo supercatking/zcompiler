@@ -145,6 +145,8 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseStoreStatement();
   if (check(TokenKind::KwPrintI32))
     return parsePrintI32Statement();
+  if (check(TokenKind::KwMatrixMultiply))
+    return parseMatrixMultiplyStatement();
   if (check(TokenKind::KwVectorAdd))
     return parseVectorAddStatement();
   if (check(TokenKind::KwVectorCopy))
@@ -278,8 +280,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorAddStatement() {
   if (!expect(TokenKind::Semicolon, "expected ';' after vector_add statement"))
     return nullptr;
 
-  return std::make_unique<VectorAddStmtAST>(
-      std::move(output), std::move(lhs), std::move(rhs), std::move(length));
+  return std::make_unique<VectorAddStmtAST>(std::move(output), std::move(lhs),
+                                            std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorCopyStatement() {
@@ -346,7 +348,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorScaleStatement() {
   if (!length)
     return nullptr;
 
-  if (!expect(TokenKind::Semicolon, "expected ';' after vector_scale statement"))
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_scale statement"))
     return nullptr;
 
   return std::make_unique<VectorScaleStmtAST>(
@@ -391,8 +394,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorMulStatement() {
   if (!expect(TokenKind::Semicolon, "expected ';' after vector_mul statement"))
     return nullptr;
 
-  return std::make_unique<VectorMulStmtAST>(
-      std::move(output), std::move(lhs), std::move(rhs), std::move(length));
+  return std::make_unique<VectorMulStmtAST>(std::move(output), std::move(lhs),
+                                            std::move(rhs), std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
@@ -428,8 +431,9 @@ std::unique_ptr<StmtAST> Parser::parseVectorReduceAddStatement() {
       std::move(result), std::move(input), std::move(length));
 }
 
-std::unique_ptr<StmtAST> Parser::parseVectorSelectStatement(
-    VectorSelectPredicate predicate, StringRef keyword) {
+std::unique_ptr<StmtAST>
+Parser::parseVectorSelectStatement(VectorSelectPredicate predicate,
+                                   StringRef keyword) {
   advance();
 
   auto parseBuffer = [this](StringRef diagnostic) -> std::string {
@@ -440,18 +444,21 @@ std::unique_ptr<StmtAST> Parser::parseVectorSelectStatement(
     return advance().lexeme;
   };
 
-  std::string output = parseBuffer("expected output buffer after vector_select");
+  std::string output =
+      parseBuffer("expected output buffer after vector_select");
   if (output.empty() ||
       !expect(TokenKind::Comma, "expected ',' after vector_select output"))
     return nullptr;
 
-  std::string lhs = parseBuffer("expected left compare buffer in vector_select");
+  std::string lhs =
+      parseBuffer("expected left compare buffer in vector_select");
   if (lhs.empty() ||
       !expect(TokenKind::Comma,
               "expected ',' after vector_select left compare input"))
     return nullptr;
 
-  std::string rhs = parseBuffer("expected right compare buffer in vector_select");
+  std::string rhs =
+      parseBuffer("expected right compare buffer in vector_select");
   if (rhs.empty() ||
       !expect(TokenKind::Comma,
               "expected ',' after vector_select right compare input"))
@@ -512,8 +519,8 @@ std::unique_ptr<StmtAST> Parser::parseStoreStatement() {
   if (!expect(TokenKind::Semicolon, "expected ';' after store statement"))
     return nullptr;
 
-  return std::make_unique<StoreStmtAST>(std::move(bufferName),
-                                        std::move(index), std::move(value));
+  return std::make_unique<StoreStmtAST>(std::move(bufferName), std::move(index),
+                                        std::move(value));
 }
 
 std::unique_ptr<StmtAST> Parser::parsePrintI32Statement() {
@@ -527,6 +534,60 @@ std::unique_ptr<StmtAST> Parser::parsePrintI32Statement() {
     return nullptr;
 
   return std::make_unique<PrintI32StmtAST>(std::move(value));
+}
+
+std::unique_ptr<StmtAST> Parser::parseMatrixMultiplyStatement() {
+  advance();
+
+  auto parseBuffer = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseBuffer("expected output buffer after matrix_multiply");
+  if (output.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after matrix_multiply output"))
+    return nullptr;
+
+  std::string lhs =
+      parseBuffer("expected lhs matrix buffer in matrix_multiply");
+  if (lhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after matrix_multiply lhs"))
+    return nullptr;
+
+  std::string rhs =
+      parseBuffer("expected rhs matrix buffer in matrix_multiply");
+  if (rhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after matrix_multiply rhs"))
+    return nullptr;
+
+  auto rows = parseExpression();
+  if (!rows)
+    return nullptr;
+  if (!expect(TokenKind::Comma, "expected ',' after matrix_multiply rows"))
+    return nullptr;
+
+  auto cols = parseExpression();
+  if (!cols)
+    return nullptr;
+  if (!expect(TokenKind::Comma, "expected ',' after matrix_multiply cols"))
+    return nullptr;
+
+  auto inner = parseExpression();
+  if (!inner)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after matrix_multiply statement"))
+    return nullptr;
+
+  return std::make_unique<MatrixMultiplyStmtAST>(
+      std::move(output), std::move(lhs), std::move(rhs), std::move(rows),
+      std::move(cols), std::move(inner));
 }
 
 std::unique_ptr<StmtAST> Parser::parseAssignStatement() {
@@ -567,9 +628,9 @@ std::unique_ptr<StmtAST> Parser::parseLetStatement() {
   return std::make_unique<LetStmtAST>(std::move(name), std::move(value));
 }
 
-
-std::unique_ptr<StmtAST> Parser::parseVectorMaskStatement(
-    VectorSelectPredicate predicate, StringRef keyword) {
+std::unique_ptr<StmtAST>
+Parser::parseVectorMaskStatement(VectorSelectPredicate predicate,
+                                 StringRef keyword) {
   advance();
 
   auto parseName = [this](StringRef diagnostic) -> std::string {
@@ -585,11 +646,13 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskStatement(
     return nullptr;
 
   std::string lhs = parseName("expected left compare buffer in vector_mask");
-  if (lhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_mask left input"))
+  if (lhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_mask left input"))
     return nullptr;
 
   std::string rhs = parseName("expected right compare buffer in vector_mask");
-  if (rhs.empty() || !expect(TokenKind::Comma, "expected ',' after vector_mask right input"))
+  if (rhs.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_mask right input"))
     return nullptr;
 
   auto length = parseExpression();
@@ -606,8 +669,9 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskStatement(
                                              std::move(length));
 }
 
-std::unique_ptr<StmtAST> Parser::parseVectorMaskedBinaryStatement(
-    VectorMaskedBinaryOp op, StringRef keyword) {
+std::unique_ptr<StmtAST>
+Parser::parseVectorMaskedBinaryStatement(VectorMaskedBinaryOp op,
+                                         StringRef keyword) {
   advance();
 
   auto parseName = [this](StringRef diagnostic) -> std::string {
@@ -639,9 +703,8 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedBinaryStatement(
     return nullptr;
 
   std::string mask = parseName("expected mask name in " + keyword.str());
-  if (mask.empty() ||
-      !expect(TokenKind::Comma,
-              "expected ',' after " + keyword.str() + " mask"))
+  if (mask.empty() || !expect(TokenKind::Comma,
+                              "expected ',' after " + keyword.str() + " mask"))
     return nullptr;
 
   std::string passthrough =
@@ -664,7 +727,6 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedBinaryStatement(
       std::move(passthrough), std::move(length));
 }
 
-
 std::unique_ptr<StmtAST> Parser::parseVectorMaskedStoreStatement() {
   advance();
 
@@ -685,8 +747,7 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedStoreStatement() {
 
   std::string input = parseName("expected input buffer in vector_masked_store");
   if (input.empty() ||
-      !expect(TokenKind::Comma,
-              "expected ',' after vector_masked_store input"))
+      !expect(TokenKind::Comma, "expected ',' after vector_masked_store input"))
     return nullptr;
 
   std::string mask = parseName("expected mask name in vector_masked_store");
@@ -720,14 +781,12 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedLoadStatement() {
   std::string output =
       parseName("expected output buffer after vector_masked_load");
   if (output.empty() ||
-      !expect(TokenKind::Comma,
-              "expected ',' after vector_masked_load output"))
+      !expect(TokenKind::Comma, "expected ',' after vector_masked_load output"))
     return nullptr;
 
   std::string input = parseName("expected input buffer in vector_masked_load");
   if (input.empty() ||
-      !expect(TokenKind::Comma,
-              "expected ',' after vector_masked_load input"))
+      !expect(TokenKind::Comma, "expected ',' after vector_masked_load input"))
     return nullptr;
 
   std::string mask = parseName("expected mask name in vector_masked_load");
@@ -829,8 +888,8 @@ std::unique_ptr<ExprAST> Parser::parseExpression() {
   return parseBinaryRHS(0, std::move(lhs));
 }
 
-std::unique_ptr<ExprAST>
-Parser::parseBinaryRHS(int expressionPrecedence, std::unique_ptr<ExprAST> lhs) {
+std::unique_ptr<ExprAST> Parser::parseBinaryRHS(int expressionPrecedence,
+                                                std::unique_ptr<ExprAST> lhs) {
   while (true) {
     int tokenPrecedence = getTokenPrecedence();
     if (tokenPrecedence < expressionPrecedence)
@@ -895,8 +954,7 @@ std::unique_ptr<ExprAST> Parser::parseLoadExpression() {
   if (!expect(TokenKind::RBracket, "expected ']' after load index"))
     return nullptr;
 
-  return std::make_unique<LoadExprAST>(std::move(bufferName),
-                                       std::move(index));
+  return std::make_unique<LoadExprAST>(std::move(bufferName), std::move(index));
 }
 
 std::unique_ptr<ExprAST> Parser::parseIdentifierExpression() {

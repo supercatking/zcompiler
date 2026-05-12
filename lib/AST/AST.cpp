@@ -117,6 +117,21 @@ void PrintI32StmtAST::dump(raw_ostream &os, unsigned indent) const {
   value->dump(os, indent + 1);
 }
 
+void MatrixMultiplyStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "MatrixMultiplyStmt output=" << output << " lhs=" << lhs
+     << " rhs=" << rhs << '\n';
+  writeIndent(os, indent + 1);
+  os << "Rows\n";
+  rows->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Cols\n";
+  cols->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Inner\n";
+  inner->dump(os, indent + 2);
+}
+
 void VectorAddStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorAddStmt output=" << output << " lhs=" << lhs << " rhs=" << rhs
@@ -172,7 +187,6 @@ void VectorSelectStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
-
 void VectorMaskStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorMaskStmt predicate=" << getVectorSelectPredicateName(predicate)
@@ -191,7 +205,6 @@ void VectorMaskedBinaryStmtAST::dump(raw_ostream &os, unsigned indent) const {
   os << "Length\n";
   length->dump(os, indent + 2);
 }
-
 
 void VectorMaskedStoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);

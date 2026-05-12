@@ -46,8 +46,8 @@ private:
     SmallVector<Type, 4> inputTypes;
     for (const ParameterAST &parameter : function.getParameters())
       inputTypes.push_back(getType(parameter.getType()));
-    auto functionType =
-        builder.getFunctionType(inputTypes, {getType(function.getReturnType())});
+    auto functionType = builder.getFunctionType(
+        inputTypes, {getType(function.getReturnType())});
     auto func = func::FuncOp::create(loc, function.getName(), functionType);
     builder.insert(func);
 
@@ -60,7 +60,8 @@ private:
     bool hasTerminator = false;
     for (const auto &statement : function.getBody()) {
       emitStatement(*statement);
-      hasTerminator = !entry->empty() && entry->back().hasTrait<OpTrait::IsTerminator>();
+      hasTerminator =
+          !entry->empty() && entry->back().hasTrait<OpTrait::IsTerminator>();
       if (hasTerminator)
         break;
     }
@@ -191,11 +192,15 @@ private:
           "MLIR API generation for print_i32 is planned after the RISC-V "
           "runtime slice");
       return;
+    case StmtKind::MatrixMultiply:
+      emitMatrixMultiply(static_cast<const MatrixMultiplyStmtAST &>(statement));
+      return;
     case StmtKind::Return:
       emitReturn(static_cast<const ReturnStmtAST &>(statement));
       return;
     case StmtKind::If:
-      result.addDiagnostic("MLIR API generation for if is planned for Phase 19");
+      result.addDiagnostic(
+          "MLIR API generation for if is planned for Phase 19");
       return;
     case StmtKind::While:
       result.addDiagnostic(
@@ -267,6 +272,67 @@ private:
                                     found->second, ValueRange(index));
   }
 
+  void emitMatrixMultiply(const MatrixMultiplyStmtAST &statement) {
+    auto output = variables.find(statement.getOutput());
+    auto lhs = variables.find(statement.getLHS());
+    auto rhs = variables.find(statement.getRHS());
+    if (output == variables.end() || lhs == variables.end() ||
+        rhs == variables.end()) {
+      result.addDiagnostic("unknown buffer in matrix_multiply statement");
+      return;
+    }
+
+    Value rows = ensureIndex(emitExpression(statement.getRows()));
+    Value cols = ensureIndex(emitExpression(statement.getCols()));
+    Value inner = ensureIndex(emitExpression(statement.getInner()));
+    if (!rows || !cols || !inner)
+      return;
+
+    Location loc = builder.getUnknownLoc();
+    Value zeroIndex = builder.create<arith::ConstantIndexOp>(loc, 0);
+    Value oneIndex = builder.create<arith::ConstantIndexOp>(loc, 1);
+    Value zeroI32 = builder.create<arith::ConstantIntOp>(loc, 0, 32);
+
+    auto rowLoop = builder.create<scf::ForOp>(loc, zeroIndex, rows, oneIndex);
+    OpBuilder::InsertionGuard rowGuard(builder);
+    builder.setInsertionPointToStart(rowLoop.getBody());
+    Value row = rowLoop.getInductionVar();
+
+    auto colLoop = builder.create<scf::ForOp>(loc, zeroIndex, cols, oneIndex);
+    OpBuilder::InsertionGuard colGuard(builder);
+    builder.setInsertionPointToStart(colLoop.getBody());
+    Value col = colLoop.getInductionVar();
+
+    auto innerLoop = builder.create<scf::ForOp>(loc, zeroIndex, inner, oneIndex,
+                                                ValueRange(zeroI32));
+    {
+      OpBuilder::InsertionGuard innerGuard(builder);
+      builder.setInsertionPointToStart(innerLoop.getBody());
+      Value k = innerLoop.getInductionVar();
+      Value accumulator = innerLoop.getRegionIterArg(0);
+
+      Value lhsRowOffset = builder.create<arith::MulIOp>(loc, row, inner);
+      Value lhsIndex = builder.create<arith::AddIOp>(loc, lhsRowOffset, k);
+      Value rhsRowOffset = builder.create<arith::MulIOp>(loc, k, cols);
+      Value rhsIndex = builder.create<arith::AddIOp>(loc, rhsRowOffset, col);
+
+      Value lhsValue = builder.create<memref::LoadOp>(loc, lhs->second,
+                                                      ValueRange(lhsIndex));
+      Value rhsValue = builder.create<memref::LoadOp>(loc, rhs->second,
+                                                      ValueRange(rhsIndex));
+      Value product = builder.create<arith::MulIOp>(loc, lhsValue, rhsValue);
+      Value nextAccumulator =
+          builder.create<arith::AddIOp>(loc, accumulator, product);
+      builder.create<scf::YieldOp>(loc, ValueRange(nextAccumulator));
+    }
+
+    Value outputRowOffset = builder.create<arith::MulIOp>(loc, row, cols);
+    Value outputIndex =
+        builder.create<arith::AddIOp>(loc, outputRowOffset, col);
+    builder.create<memref::StoreOp>(loc, innerLoop.getResult(0), output->second,
+                                    ValueRange(outputIndex));
+  }
+
   scf::ForOp createMaskedVectorLoop(Value upperBound, Value &step) {
     Location loc = builder.getUnknownLoc();
     Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
@@ -300,8 +366,8 @@ private:
     auto maskType = VectorType::get({4}, builder.getI1Type());
     Value remaining = builder.create<arith::SubIOp>(loc, upperBound, index);
     Value activeLanes = builder.create<arith::MinUIOp>(loc, remaining, step);
-    access.mask = builder.create<vector::CreateMaskOp>(
-        loc, maskType, ValueRange(activeLanes));
+    access.mask = builder.create<vector::CreateMaskOp>(loc, maskType,
+                                                       ValueRange(activeLanes));
     return access;
   }
 
@@ -486,11 +552,10 @@ private:
     Value mask = builder.create<arith::CmpIOp>(
         access.loc, getMLIRPredicate(statement.getPredicate()), lhsVector,
         rhsVector);
-    Value selected =
-        builder.create<arith::SelectOp>(access.loc, mask, trueVector, falseVector);
+    Value selected = builder.create<arith::SelectOp>(access.loc, mask,
+                                                     trueVector, falseVector);
     emitVectorWrite(selected, output->second, access);
   }
-
 
   Value emitVectorMaskedBinaryOp(VectorMaskedBinaryOp op, Location loc,
                                  Value lhs, Value rhs) {
@@ -507,7 +572,8 @@ private:
 
   void rememberVectorMask(const VectorMaskStmtAST &statement) {
     if (masks.count(statement.getMask())) {
-      result.addDiagnostic("duplicate vector mask '" + statement.getMask() + "'");
+      result.addDiagnostic("duplicate vector mask '" + statement.getMask() +
+                           "'");
       return;
     }
     masks[statement.getMask()] = &statement;
@@ -530,10 +596,10 @@ private:
     if (output == variables.end() || lhs == variables.end() ||
         rhs == variables.end() || passthrough == variables.end() ||
         maskLHS == variables.end() || maskRHS == variables.end()) {
-      result.addDiagnostic("unknown buffer in vector_masked_" +
-                           std::string(getVectorMaskedBinaryOpName(
-                               statement.getOp())) +
-                           " statement");
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_" +
+          std::string(getVectorMaskedBinaryOpName(statement.getOp())) +
+          " statement");
       return;
     }
 
@@ -558,12 +624,11 @@ private:
     Value rhsVector = emitVectorRead(rhs->second, access);
     Value passthroughVector = emitVectorRead(passthrough->second, access);
     Value computed = emitVectorMaskedBinaryOp(statement.getOp(), access.loc,
-                                             lhsVector, rhsVector);
+                                              lhsVector, rhsVector);
     Value selected = builder.create<arith::SelectOp>(
         access.loc, vectorMask, computed, passthroughVector);
     emitVectorWrite(selected, output->second, access);
   }
-
 
   void emitVectorMaskedStore(const VectorMaskedStoreStmtAST &statement) {
     auto maskDefinition = masks.find(statement.getMask());
@@ -674,8 +739,8 @@ private:
     Location loc = builder.getUnknownLoc();
     Value lowerBound = builder.create<arith::ConstantIndexOp>(loc, 0);
     Value step = builder.create<arith::ConstantIndexOp>(loc, 4);
-    auto forOp = builder.create<scf::ForOp>(
-        loc, lowerBound, upperBound, step, ValueRange(resultVariable->second));
+    auto forOp = builder.create<scf::ForOp>(loc, lowerBound, upperBound, step,
+                                            ValueRange(resultVariable->second));
 
     OpBuilder::InsertionGuard guard(builder);
     builder.setInsertionPointToStart(forOp.getBody());
@@ -711,8 +776,8 @@ private:
     if (value.getType().isIndex())
       return value;
     if (value.getType().isInteger(32))
-      return builder.create<arith::IndexCastOp>(
-          builder.getUnknownLoc(), builder.getIndexType(), value);
+      return builder.create<arith::IndexCastOp>(builder.getUnknownLoc(),
+                                                builder.getIndexType(), value);
     result.addDiagnostic("expected i32 or index expression for memory index");
     return nullptr;
   }

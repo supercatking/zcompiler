@@ -19,6 +19,8 @@ The diagram shows the current project shape after the toy compiler phases:
   accelerator-oriented goal without changing direction later.
 - Accelerator profiles under `profiles/` capture target assumptions such as
   `rv64gcv`, SEW/LMUL policy, tail/mask policy, and current backend strategy.
+- Phase 31T adds `matrix_multiply` as a dedicated AST/kernel statement so matrix
+  semantics have a clean hook for future RVV tiling and packed-memory lowering.
 
 ## 1. Design Principles
 

@@ -721,6 +721,34 @@ operation has source syntax, MLIR lowering, direct RVV assembly, objdump checks,
 and QEMU runtime validation.
 ```
 
+## Phase 31: Matrix / MMA Kernel Bring-Up
+
+Goal: add compiler-owned matrix operations as the bridge from one-dimensional
+RVV kernels toward accelerator-style workloads.
+
+Completed slices:
+
+- Phase 31T: scalar `matrix_multiply c, a, b, rows, cols, inner;` with lexer,
+  parser, AST, MLIR nested `scf.for`, direct RISC-V assembly, goldens, assembler
+  checks, phase docs, and QEMU runtime correctness validation.
+
+Planned slices:
+
+- Phase 31U: transposed-B or packed-B workflow so dot products can use
+  unit-stride vector loads.
+- Phase 31V: formal dot-product kernel surface with QEMU and objdump checks.
+- Phase 31W: RVV matrix multiply over packed-B rows.
+- Phase 31X: tiled matrix multiply with explicit tile policy in the accelerator
+  profile.
+
+Exit criteria:
+
+```text
+Matrix kernels have explicit source syntax, documented shape/layout semantics,
+MLIR lowering, direct backend lowering, and QEMU correctness tests before being
+optimized for RVV.
+```
+
 ## Engineering Rules For All Future Phases
 
 - Think through the core architecture first and document it before coding.
@@ -738,8 +766,8 @@ and QEMU runtime validation.
 
 The next implementation steps after Phase 29A compliance baseline:
 
-1. Start Phase 30T with mask logical operations so masks become more composable.
-2. Start Phase 29C/29E work: LMUL policy and the first non-`i32` typed-buffer vector path.
-3. Continue toward strided/indexed memory forms after unit-stride masked load/store semantics are covered.
+1. Start Phase 31U with transposed-B or packed-B layout support for RVV-friendly matrix dot products.
+2. Start Phase 30T with mask logical operations so masks become more composable.
+3. Start Phase 29C/29E work: LMUL policy and the first non-`i32` typed-buffer vector path.
 4. Run `./scripts/prepare-riscv-llvm-build.sh --configure` or `--build` when
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.
