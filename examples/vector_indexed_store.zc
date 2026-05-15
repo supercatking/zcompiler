@@ -1,0 +1,4 @@
+func vector_indexed_store_demo(base: ptr<i32>, values: ptr<i32>, indices: ptr<i32>, n: i32) -> i32 {
+  vector_indexed_store base, values, indices, n;
+  return 0;
+}

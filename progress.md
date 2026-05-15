@@ -2323,3 +2323,26 @@ Close the first `m4` runtime validation gap for the direct RVV backend.
 `vector_add_m4` is now validated for `ptr<i16>` addition through the same runtime
 length matrix as the existing i16 `m1`/`m2` slices. Full LMUL coverage remains
 partial because other RVV operations have not yet been broadened to `m2`/`m4`.
+
+## Phase 39A/39B: Strided and Indexed Stores
+
+### Execution Target
+
+Add unmasked non-unit RVV store forms for the current `i32` memory subset.
+
+### Execution Summary
+
+- Added `vector_strided_store base, values, stride, n;`.
+- Added `vector_indexed_store base, values, indices, n;`.
+- Lowered strided stores to `vsse32.v`.
+- Lowered indexed stores to `vsuxei32.v` after shifting element indices to byte
+  offsets.
+- Added examples, lexer/parser/codegen goldens, profile/compliance entries, and
+  QEMU checks.
+
+### Execution Result
+
+Phase 39A/39B completes unmasked strided/indexed store slices for `ptr<i32>`.
+QEMU covers lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies untouched
+destination elements remain unchanged. Masked non-unit memory forms remain
+planned for Phase 39C.

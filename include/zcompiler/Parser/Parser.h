@@ -42,6 +42,8 @@ private:
   std::unique_ptr<StmtAST> parseVectorAddStatement();
   std::unique_ptr<StmtAST> parseVectorStridedLoadStatement();
   std::unique_ptr<StmtAST> parseVectorIndexedLoadStatement();
+  std::unique_ptr<StmtAST> parseVectorStridedStoreStatement();
+  std::unique_ptr<StmtAST> parseVectorIndexedStoreStatement();
   std::unique_ptr<StmtAST> parseVectorCopyStatement();
   std::unique_ptr<StmtAST> parseVectorScaleStatement();
   std::unique_ptr<StmtAST> parseVectorMulStatement();

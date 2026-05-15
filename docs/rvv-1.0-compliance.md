@@ -41,7 +41,7 @@ Required profile fields for RVV 1.0 tracking:
 | RVV spec target | RVV 1.0 profile field | JSON validation |
 | SEW | `i32` source kernels plus validated `i16` add/widen slices | QEMU correctness tests |
 | LMUL | `m1`, plus `i16` `m2`/`m4` vector-add slices | assembly inspection and QEMU |
-| Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads | QEMU correctness tests |
+| Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads and stores | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
 | Tail/mask policy | `ta, ma` direct assembly policy | assembly inspection |
 | Signed runtime inputs | mixed positive/negative `i32` including overflow bit patterns | QEMU |
@@ -70,11 +70,11 @@ Required profile fields for RVV 1.0 tracking:
 | --- | --- | --- |
 | Element widths | typed-buffer contract exists; `i16` add/widen and `i32` kernels are validated, but `i8`/`i64` remain incomplete | Phase 40A |
 | LMUL policy | `m2`/`m4` are validated for i16 add only; other kernels remain mostly `m1` | Phase 42A |
-| Memory forms | strided/indexed loads exist; strided/indexed stores and masked non-unit memory forms remain missing | Phase 39A |
+| Memory forms | strided/indexed unmasked loads and stores exist; masked non-unit memory, segment, FOF, and whole-register forms remain missing | Phase 39C |
 | Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
 | Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 31D |
 | Reductions | only add reduction is implemented | Phase 31A |
-| ABI contract | vector register clobbering is not documented as an ABI | Phase 31B |
+| ABI contract | direct-backend clobber policy is documented; full vector calling convention and spill/reload remain missing | Phase 49 |
 | Formal lowering | MLIR/LLVM RVV path is still blocked by local toolchain mismatch | Phase 32A |
 | Overflow policy | current RVV kernel subset checks wrapping modulo `2^32` | QEMU bit-pattern checks |
 | Scalar `i32` arithmetic | direct RISC-V path uses RV64 word ops | QEMU stdout check |
@@ -93,7 +93,9 @@ Every RVV kernel should eventually be tested across:
 - QEMU execution result checks
 - disassembly checks for expected RVV instruction families
 
-Phase 29B records the source element-width contract: typed buffers first; implemented width remains `i32`.
+Phase 29B records the source element-width contract: typed buffers first; the
+validated execution subset is currently `i32` plus targeted `i16` add/widen
+slices.
 
 The current QEMU test covers the length set above for:
 
@@ -133,6 +135,8 @@ The current QEMU test covers the length set above for:
 - `vector_add_i16_m4`
 - `vector_strided_load`
 - `vector_indexed_load`
+- `vector_strided_store`
+- `vector_indexed_store`
 - `vector_mask_logical`
 - `vector_widen_add_i16_i32`
 
@@ -212,3 +216,12 @@ alignment, and QEMU checks cover the same length set as the existing i16 `m1` an
 
 The broader `m2_m4_policy` row remains partial because LMUL expansion has not yet
 been applied to every integer, memory, mask, reduction, and matrix operation.
+
+## Phase 39A/39B Compliance Update
+
+`vector_strided_store` and `vector_indexed_store` are now supported for the
+current `ptr<i32>` RVV subset. `vector_strided_store` uses legal RVV 1.0
+`vsse32.v`; `vector_indexed_store` uses legal RVV 1.0 `vsuxei32.v` with element
+indices shifted to byte offsets. QEMU checks cover lengths
+`0, 1, 2, 3, 5, 8, 17, 31` and verify unselected destination elements remain
+unchanged.

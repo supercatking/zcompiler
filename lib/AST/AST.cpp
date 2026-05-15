@@ -209,6 +209,26 @@ void VectorIndexedLoadStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorStridedStoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorStridedStoreStmt base=" << base << " values=" << values << '\n';
+  writeIndent(os, indent + 1);
+  os << "Stride\n";
+  stride->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorIndexedStoreStmtAST::dump(raw_ostream &os, unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorIndexedStoreStmt base=" << base << " values=" << values
+     << " indices=" << indices << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void VectorCopyStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "VectorCopyStmt output=" << output << " input=" << input << '\n';

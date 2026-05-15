@@ -34,6 +34,8 @@ enum class TokenKind {
   KwVectorAddM4,
   KwVectorStridedLoad,
   KwVectorIndexedLoad,
+  KwVectorStridedStore,
+  KwVectorIndexedStore,
   KwVectorCopy,
   KwVectorScale,
   KwVectorMul,

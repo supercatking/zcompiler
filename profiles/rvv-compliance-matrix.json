@@ -104,6 +104,30 @@
       ]
     },
     {
+      "area": "memory",
+      "feature": "strided_store",
+      "status": "supported",
+      "phase": "39A",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "indexed_store",
+      "status": "supported",
+      "phase": "39B",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
       "area": "integer",
       "feature": "add_sub_mul",
       "status": "supported",

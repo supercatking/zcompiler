@@ -60,12 +60,12 @@ tutorial. It currently supports:
   multiply.
 - Direct RVV reference assembly for vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
-- Direct RVV reference assembly for strided i32 loads, indexed i32 loads, logical mask composition, and signed i16-to-i32 widening add.
+- Direct RVV reference assembly for strided/indexed i32 loads and stores, logical mask composition, and signed i16-to-i32 widening add.
 - Direct scalar RISC-V assembly for `matrix_multiply` with QEMU correctness validation.
 - Direct RISC-V `matrix_pack_b` plus RVV assembly for packed-B matrix multiply using unit-stride vector dot products.
 - Scalar-vs-vector benchmark metadata for vector add.
 - Machine-readable RVV accelerator profile.
-- Host-side and QEMU correctness harnesses for masked vector tails, strided/indexed loads, i16 widening add, and packed-B matrix workflows.
+- Host-side and QEMU correctness harnesses for masked vector tails, strided/indexed loads and stores, i16 widening add, and packed-B matrix workflows.
 
 Example target input:
 
@@ -196,6 +196,8 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i16_m4.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_strided_store.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_indexed_store.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply_packed_b.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast

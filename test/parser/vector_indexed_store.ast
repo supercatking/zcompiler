@@ -1,0 +1,12 @@
+Module
+  Function name=vector_indexed_store_demo return=i32
+    Params
+      Param name=base type=ptr<i32>
+      Param name=values type=ptr<i32>
+      Param name=indices type=ptr<i32>
+      Param name=n type=i32
+    VectorIndexedStoreStmt base=base values=values indices=indices
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

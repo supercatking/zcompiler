@@ -241,6 +241,10 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorStridedLoad;
   else if (text == "vector_indexed_load")
     kind = TokenKind::KwVectorIndexedLoad;
+  else if (text == "vector_strided_store")
+    kind = TokenKind::KwVectorStridedStore;
+  else if (text == "vector_indexed_store")
+    kind = TokenKind::KwVectorIndexedStore;
   else if (text == "vector_copy")
     kind = TokenKind::KwVectorCopy;
   else if (text == "vector_scale")

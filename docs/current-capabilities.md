@@ -279,6 +279,8 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 - `examples/vector_add_i16_m2.zc`
 - `examples/vector_strided_load.zc`
 - `examples/vector_indexed_load.zc`
+- `examples/vector_strided_store.zc`
+- `examples/vector_indexed_store.zc`
 - `examples/vector_mask_logical.zc`
 - `examples/vector_widen_add_i16_i32.zc`
 
@@ -292,7 +294,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 The new QEMU harness prints:
 
 ```text
-vector memory/mask/widen demo passed n=17
+vector memory/mask/widen demo passed n=17 store_n=31
 ```
 
 Phase 37A also provides a repeatable formal lowering probe:
@@ -311,3 +313,12 @@ Current probe status: `blocked_at_riscv_llc`.
   current validated add slices.
 - The direct RVV backend records an explicit clobber policy: zcompiler-generated
   RVV helper calls own the vector register groups used by the emitted kernel.
+
+## Phase 39A/39B Capability Addendum
+
+- `examples/vector_strided_store.zc` now compiles to `vsse32.v` and runs under
+  QEMU.
+- `examples/vector_indexed_store.zc` now compiles to `vsuxei32.v` and runs under
+  QEMU.
+- Store validation checks full destination arrays so untouched and tail elements
+  remain unchanged.

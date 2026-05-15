@@ -776,7 +776,7 @@ The next implementation steps after Phase 29A compliance baseline:
    ready for the larger same-version RISC-V-enabled LLVM/MLIR build.
 
 
-## Phase 32-38 RVV Compatibility Iteration
+## Phase 32-39 RVV Compatibility Iteration
 
 Completed slices:
 
@@ -790,10 +790,12 @@ Completed slices:
 - Phase 36A: `vector_widen_add_i16_i32` signed widening add.
 - Phase 37A: formal MLIR vector -> LLVM -> RVV probe; MLIR reaches LLVM bitcode, but RISC-V RVV `llc` assembly remains blocked by available toolchain configuration.
 - Phase 38A: dedicated `vector_add_m4` QEMU validation plus LMUL register-group and ABI clobber documentation.
+- Phase 39A: `vector_strided_store` using `vsse32.v` with untouched-lane QEMU validation.
+- Phase 39B: `vector_indexed_store` using `vsuxei32.v` with element-index to byte-offset lowering and QEMU validation.
 
 Next long-range phases:
 
-- Phase 39A: add strided/indexed stores plus masked strided/indexed memory forms.
+- Phase 39C: add masked strided/indexed memory forms.
 - Phase 40A: broaden SEW coverage with i8/i64 arithmetic and load/store slices.
 - Phase 41A: add more widening/narrowing operations and unsigned widening variants.
 - Phase 42A: introduce a reusable RVV lowering helper layer so direct assembly emitters stop duplicating loop skeletons.

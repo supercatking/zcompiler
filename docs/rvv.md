@@ -234,7 +234,7 @@ Current committed subset:
 
 - `SEW=32` plus validated `i16` add/widen slices
 - `LMUL=m1` plus validated `i16` `m2` and `m4` vector-add slices
-- unit-stride memory plus strided/indexed `i32` loads
+- unit-stride memory plus strided/indexed `i32` loads and stores
 - `ta, ma` direct assembly policy
 - QEMU-tested lengths: `0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17`
 
@@ -288,6 +288,8 @@ vector_add_m2 c, a, b, n;
 vector_add_m4 c, a, b, n;
 vector_strided_load out, input, stride, n;
 vector_indexed_load out, input, indices, n;
+vector_strided_store base, values, stride, n;
+vector_indexed_store base, values, indices, n;
 vector_mask_and m2, m0, m1, n;
 vector_mask_or m3, m0, m1, n;
 vector_mask_xor m4, m0, m1, n;
@@ -302,6 +304,8 @@ Direct RVV/RISC-V mappings added in this iteration:
 - `vector_add_m4` emits `vsetvli ..., e16, m4, ta, ma` for the validated i16 LMUL slice, using RVV-aligned register groups starting at `v0`, `v4`, and `v8`.
 - `vector_strided_load` emits `vlse32.v` and unit-stride output stores.
 - `vector_indexed_load` emits `vle32.v` for element indices, shifts to byte offsets, then emits `vluxei32.v`.
+- `vector_strided_store` emits `vle32.v` from contiguous values and `vsse32.v` into element-strided output.
+- `vector_indexed_store` emits `vle32.v` for values and indices, shifts element indices to byte offsets, then emits `vsuxei32.v`.
 - `vector_mask_and/or/xor/not` emits RVV mask logical instructions and feeds the final mask into `v0` for masked consumers.
 - `vector_widen_add_i16_i32` emits `vle16.v`, signed `vwadd.vv`, and `vse32.v`.
 
@@ -319,3 +323,12 @@ Direct RVV helper functions are leaf kernels. They clobber the caller-saved
 integer temporaries used by the emitted loop and the vector register groups used
 by the selected operation. Source programs should treat vector registers as
 backend-owned temporaries across zcompiler-generated function calls.
+
+## Phase 39A/39B Memory Store Policy
+
+The active RVV memory subset now includes unmasked strided and indexed stores for
+`ptr<i32>`. Source strides and indices are element based. The direct backend
+converts them to byte offsets for `vsse32.v` and `vsuxei32.v`.
+
+Masked strided/indexed stores and masked non-unit loads remain planned for Phase
+39C.

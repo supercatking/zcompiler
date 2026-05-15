@@ -373,6 +373,14 @@ private:
       emitVectorIndexedLoad(
           static_cast<const VectorIndexedLoadStmtAST &>(statement));
       return;
+    case StmtKind::VectorStridedStore:
+      emitVectorStridedStore(
+          static_cast<const VectorStridedStoreStmtAST &>(statement));
+      return;
+    case StmtKind::VectorIndexedStore:
+      emitVectorIndexedStore(
+          static_cast<const VectorIndexedStoreStmtAST &>(statement));
+      return;
     case StmtKind::VectorCopy:
       emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));
       return;
@@ -933,6 +941,114 @@ private:
     os << "  vsll.vi v0, v0, 2\n";
     os << "  vluxei32.v v1, (" << input->second.name << "), v0\n";
     os << "  vse32.v v1, 0(" << outputAddress << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorStridedStore(const VectorStridedStoreStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_strided_store text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto base = variables.find(statement.getBase());
+    auto values = variables.find(statement.getValues());
+    if (base == variables.end() || values == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_strided_store statement");
+      return;
+    }
+    if (base->second.type != "ptr<i32>" || values->second.type != "ptr<i32>") {
+      result.addDiagnostic(
+          "vector_strided_store currently requires ptr<i32> data buffers");
+      return;
+    }
+
+    EmittedValue stride = emitExpression(statement.getStride());
+    EmittedValue length = emitExpression(statement.getLength());
+    if (stride.name.empty() || length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string valuesOffset = nextTempRegister();
+    std::string baseOffset = nextTempRegister();
+    std::string byteStride = nextTempRegister();
+    std::string valuesAddress = nextTempRegister();
+    std::string baseAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_strided_store");
+    std::string endLabel = nextLabel(".Lvector_strided_store_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << valuesOffset << ", " << index << ", 2\n";
+    os << "  mul " << baseOffset << ", " << index << ", " << stride.name
+       << "\n";
+    os << "  slli " << baseOffset << ", " << baseOffset << ", 2\n";
+    os << "  slli " << byteStride << ", " << stride.name << ", 2\n";
+    os << "  add " << valuesAddress << ", " << values->second.name << ", "
+       << valuesOffset << "\n";
+    os << "  add " << baseAddress << ", " << base->second.name << ", "
+       << baseOffset << "\n";
+    os << "  vle32.v v0, 0(" << valuesAddress << ")\n";
+    os << "  vsse32.v v0, (" << baseAddress << "), " << byteStride << "\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorIndexedStore(const VectorIndexedStoreStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_indexed_store text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto base = variables.find(statement.getBase());
+    auto values = variables.find(statement.getValues());
+    auto indices = variables.find(statement.getIndices());
+    if (base == variables.end() || values == variables.end() ||
+        indices == variables.end()) {
+      result.addDiagnostic("unknown buffer in vector_indexed_store statement");
+      return;
+    }
+    if (base->second.type != "ptr<i32>" || values->second.type != "ptr<i32>" ||
+        indices->second.type != "ptr<i32>") {
+      result.addDiagnostic(
+          "vector_indexed_store currently requires ptr<i32> data and indices");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string valuesAddress = nextTempRegister();
+    std::string indexAddress = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_indexed_store");
+    std::string endLabel = nextLabel(".Lvector_indexed_store_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  add " << valuesAddress << ", " << values->second.name << ", "
+       << offset << "\n";
+    os << "  add " << indexAddress << ", " << indices->second.name << ", "
+       << offset << "\n";
+    os << "  vle32.v v0, 0(" << valuesAddress << ")\n";
+    os << "  vle32.v v1, 0(" << indexAddress << ")\n";
+    os << "  vsll.vi v1, v1, 2\n";
+    os << "  vsuxei32.v v0, (" << base->second.name << "), v1\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";

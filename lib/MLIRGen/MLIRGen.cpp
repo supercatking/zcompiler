@@ -215,9 +215,11 @@ private:
       return;
     case StmtKind::VectorStridedLoad:
     case StmtKind::VectorIndexedLoad:
-      result.addDiagnostic(
-          "MLIR API generation for strided/indexed RVV loads is planned after "
-          "the direct RISC-V reference slice");
+    case StmtKind::VectorStridedStore:
+    case StmtKind::VectorIndexedStore:
+      result.addDiagnostic("MLIR API generation for strided/indexed RVV memory "
+                           "forms is planned after "
+                           "the direct RISC-V reference slice");
       return;
     case StmtKind::VectorCopy:
       emitVectorCopy(static_cast<const VectorCopyStmtAST &>(statement));

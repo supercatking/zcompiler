@@ -180,6 +180,10 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorStridedLoadStatement();
   if (check(TokenKind::KwVectorIndexedLoad))
     return parseVectorIndexedLoadStatement();
+  if (check(TokenKind::KwVectorStridedStore))
+    return parseVectorStridedStoreStatement();
+  if (check(TokenKind::KwVectorIndexedStore))
+    return parseVectorIndexedStoreStatement();
   if (check(TokenKind::KwVectorCopy))
     return parseVectorCopyStatement();
   if (check(TokenKind::KwVectorScale))
@@ -418,6 +422,93 @@ std::unique_ptr<StmtAST> Parser::parseVectorIndexedLoadStatement() {
 
   return std::make_unique<VectorIndexedLoadStmtAST>(
       std::move(output), std::move(input), std::move(indices),
+      std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorStridedStoreStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string base =
+      parseName("expected base buffer after vector_strided_store");
+  if (base.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_strided_store base"))
+    return nullptr;
+
+  std::string values =
+      parseName("expected values buffer in vector_strided_store");
+  if (values.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_strided_store values"))
+    return nullptr;
+
+  auto stride = parseExpression();
+  if (!stride)
+    return nullptr;
+  if (!expect(TokenKind::Comma,
+              "expected ',' after vector_strided_store stride"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_strided_store statement"))
+    return nullptr;
+
+  return std::make_unique<VectorStridedStoreStmtAST>(
+      std::move(base), std::move(values), std::move(stride), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorIndexedStoreStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string base =
+      parseName("expected base buffer after vector_indexed_store");
+  if (base.empty() ||
+      !expect(TokenKind::Comma, "expected ',' after vector_indexed_store base"))
+    return nullptr;
+
+  std::string values =
+      parseName("expected values buffer in vector_indexed_store");
+  if (values.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_indexed_store values"))
+    return nullptr;
+
+  std::string indices =
+      parseName("expected index buffer in vector_indexed_store");
+  if (indices.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_indexed_store indices"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_indexed_store statement"))
+    return nullptr;
+
+  return std::make_unique<VectorIndexedStoreStmtAST>(
+      std::move(base), std::move(values), std::move(indices),
       std::move(length));
 }
 

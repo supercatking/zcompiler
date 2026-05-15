@@ -68,6 +68,8 @@
       "vector_add_m4",
       "vector_strided_load",
       "vector_indexed_load",
+      "vector_strided_store",
+      "vector_indexed_store",
       "vector_mask_and",
       "vector_mask_or",
       "vector_mask_xor",
@@ -79,7 +81,7 @@
       16,
       32
     ],
-    "source_memory_access": "unit-stride i32/i16 buffers, strided i32 loads, indexed i32 loads, and column-packed B for matrix_multiply_packed_b",
+    "source_memory_access": "unit-stride i32/i16 buffers, strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
@@ -175,9 +177,11 @@
     "memory_operations": {
       "implemented": [
         "vector_strided_load",
-        "vector_indexed_load"
+        "vector_indexed_load",
+        "vector_strided_store",
+        "vector_indexed_store"
       ],
-      "direct_rvv_policy": "vlse32.v for element-strided i32 reads; vluxei32.v with i32 element indices shifted to byte offsets for indexed reads"
+      "direct_rvv_policy": "vlse32.v/vsse32.v for element-strided i32 reads and writes; vluxei32.v/vsuxei32.v with i32 element indices shifted to byte offsets for indexed reads and writes"
     },
     "widening_operations": {
       "implemented": [
@@ -283,8 +287,20 @@
       "vector_add_i16_m4",
       "vector_strided_load",
       "vector_indexed_load",
+      "vector_strided_store",
+      "vector_indexed_store",
       "vector_mask_logical",
       "vector_widen_add_i16_i32"
+    ],
+    "phase39_store_tested_lengths": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      17,
+      31
     ]
   },
   "toolchain": {

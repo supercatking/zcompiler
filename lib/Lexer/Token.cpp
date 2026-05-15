@@ -56,6 +56,10 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_strided_load";
   case TokenKind::KwVectorIndexedLoad:
     return "kw_vector_indexed_load";
+  case TokenKind::KwVectorStridedStore:
+    return "kw_vector_strided_store";
+  case TokenKind::KwVectorIndexedStore:
+    return "kw_vector_indexed_store";
   case TokenKind::KwVectorCopy:
     return "kw_vector_copy";
   case TokenKind::KwVectorScale:

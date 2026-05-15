@@ -31,6 +31,8 @@ enum class StmtKind {
   VectorAdd,
   VectorStridedLoad,
   VectorIndexedLoad,
+  VectorStridedStore,
+  VectorIndexedStore,
   VectorCopy,
   VectorScale,
   VectorMul,
@@ -354,6 +356,48 @@ public:
 private:
   std::string output;
   std::string input;
+  std::string indices;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorStridedStoreStmtAST final : public StmtAST {
+public:
+  VectorStridedStoreStmtAST(std::string base, std::string values,
+                            std::unique_ptr<ExprAST> stride,
+                            std::unique_ptr<ExprAST> length)
+      : base(std::move(base)), values(std::move(values)),
+        stride(std::move(stride)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorStridedStore; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBase() const { return base; }
+  const std::string &getValues() const { return values; }
+  const ExprAST &getStride() const { return *stride; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string base;
+  std::string values;
+  std::unique_ptr<ExprAST> stride;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorIndexedStoreStmtAST final : public StmtAST {
+public:
+  VectorIndexedStoreStmtAST(std::string base, std::string values,
+                            std::string indices,
+                            std::unique_ptr<ExprAST> length)
+      : base(std::move(base)), values(std::move(values)),
+        indices(std::move(indices)), length(std::move(length)) {}
+  StmtKind getKind() const override { return StmtKind::VectorIndexedStore; }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBase() const { return base; }
+  const std::string &getValues() const { return values; }
+  const std::string &getIndices() const { return indices; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string base;
+  std::string values;
   std::string indices;
   std::unique_ptr<ExprAST> length;
 };
