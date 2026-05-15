@@ -95,7 +95,7 @@ diff -u "$source_root/test/lexer/vector_masked_load_gt.tokens" \
   "$tmp_dir/vector_masked_load_gt.tokens"
 
 
-for example in matrix_pack_b_then_multiply vector_add_i16 vector_add_i16_m2   vector_strided_load vector_indexed_load vector_mask_logical   vector_widen_add_i16_i32; do
+for example in matrix_pack_b_then_multiply vector_add_i16 vector_add_i16_m2   vector_add_i16_m4 vector_strided_load vector_indexed_load vector_mask_logical   vector_widen_add_i16_i32; do
   "$zc_bin" "$source_root/examples/${example}.zc" --emit-tokens     > "$tmp_dir/${example}.tokens"
   diff -u "$source_root/test/lexer/${example}.tokens"     "$tmp_dir/${example}.tokens"
 done

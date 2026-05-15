@@ -39,9 +39,9 @@ Required profile fields for RVV 1.0 tracking:
 | --- | --- | --- |
 | Base target | `rv64gcv`, `lp64d` | assembler, linker, QEMU |
 | RVV spec target | RVV 1.0 profile field | JSON validation |
-| SEW | `i32` source kernels | QEMU correctness tests |
-| LMUL | `m1` | assembly inspection |
-| Memory access | unit-stride `i32` buffers | QEMU correctness tests |
+| SEW | `i32` source kernels plus validated `i16` add/widen slices | QEMU correctness tests |
+| LMUL | `m1`, plus `i16` `m2`/`m4` vector-add slices | assembly inspection and QEMU |
+| Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
 | Tail/mask policy | `ta, ma` direct assembly policy | assembly inspection |
 | Signed runtime inputs | mixed positive/negative `i32` including overflow bit patterns | QEMU |
@@ -68,9 +68,9 @@ Required profile fields for RVV 1.0 tracking:
 
 | Area | Gap | Planned phase |
 | --- | --- | --- |
-| Element widths | typed-buffer contract is defined; implementation remains `i32` only | Phase 29E |
-| LMUL policy | only `m1` is emitted | Phase 29C |
-| Memory forms | no strided or indexed vector load/store | Phase 30A |
+| Element widths | typed-buffer contract exists; `i16` add/widen and `i32` kernels are validated, but `i8`/`i64` remain incomplete | Phase 40A |
+| LMUL policy | `m2`/`m4` are validated for i16 add only; other kernels remain mostly `m1` | Phase 42A |
+| Memory forms | strided/indexed loads exist; strided/indexed stores and masked non-unit memory forms remain missing | Phase 39A |
 | Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
 | Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 31D |
 | Reductions | only add reduction is implemented | Phase 31A |
@@ -127,6 +127,14 @@ The current QEMU test covers the length set above for:
 - `vector_masked_store_gt`
 - `vector_masked_load_gt`
 - `matrix_multiply_packed_b`
+- `matrix_pack_b_then_multiply`
+- `vector_add_i16`
+- `vector_add_i16_m2`
+- `vector_add_i16_m4`
+- `vector_strided_load`
+- `vector_indexed_load`
+- `vector_mask_logical`
+- `vector_widen_add_i16_i32`
 
 ## Acceptance Rule
 
@@ -181,7 +189,7 @@ to provide `packed_b`.
 The current RVV 1.0-compatible subset now also includes:
 
 - `vector_add` for validated `ptr<i16>` and `ptr<i32>` slices.
-- `vector_add_m2` for validated `i16` LMUL `m2` addition.
+- `vector_add_m2` and `vector_add_m4` for validated `i16` LMUL addition.
 - `vector_strided_load` for i32 element-strided loads using `vlse32.v`.
 - `vector_indexed_load` for i32 indexed loads using `vluxei32.v`.
 - Logical mask composition with `vmand.mm`, `vmor.mm`, `vmxor.mm`, and
@@ -194,3 +202,13 @@ The generated coverage table is maintained in
 compatibility is still not achieved; the largest remaining areas are complete
 SEW/LMUL coverage, stores/gathers/scatters, floating point, fixed point,
 permutation, exception/ABI policy, and the formal MLIR/LLVM RVV backend path.
+
+## Phase 38A Compliance Update
+
+`vector_add_m4` is now validated as a supported `ptr<i16>` RVV subset slice. The
+emitted register groups begin at `v0`, `v4`, and `v8`, satisfying LMUL=4 group
+alignment, and QEMU checks cover the same length set as the existing i16 `m1` and
+`m2` kernels.
+
+The broader `m2_m4_policy` row remains partial because LMUL expansion has not yet
+been applied to every integer, memory, mask, reduction, and matrix operation.

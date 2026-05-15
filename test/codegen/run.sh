@@ -103,7 +103,7 @@ for instruction in matrix_pack_b vsetvli vle32.v vmul.vv vredsum.vs sw; do
   grep -q "$instruction" "$tmp_dir/matrix_pack_b_then_multiply.riscv"
 done
 
-for example in vector_add_i16 vector_add_i16_m2 vector_strided_load   vector_indexed_load vector_mask_logical vector_widen_add_i16_i32; do
+for example in vector_add_i16 vector_add_i16_m2 vector_add_i16_m4   vector_strided_load vector_indexed_load vector_mask_logical vector_widen_add_i16_i32; do
   "$zc_bin" "$source_root/examples/${example}.zc" --emit-riscv-asm     > "$tmp_dir/${example}.riscv"
   diff -u "$source_root/test/codegen/${example}.riscv"     "$tmp_dir/${example}.riscv"
 done
@@ -112,6 +112,9 @@ for instruction in "e16, m1" vle16.v vse16.v vadd.vv; do
 done
 for instruction in "e16, m2" vle16.v vse16.v vadd.vv; do
   grep -q "$instruction" "$tmp_dir/vector_add_i16_m2.riscv"
+done
+for instruction in "e16, m4" vle16.v vse16.v vadd.vv; do
+  grep -q "$instruction" "$tmp_dir/vector_add_i16_m4.riscv"
 done
 for instruction in vlse32.v vse32.v; do
   grep -q "$instruction" "$tmp_dir/vector_strided_load.riscv"

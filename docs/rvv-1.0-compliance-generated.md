@@ -8,7 +8,8 @@ Do not edit the table by hand; update the JSON and regenerate it.
 | `formal_lowering` | `mlir_vector_to_llvm_to_rvv` | `blocked` | `37A` | probe |
 | `integer` | `add_sub_mul` | `supported` | `30Q` | objdump, qemu |
 | `lmul` | `m1` | `supported` | `29A` | objdump, qemu |
-| `lmul` | `m2_m4_policy` | `partial` | `33A` | objdump, qemu_m2 |
+| `lmul` | `m2_m4_policy` | `partial` | `33A/38A` | objdump, qemu_m2, qemu_m4, abi_doc |
+| `lmul` | `m4_i16_vector_add` | `supported` | `38A` | lexer, parser, objdump, qemu |
 | `mask` | `compare_masks` | `supported` | `30P` | objdump, qemu |
 | `mask` | `mask_logical` | `supported` | `35A` | objdump, qemu |
 | `matrix` | `compiler_owned_pack_b` | `supported` | `31V` | qemu |
@@ -24,7 +25,7 @@ Do not edit the table by hand; update the JSON and regenerate it.
 
 ## Status Counts
 
-- `supported`: 13
+- `supported`: 14
 - `partial`: 2
 - `planned`: 0
 - `blocked`: 1

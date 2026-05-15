@@ -3,12 +3,13 @@
 
 extern int vadd_i16(int16_t *c, int16_t *a, int16_t *b, int n);
 extern int vadd_i16_m2(int16_t *c, int16_t *a, int16_t *b, int n);
+extern int vadd_i16_m4(int16_t *c, int16_t *a, int16_t *b, int n);
 
 #define CAPACITY 40
 
 static int16_t wrap_i16(int value) { return (int16_t)value; }
 
-static int run_one(int use_m2, int n) {
+static int run_one(int lmul, int n) {
   int16_t a[CAPACITY];
   int16_t b[CAPACITY];
   int16_t c[CAPACITY];
@@ -21,7 +22,13 @@ static int run_one(int use_m2, int n) {
     c[i] = sentinel[i];
   }
 
-  int status = use_m2 ? vadd_i16_m2(c, a, b, n) : vadd_i16(c, a, b, n);
+  int status = 0;
+  if (lmul == 4)
+    status = vadd_i16_m4(c, a, b, n);
+  else if (lmul == 2)
+    status = vadd_i16_m2(c, a, b, n);
+  else
+    status = vadd_i16(c, a, b, n);
   if (status != 0)
     return 1;
 
@@ -44,10 +51,13 @@ int main(void) {
     int status = run_one(0, lengths[i]);
     if (status != 0)
       return status;
-    status = run_one(1, lengths[i]);
+    status = run_one(2, lengths[i]);
     if (status != 0)
       return 100 + status;
+    status = run_one(4, lengths[i]);
+    if (status != 0)
+      return 200 + status;
   }
-  printf("vector_add_i16 demo n=31 m1/m2 passed\n");
+  printf("vector_add_i16 demo n=31 m1/m2/m4 passed\n");
   return 0;
 }

@@ -303,3 +303,11 @@ MLIR_BUILD=/home/zyz/mlir/build ./scripts/probe-formal-rvv-lowering.sh
 ```
 
 Current probe status: `blocked_at_riscv_llc`.
+
+## Phase 38A Capability Addendum
+
+- `examples/vector_add_i16_m4.zc` now compiles and runs through QEMU.
+- The active RVV profile records `m1`, `m2`, and `m4` LMUL support for the
+  current validated add slices.
+- The direct RVV backend records an explicit clobber policy: zcompiler-generated
+  RVV helper calls own the vector register groups used by the emitted kernel.

@@ -22,7 +22,8 @@
     "default_lmul": "m1",
     "supported_lmul": [
       "m1",
-      "m2"
+      "m2",
+      "m4"
     ],
     "tail_policy": "ta",
     "mask_policy": "ma",
@@ -183,6 +184,49 @@
         "vector_widen_add_i16_i32"
       ],
       "direct_rvv_policy": "vle16.v inputs, vwadd.vv signed widening add, and vse32.v output under e16,m1"
+    },
+    "lmul_policy": {
+      "implemented_operations": {
+        "vector_add": [
+          "m1"
+        ],
+        "vector_add_m2": [
+          "m2"
+        ],
+        "vector_add_m4": [
+          "m4"
+        ]
+      },
+      "validated_element_widths": {
+        "m1": [
+          16,
+          32
+        ],
+        "m2": [
+          16
+        ],
+        "m4": [
+          16
+        ]
+      },
+      "register_groups": {
+        "m1": [
+          "v0",
+          "v1",
+          "v2"
+        ],
+        "m2": [
+          "v0",
+          "v2",
+          "v4"
+        ],
+        "m4": [
+          "v0",
+          "v4",
+          "v8"
+        ]
+      },
+      "abi_clobber_policy": "direct RVV helper functions are leaf kernels that clobber caller-saved integer temporaries and vector registers used by the selected kernel; callers must not expect vector registers to survive a zcompiler-generated RVV call"
     }
   },
   "current_execution_validation": {
@@ -236,6 +280,7 @@
       "matrix_pack_b_then_multiply",
       "vector_add_i16",
       "vector_add_i16_m2",
+      "vector_add_i16_m4",
       "vector_strided_load",
       "vector_indexed_load",
       "vector_mask_logical",

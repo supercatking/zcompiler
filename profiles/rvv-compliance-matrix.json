@@ -53,10 +53,24 @@
       "area": "lmul",
       "feature": "m2_m4_policy",
       "status": "partial",
-      "phase": "33A",
+      "phase": "33A/38A",
       "validation": [
         "objdump",
-        "qemu_m2"
+        "qemu_m2",
+        "qemu_m4",
+        "abi_doc"
+      ]
+    },
+    {
+      "area": "lmul",
+      "feature": "m4_i16_vector_add",
+      "status": "supported",
+      "phase": "38A",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
       ]
     },
     {

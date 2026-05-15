@@ -2302,3 +2302,24 @@ Completed Phase 37A as a reproducible probe. Status remains
 `blocked_at_riscv_llc`: MLIR reaches LLVM bitcode with masked load/store
 intrinsics, but current local/system `llc` does not produce RISC-V RVV assembly.
 The direct RVV backend remains validated by CTest and QEMU.
+
+## Phase 38A: LMUL m4 Validation
+
+### Execution Target
+
+Close the first `m4` runtime validation gap for the direct RVV backend.
+
+### Execution Summary
+
+- Added `examples/vector_add_i16_m4.zc`.
+- Added lexer, parser, and RISC-V assembly goldens.
+- Extended codegen checks for `e16, m4`.
+- Extended the i16 QEMU harness to run `m1`, `m2`, and `m4`.
+- Recorded the LMUL register grouping and direct-backend vector clobber policy
+  in the active RVV profile and phase note.
+
+### Execution Result
+
+`vector_add_m4` is now validated for `ptr<i16>` addition through the same runtime
+length matrix as the existing i16 `m1`/`m2` slices. Full LMUL coverage remains
+partial because other RVV operations have not yet been broadened to `m2`/`m4`.

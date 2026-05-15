@@ -232,9 +232,9 @@ docs/rvv-1.0-compliance.md
 
 Current committed subset:
 
-- `SEW=32`
-- `LMUL=m1`
-- unit-stride memory
+- `SEW=32` plus validated `i16` add/widen slices
+- `LMUL=m1` plus validated `i16` `m2` and `m4` vector-add slices
+- unit-stride memory plus strided/indexed `i32` loads
 - `ta, ma` direct assembly policy
 - QEMU-tested lengths: `0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17`
 
@@ -299,6 +299,7 @@ Direct RVV/RISC-V mappings added in this iteration:
 
 - `vector_add` chooses `vle{SEW}.v`, `vadd.vv`, and `vse{SEW}.v` from typed pointer operands for the current validated `i16` and `i32` slices.
 - `vector_add_m2` emits `vsetvli ..., e16, m2, ta, ma` for the validated i16 LMUL slice.
+- `vector_add_m4` emits `vsetvli ..., e16, m4, ta, ma` for the validated i16 LMUL slice, using RVV-aligned register groups starting at `v0`, `v4`, and `v8`.
 - `vector_strided_load` emits `vlse32.v` and unit-stride output stores.
 - `vector_indexed_load` emits `vle32.v` for element indices, shifts to byte offsets, then emits `vluxei32.v`.
 - `vector_mask_and/or/xor/not` emits RVV mask logical instructions and feeds the final mask into `v0` for masked consumers.
@@ -307,3 +308,14 @@ Direct RVV/RISC-V mappings added in this iteration:
 The formal MLIR vector-to-LLVM probe is reproducible through
 `scripts/probe-formal-rvv-lowering.sh`; Phase 37A currently records the final
 blocker as `blocked_at_riscv_llc`.
+
+## Phase 38A LMUL Policy
+
+The active profile now records `m1`, `m2`, and `m4` as supported LMUL values for
+the currently validated direct-backend slices. This is not yet full cross-kernel
+LMUL support: `m4` is validated only for `ptr<i16>` `vector_add_m4`.
+
+Direct RVV helper functions are leaf kernels. They clobber the caller-saved
+integer temporaries used by the emitted loop and the vector register groups used
+by the selected operation. Source programs should treat vector registers as
+backend-owned temporaries across zcompiler-generated function calls.
