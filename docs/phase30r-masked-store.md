@@ -68,8 +68,8 @@ Validated by:
 Validated command:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Remaining Limits

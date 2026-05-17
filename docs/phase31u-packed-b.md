@@ -47,7 +47,7 @@ RVV assembly, assembler/objdump checks, and QEMU runtime correctness.
 Manual visible QEMU demo:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm > /tmp/matrix_multiply_packed_b.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply_packed_b.s test/qemu/matrix_multiply_packed_b_harness.c -o /tmp/matrix_multiply_packed_b
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply_packed_b

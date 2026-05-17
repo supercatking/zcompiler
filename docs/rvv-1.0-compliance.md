@@ -172,7 +172,7 @@ true:
 ## Manual Validation
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 python3 -m json.tool profiles/rvv-default.json >/dev/null
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ctest --test-dir build --output-on-failure

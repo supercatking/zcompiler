@@ -36,7 +36,7 @@ case intentionally creates both true and false lanes.
 Validated command:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Remaining Predicate Work

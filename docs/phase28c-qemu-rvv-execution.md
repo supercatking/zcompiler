@@ -60,6 +60,6 @@ source edits.
 ## Manual Command
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```

@@ -62,9 +62,9 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build
-/home/zyz/zcomipler/build/tools/zc/zc --help
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+cmake --build /home/zyz/zcompiler/build
+/home/zyz/zcompiler/build/tools/zc/zc --help
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-mlir
 ```
 
 Commit:
@@ -98,9 +98,9 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-tokens
+cmake --build /home/zyz/zcompiler/build
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-tokens
 ```
 
 Commit:
@@ -138,9 +138,9 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-ast
+cmake --build /home/zyz/zcompiler/build
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-ast
 ```
 
 Commit:
@@ -172,8 +172,8 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+cmake --build /home/zyz/zcompiler/build
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/hello.mlir -o /tmp/hello.opt.mlir
 ```
 
@@ -210,7 +210,7 @@ MLIR TableGen so `mlir-opt` can parse `zc` operations directly.
 Validated command:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-zc-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-zc-mlir
 ```
 
 ## Phase 6: Lowering Passes
@@ -237,7 +237,7 @@ patterns after the compiled `zc` dialect is registered.
 Validated command:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-lowered-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-lowered-mlir
 ```
 
 ## Phase 7: LLVM IR Emission
@@ -265,9 +265,9 @@ Completed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-llvm
 /home/zyz/mlir/build/bin/llvm-as /tmp/hello.ll -o /tmp/hello.bc
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 21A: Reproducible Vector Add Artifacts
@@ -303,7 +303,7 @@ first reproducible compile-and-inspect benchmark foundation.
 Validated command:
 
 ```bash
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
 ```
 
 ## Phase 20B: RVV Instruction Regression Checks
@@ -331,7 +331,7 @@ Completed.
 Validated command:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 20C: Formal MLIR/LLVM RVV Lowering Probe
@@ -361,8 +361,8 @@ blocked at RISC-V `llc` by toolchain mismatch.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
-python3 -m json.tool /home/zyz/zcomipler/build/experiments/mlir-rvv/formal-rvv-lowering-result.json
+/home/zyz/zcompiler/scripts/probe-formal-rvv-lowering.sh
+python3 -m json.tool /home/zyz/zcompiler/build/experiments/mlir-rvv/formal-rvv-lowering-result.json
 ```
 
 ## Phase 21B: Machine-Readable Benchmark Metadata
@@ -397,8 +397,8 @@ Completed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
-python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcompiler/build/benchmarks/vector_add/result.json
 ```
 
 ## Phase 21C: Scalar Baseline Comparison Metadata
@@ -431,8 +431,8 @@ Completed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
-python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcompiler/build/benchmarks/vector_add/result.json
 ```
 
 ## Phase 22B: Prompt Records
@@ -465,12 +465,12 @@ experiments/prompts/vector_add_rvv_001.md
 Generated artifacts:
 
 ```text
-/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.s
-/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.o
-/home/zyz/zcomipler/build/benchmarks/vector_add/reference_rvv.objdump
-/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.s
-/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.o
-/home/zyz/zcomipler/build/benchmarks/vector_add/zcompiler_vector_add.objdump
+/home/zyz/zcompiler/build/benchmarks/vector_add/reference_rvv.s
+/home/zyz/zcompiler/build/benchmarks/vector_add/reference_rvv.o
+/home/zyz/zcompiler/build/benchmarks/vector_add/reference_rvv.objdump
+/home/zyz/zcompiler/build/benchmarks/vector_add/zcompiler_vector_add.s
+/home/zyz/zcompiler/build/benchmarks/vector_add/zcompiler_vector_add.o
+/home/zyz/zcompiler/build/benchmarks/vector_add/zcompiler_vector_add.objdump
 ```
 
 ## Phase 23A: Machine-Readable RVV Accelerator Profile
@@ -498,10 +498,10 @@ Completed.
 Validated commands:
 
 ```bash
-python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
-python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcompiler/profiles/rvv-default.json
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcompiler/build/benchmarks/vector_add/result.json
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 24A: Host-Side Vector Add Correctness Harness
@@ -534,8 +534,8 @@ the current WSL environment.
 Validated commands:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_add_host.json
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcompiler/build/correctness/vector_add_host.json
 ```
 
 ## Phase 25A: Vector Copy Kernel Surface
@@ -571,11 +571,11 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j2
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j2
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 /home/zyz/mlir/build/bin/mlir-opt /tmp/vector_copy.mlir -o /tmp/vector_copy.checked.mlir
 riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_copy.s -o /tmp/vector_copy.o
-python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_copy_host.json
+python3 -m json.tool /home/zyz/zcompiler/build/correctness/vector_copy_host.json
 ```
 
 ## Phase 25B: Vector Scale Kernel Surface
@@ -617,16 +617,16 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j2
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir > /tmp/vector_scale.mlir
+cmake --build /home/zyz/zcompiler/build -j2
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale.zc --emit-mlir > /tmp/vector_scale.mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/vector_scale.mlir -o /tmp/vector_scale.checked.mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm > /tmp/vector_scale.s
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale.zc --emit-riscv-asm > /tmp/vector_scale.s
 riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_scale.s -o /tmp/vector_scale.o
 riscv64-linux-gnu-objdump -d /tmp/vector_scale.o
-python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_scale_host.json
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
-python3 -m json.tool /home/zyz/zcomipler/build/benchmarks/vector_add/result.json
+python3 -m json.tool /home/zyz/zcompiler/build/correctness/vector_scale_host.json
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
+python3 -m json.tool /home/zyz/zcompiler/build/benchmarks/vector_add/result.json
 ```
 
 ## Phase 25C: Vector Reduce Add Kernel Surface
@@ -669,14 +669,14 @@ Completed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j2
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir > /tmp/vector_reduce_add.mlir
+cmake --build /home/zyz/zcompiler/build -j2
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add.zc --emit-mlir > /tmp/vector_reduce_add.mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/vector_reduce_add.mlir -o /tmp/vector_reduce_add.checked.mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm > /tmp/vector_reduce_add.s
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add.zc --emit-riscv-asm > /tmp/vector_reduce_add.s
 riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_reduce_add.s -o /tmp/vector_reduce_add.o
 riscv64-linux-gnu-objdump -d /tmp/vector_reduce_add.o
-python3 -m json.tool /home/zyz/zcomipler/build/correctness/vector_reduce_add_host.json
+python3 -m json.tool /home/zyz/zcompiler/build/correctness/vector_reduce_add_host.json
 ```
 
 ## Phase 26A: RVV Toolchain Diagnostic
@@ -712,9 +712,9 @@ installed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
-python3 -m json.tool /home/zyz/zcomipler/build/experiments/rvv-toolchain/rvv-toolchain-diagnostic.json
-/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
+/home/zyz/zcompiler/scripts/check-rvv-toolchain.sh
+python3 -m json.tool /home/zyz/zcompiler/build/experiments/rvv-toolchain/rvv-toolchain-diagnostic.json
+/home/zyz/zcompiler/scripts/probe-formal-rvv-lowering.sh
 ```
 
 ## Phase 27A: Profile-Aware AI Experiment Records
@@ -747,8 +747,8 @@ Completed as a workflow and traceability phase.
 Validated commands:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
-python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcompiler/profiles/rvv-default.json
 ```
 
 ## Phase 26B: RISCV LLVM Build Plan Script
@@ -783,8 +783,8 @@ default.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
-python3 -m json.tool /home/zyz/zcomipler/build/experiments/rvv-toolchain/riscv-llvm-build-plan.json
+/home/zyz/zcompiler/scripts/prepare-riscv-llvm-build.sh --dry-run
+python3 -m json.tool /home/zyz/zcompiler/build/experiments/rvv-toolchain/riscv-llvm-build-plan.json
 ```
 
 ## Phase 22A: First AI-Assisted Experiment Record
@@ -856,10 +856,10 @@ vse32.v v2, 0(t5)
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-riscv-asm
 riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/vector_add.rvv.s -o /tmp/vector_add.rvv.o
 riscv64-linux-gnu-objdump -d /tmp/vector_add.rvv.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 19A: Vector Add to MLIR Vector Dialect
@@ -904,9 +904,9 @@ mask handling are deferred to Phase 19B.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/vector_add.mlir -o /tmp/vector_add.checked.mlir
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 19B: Masked Vector Tail Handling
@@ -935,9 +935,9 @@ Completed for `vector<4xi32>` masked transfer lowering. This removes the Phase
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/vector_add.mlir -o /tmp/vector_add.checked.mlir
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 18A: Target-Independent Vector Add Syntax
@@ -984,9 +984,9 @@ func vadd(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, n: i32) -> i32 {
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-tokens
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-tokens
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-ast
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 17B: Scalar Memory and Array Access
@@ -1044,13 +1044,13 @@ func add_at(a: ptr<i32>, b: ptr<i32>, c: ptr<i32>, i: i32) -> i32 {
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-llvm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/arrays.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/arrays.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/arrays.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/arrays.zc --emit-riscv-asm
 /home/zyz/mlir/build/bin/mlir-opt /tmp/arrays.mlir -o /tmp/arrays.checked.mlir
 /home/zyz/mlir/build/bin/llvm-as /tmp/arrays.ll -o /tmp/arrays.bc
 riscv64-linux-gnu-as /tmp/arrays.s -o /tmp/arrays.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 Commit:
@@ -1082,8 +1082,8 @@ Completed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-riscv-asm
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 9: Control Flow
@@ -1119,10 +1119,10 @@ Completed.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-llvm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/control.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/control.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/while.zc --emit-llvm
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 10: Vector and RVV Preparation
@@ -1171,8 +1171,8 @@ Completed as a workflow foundation.
 Final validation:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+cmake --build /home/zyz/zcompiler/build
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 12: Registered zc MLIR Dialect
@@ -1206,8 +1206,8 @@ and makes Phase 13 lowering clearer.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc-opt/zc-opt /home/zyz/zcomipler/test/dialect/registered.mlir -o /tmp/registered.checked.mlir
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc-opt/zc-opt /home/zyz/zcompiler/test/dialect/registered.mlir -o /tmp/registered.checked.mlir
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 13: Real MLIR Lowering Pass
@@ -1237,8 +1237,8 @@ Completed for core arithmetic operations.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc-opt/zc-opt /home/zyz/zcomipler/test/dialect/registered.mlir --lower-zc-to-standard -o /tmp/lowered.mlir
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+/home/zyz/zcompiler/build/tools/zc-opt/zc-opt /home/zyz/zcompiler/test/dialect/registered.mlir --lower-zc-to-standard -o /tmp/lowered.mlir
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 14: AST to In-Memory MLIR
@@ -1269,9 +1269,9 @@ the current control-flow examples.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/hello.mlir -o /tmp/hello.checked.mlir
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 15: MLIR to LLVM IR Pipeline
@@ -1305,9 +1305,9 @@ through the fallback path.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-llvm
 /home/zyz/mlir/build/bin/llvm-as /tmp/new-hello.ll -o /tmp/new-hello.bc
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 16: LLVM RISC-V Backend Integration
@@ -1348,9 +1348,9 @@ build under `/home/zyz/mlir/build/bin`.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-riscv-asm
 riscv64-linux-gnu-as /tmp/new-hello.riscv -o /tmp/new-hello.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 17: Functions, Calls, and Assignment
@@ -1390,13 +1390,13 @@ is documented as the next memory-model slice.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-llvm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/calls.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/calls.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/calls.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/calls.zc --emit-riscv-asm
 /home/zyz/mlir/build/bin/mlir-opt /tmp/calls.mlir -o /tmp/calls.checked.mlir
 /home/zyz/mlir/build/bin/llvm-as /tmp/calls.ll -o /tmp/calls.bc
 riscv64-linux-gnu-as /tmp/calls.s -o /tmp/calls.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 28A: Current Capability Demo
@@ -1432,13 +1432,13 @@ Completed as the current "most complex stable demo" for the compiler.
 Validated commands:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir > /tmp/complex_vector_pipeline.mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-mlir > /tmp/complex_vector_pipeline.mlir
 /home/zyz/mlir/build/bin/mlir-opt /tmp/complex_vector_pipeline.mlir -o /tmp/complex_vector_pipeline.checked.mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm > /tmp/complex_vector_pipeline.s
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-riscv-asm > /tmp/complex_vector_pipeline.s
 riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /tmp/complex_vector_pipeline.s -o /tmp/complex_vector_pipeline.o
 riscv64-linux-gnu-objdump -d /tmp/complex_vector_pipeline.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 28B: Built-in print_i32 Runtime Output
@@ -1471,11 +1471,11 @@ Completed for RISC-V runtime output.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/print_i32.zc --emit-riscv-asm > /tmp/print_i32.s
+cmake --build /home/zyz/zcompiler/build -j32
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/print_i32.zc --emit-riscv-asm > /tmp/print_i32.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/print_i32.s -o /tmp/print_i32_test
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/print_i32_test
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 28C: QEMU RVV Execution Validation
@@ -1508,9 +1508,9 @@ Completed for local QEMU-backed RVV execution validation.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 ## Phase 29A: RVV 1.0 Compliance Baseline
@@ -1541,10 +1541,10 @@ Completed as the baseline RVV 1.0 compliance tracking phase.
 Validated commands:
 
 ```bash
-python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcompiler/profiles/rvv-default.json
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1578,12 +1578,12 @@ Completed for elementwise vector multiply over `i32` unit-stride buffers.
 Validated commands:
 
 ```bash
-python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json >/dev/null
-cmake --build /home/zyz/zcomipler/build -j32
-/home/zyz/mlir/build/bin/mlir-opt /home/zyz/zcomipler/test/codegen/vector_mul.mlir -o /tmp/vector_mul.checked.mlir
-riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /home/zyz/zcomipler/test/codegen/vector_mul.riscv -o /tmp/vector_mul.o
+python3 -m json.tool /home/zyz/zcompiler/profiles/rvv-default.json >/dev/null
+cmake --build /home/zyz/zcompiler/build -j32
+/home/zyz/mlir/build/bin/mlir-opt /home/zyz/zcompiler/test/codegen/vector_mul.mlir -o /tmp/vector_mul.checked.mlir
+riscv64-linux-gnu-as -march=rv64gcv -mabi=lp64d /home/zyz/zcompiler/test/codegen/vector_mul.riscv -o /tmp/vector_mul.o
 riscv64-linux-gnu-objdump -d /tmp/vector_mul.o
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1612,9 +1612,9 @@ checks remain planned for Phase 30C.
 Validated commands:
 
 ```bash
-python3 -m json.tool /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json >/dev/null
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 -m json.tool /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json >/dev/null
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1641,9 +1641,9 @@ check fragments remain planned for Phase 30D.
 Validated commands:
 
 ```bash
-python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 /home/zyz/zcompiler/test/qemu/manifest.py /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1672,9 +1672,9 @@ behavior remains a planned policy decision.
 Validated commands:
 
 ```bash
-python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 /home/zyz/zcompiler/test/qemu/manifest.py /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1703,9 +1703,9 @@ semantics remain a planned decision.
 Validated commands:
 
 ```bash
-python3 /home/zyz/zcomipler/test/qemu/manifest.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 /home/zyz/zcompiler/test/qemu/manifest.py /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1734,10 +1734,10 @@ Completed for the current direct RISC-V scalar runtime path.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/scalar_i32_wrap.zc --emit-riscv-asm
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/scalar_i32_wrap.zc --emit-riscv-asm
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1764,9 +1764,9 @@ Completed for generated QEMU C harness orchestration.
 Validated commands:
 
 ```bash
-python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 /home/zyz/zcompiler/test/qemu/harness.py /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1791,9 +1791,9 @@ Completed for QEMU harness generator structure.
 Validated commands:
 
 ```bash
-python3 /home/zyz/zcomipler/test/qemu/harness.py /home/zyz/zcomipler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+python3 /home/zyz/zcompiler/test/qemu/harness.py /home/zyz/zcompiler/test/qemu/rvv_execution_manifest.json /tmp/zcompiler_qemu_harness.c
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 
@@ -1840,8 +1840,8 @@ Completed for signed `i32` greater-than vector select in the current `e32,m1` un
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -1867,7 +1867,7 @@ non-`i32` SEW paths moves to a later phase.
 Validated commands:
 
 ```bash
-python3 -m json.tool /home/zyz/zcomipler/profiles/rvv-default.json >/dev/null
+python3 -m json.tool /home/zyz/zcompiler/profiles/rvv-default.json >/dev/null
 git diff --check
 ```
 
@@ -1893,8 +1893,8 @@ Completed for signed greater-than and equality vector select predicates.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -1918,8 +1918,8 @@ Completed. Full build and CTest validation passed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -1943,8 +1943,8 @@ Completed. Full build and CTest validation passed.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -1996,8 +1996,8 @@ Completed for the first `i32` masked arithmetic slice in the current `e32,m1` un
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -2025,8 +2025,8 @@ Completed for the current `i32`, `e32,m1`, unit-stride transient mask subset.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -2055,8 +2055,8 @@ Completed for `i32`, `e32,m1`, unit-stride masked add/sub/mul slices. Full RVV
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Phase 30R: Masked Store
@@ -2081,8 +2081,8 @@ Completed for the current `i32`, `e32,m1`, unit-stride masked store slice. False
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Phase 30S: Masked Load
@@ -2106,8 +2106,8 @@ Completed for the current `i32`, `e32,m1`, unit-stride masked load slice. Full R
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 
@@ -2142,10 +2142,10 @@ kernel.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
+cmake --build /home/zyz/zcompiler/build -j32
 ./build/tools/zc/zc examples/matrix_multiply.zc --emit-mlir
 ./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 Visible QEMU demo output:
@@ -2184,8 +2184,8 @@ do not need to prepare `packed_b` manually.
 Validated commands:
 
 ```bash
-cmake --build /home/zyz/zcomipler/build -j32
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+cmake --build /home/zyz/zcompiler/build -j32
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 Visible QEMU demo output:

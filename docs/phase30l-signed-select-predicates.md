@@ -42,7 +42,7 @@ objdump checks, and QEMU runtime validation for the new signed predicates.
 Validated command:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Remaining Work

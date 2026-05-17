@@ -116,131 +116,131 @@ This project uses the existing local LLVM/MLIR checkout and build:
 Configure and build:
 
 ```bash
-cmake -G Ninja -S /home/zyz/zcomipler -B /home/zyz/zcomipler/build \
+cmake -G Ninja -S /home/zyz/zcompiler -B /home/zyz/zcompiler/build \
   -DMLIR_DIR=/home/zyz/mlir/build/lib/cmake/mlir \
   -DLLVM_DIR=/home/zyz/mlir/build/lib/cmake/llvm
 
-cmake --build /home/zyz/zcomipler/build
+cmake --build /home/zyz/zcompiler/build
 ```
 
 Run the Phase 1 driver:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc --help
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc --help
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-mlir
 ```
 
 ## Run Tests
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build --output-on-failure
 ```
 
 Phase 2 adds the first lexer test:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-tokens
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-tokens
 ```
 
 Phase 3 adds the first parser and AST dump:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-ast
 ```
 
 Phases 4-7 add MLIR and LLVM IR emission:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-zc-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-lowered-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-llvm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/hello.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-zc-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-lowered-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/hello.zc --emit-riscv-asm
 ```
 
 Later phases add control-flow examples:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/control.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/while.zc --emit-llvm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/control.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/while.zc --emit-llvm
 ```
 
 Current RVV vector-kernel path:
 
 ```bash
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_lt.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_lt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_le.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_le.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_gt.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ge.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ge.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_eq.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_eq.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ne.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ne.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ult.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ult.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ule.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ule.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ugt.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_ugt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_uge.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i8.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i16_m4.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i64.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy_i8.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy_i64.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul_i8.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul_i64.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add_i8.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add_i64.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale_i8.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale_i64.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_i8_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_i64_gt.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_strided_store.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_indexed_store.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_strided_load.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_indexed_load.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_strided_store.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_indexed_store.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply_packed_b.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-mlir
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-riscv-asm
-/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/print_i32.zc --emit-riscv-asm
-/home/zyz/zcomipler/benchmarks/vector_add/run.sh
-/home/zyz/zcomipler/scripts/check-rvv-toolchain.sh
-/home/zyz/zcomipler/scripts/prepare-riscv-llvm-build.sh --dry-run
-/home/zyz/zcomipler/scripts/probe-formal-rvv-lowering.sh
-ctest --test-dir /home/zyz/zcomipler/build -R qemu-riscv64 --output-on-failure
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_copy.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_copy.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_mul.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_mul.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_lt.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_lt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_le.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_le.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_gt.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ge.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ge.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_eq.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_eq.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ne.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ne.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ult.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ult.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ule.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ule.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ugt.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_ugt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_uge.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_uge.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_add_gt.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_add_gt.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_add_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_store_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_load_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add_i8.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add_i16_m4.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_add_i64.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_copy_i8.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_copy_i64.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_mul_i8.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_mul_i64.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add_i8.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_reduce_add_i64.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale_i8.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_scale_i64.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_i8_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_select_i64_gt.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_strided_store.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_indexed_store.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_strided_load.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_indexed_load.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_strided_store.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/vector_masked_indexed_store.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/matrix_multiply.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/matrix_multiply_packed_b.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-ast
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-mlir
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/complex_vector_pipeline.zc --emit-riscv-asm
+/home/zyz/zcompiler/build/tools/zc/zc /home/zyz/zcompiler/examples/print_i32.zc --emit-riscv-asm
+/home/zyz/zcompiler/benchmarks/vector_add/run.sh
+/home/zyz/zcompiler/scripts/check-rvv-toolchain.sh
+/home/zyz/zcompiler/scripts/prepare-riscv-llvm-build.sh --dry-run
+/home/zyz/zcompiler/scripts/probe-formal-rvv-lowering.sh
+ctest --test-dir /home/zyz/zcompiler/build -R qemu-riscv64 --output-on-failure
 ```
 
 
 Manual visible matrix-multiply QEMU demo:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm > /tmp/matrix_multiply.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply.s test/qemu/matrix_multiply_harness.c -o /tmp/matrix_multiply
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply
@@ -255,7 +255,7 @@ matrix_multiply demo 2x3 * 3x2 = [58 64; 139 154]
 Manual visible packed-B matrix-multiply QEMU demo:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm > /tmp/matrix_multiply_packed_b.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply_packed_b.s test/qemu/matrix_multiply_packed_b_harness.c -o /tmp/matrix_multiply_packed_b
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply_packed_b

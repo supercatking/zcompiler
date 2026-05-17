@@ -38,7 +38,7 @@ runtime validation.
 Validated command:
 
 ```bash
-ctest --test-dir /home/zyz/zcomipler/build -j32 --output-on-failure
+ctest --test-dir /home/zyz/zcompiler/build -j32 --output-on-failure
 ```
 
 ## Remaining Work

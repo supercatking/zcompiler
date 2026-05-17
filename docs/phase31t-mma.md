@@ -40,7 +40,7 @@ Current lowering paths:
 Manual visible QEMU demo for `matrix_multiply`:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm > /tmp/matrix_multiply.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply.s test/qemu/matrix_multiply_harness.c -o /tmp/matrix_multiply
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply

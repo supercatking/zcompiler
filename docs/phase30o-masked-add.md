@@ -64,7 +64,7 @@ The phase is validated through:
 Manual command:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```

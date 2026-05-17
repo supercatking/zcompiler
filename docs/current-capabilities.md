@@ -89,7 +89,7 @@ examples/complex_vector_pipeline.zc
 手动验证命令：
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 
 ./build/tools/zc/zc examples/complex_vector_pipeline.zc --emit-ast
 ./build/tools/zc/zc examples/complex_vector_pipeline.zc --emit-mlir \
@@ -133,7 +133,7 @@ covered by host correctness and by the QEMU RVV execution harness.
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-ast
 ./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-mlir
 ./build/tools/zc/zc examples/vector_masked_add_gt.zc --emit-riscv-asm
@@ -152,7 +152,7 @@ RVV assembly, host correctness, objdump, and QEMU runtime validation.
 Example command:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_add_ult.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
@@ -168,7 +168,7 @@ QEMU execution using `vector_mask_gt`.
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_sub_gt.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_masked_mul_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
@@ -191,7 +191,7 @@ The MLIR path combines the vector tail mask and compare mask with `arith.andi` b
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-ast
 ./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-mlir
 ./build/tools/zc/zc examples/vector_masked_store_gt.zc --emit-riscv-asm
@@ -233,7 +233,7 @@ validation, and QEMU runtime correctness validation.
 Manual visible QEMU demo for `matrix_multiply`:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply.zc --emit-riscv-asm > /tmp/matrix_multiply.s
 riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d /tmp/matrix_multiply.s test/qemu/matrix_multiply_harness.c -o /tmp/matrix_multiply
 /home/qemu/qemu/build-riscv64-user/qemu-riscv64 -cpu max /tmp/matrix_multiply
@@ -264,7 +264,7 @@ assembler/objdump, and QEMU runtime validation are covered.
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/matrix_multiply_packed_b.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
@@ -303,7 +303,7 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 The most useful manual runtime check for the newest slice is:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
 
@@ -317,7 +317,7 @@ vector memory/mask/widen demo passed n=17 store_n=31 masked_nonunit_n=31
 Phase 37A also provides a repeatable formal lowering probe:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 MLIR_BUILD=/home/zyz/mlir/build ./scripts/probe-formal-rvv-lowering.sh
 ```
 
@@ -359,7 +359,7 @@ preserve false lanes in memory.
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_masked_strided_load.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_masked_indexed_store.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
@@ -382,7 +382,7 @@ lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies tail preservation.
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_add_i8.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_select_i64_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
@@ -398,7 +398,7 @@ slices. `ptr<i8>` emits `vle8.v`/`vse8.v`; `ptr<i64>` emits
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_mul_i8.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_scale_i64.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
@@ -417,7 +417,7 @@ The implemented policy is same-SEW reduction:
 Manual validation:
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_reduce_add_i8.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_reduce_add_i64.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure

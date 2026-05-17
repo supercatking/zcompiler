@@ -57,7 +57,7 @@ ABI model for external calls or builtin side effects.
 ## Validation
 
 ```bash
-cd /home/zyz/zcomipler
+cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/print_i32.zc --emit-tokens
 ./build/tools/zc/zc examples/print_i32.zc --emit-ast
 ./build/tools/zc/zc examples/print_i32.zc --emit-riscv-asm
