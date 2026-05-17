@@ -283,6 +283,8 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 - `examples/vector_copy_i64.zc`
 - `examples/vector_mul_i8.zc`
 - `examples/vector_mul_i64.zc`
+- `examples/vector_reduce_add_i8.zc`
+- `examples/vector_reduce_add_i64.zc`
 - `examples/vector_scale_i8.zc`
 - `examples/vector_scale_i64.zc`
 - `examples/vector_select_i8_gt.zc`
@@ -308,7 +310,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 The new QEMU harness prints:
 
 ```text
-vector SEW demo n=31 i8/i16/i64 add/copy/mul/scale/select passed
+vector SEW demo n=31 i8/i16/i64 add/copy/mul/reduce/scale/select passed
 vector memory/mask/widen demo passed n=17 store_n=31 masked_nonunit_n=31
 ```
 
@@ -399,5 +401,24 @@ Manual validation:
 cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_mul_i8.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_scale_i64.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```
+
+## Phase 40B2 Capability Addendum
+
+`vector_reduce_add` now has validated `ptr<i8>` and `ptr<i64>` direct RVV slices.
+The implemented policy is same-SEW reduction:
+
+- `ptr<i8>` emits `e8`, `vle8.v`, and `vredsum.vs`; the extracted scalar is
+  returned through the current `i32` scalar slot.
+- `ptr<i64>` emits `e64`, `vle64.v`, and `vredsum.vs`; the accumulator/result
+  must be `i64`.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_reduce_add_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_reduce_add_i64.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```

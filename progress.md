@@ -2422,3 +2422,26 @@ Phase 40B1 validates `i8` and `i64` unit-stride multiply and scalar-scale slices
 under QEMU. The tested length matrix is `0, 1, 2, 3, 5, 8, 17, 31`, with tail
 elements checked for preservation. Reduction remains a separate follow-up
 because accumulator/result-width policy needs a dedicated design.
+
+## Phase 40B2: i8/i64 Unit-Stride Reduction
+
+### Execution Target
+
+Broaden `vector_reduce_add` to validated `i8` and `i64` unit-stride reduction
+slices with explicit accumulator semantics.
+
+### Execution Summary
+
+- Generalized direct-RVV `vector_reduce_add` to derive SEW from typed input
+  buffers.
+- Defined same-SEW reduction policy: `ptr<i8>` wraps in 8-bit lanes and returns
+  the extracted scalar through the current `i32` scalar slot; `ptr<i64>`
+  requires an `i64` accumulator/result.
+- Added `vector_reduce_add_i8` and `vector_reduce_add_i64` examples.
+- Added lexer/parser/codegen goldens, profile/compliance entries, and QEMU
+  runtime checks.
+
+### Execution Result
+
+Phase 40B2 validates `i8` and `i64` unit-stride reduction under QEMU. The tested
+length matrix is `0, 1, 2, 3, 5, 8, 17, 31`.

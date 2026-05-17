@@ -2004,6 +2004,20 @@ private:
     if (length.name.empty())
       return;
 
+    unsigned elementWidth = getIntegerTypeWidth(input->second.type);
+    unsigned resultWidth = getIntegerTypeWidth(resultVariable->second.type);
+    if (elementWidth == 64 && resultWidth != 64) {
+      result.addDiagnostic("vector_reduce_add for ptr<i64> requires an i64 "
+                           "accumulator/result variable");
+      return;
+    }
+    if (elementWidth != 64 && resultWidth != 32) {
+      result.addDiagnostic("vector_reduce_add for sub-i64 inputs currently "
+                           "uses an i32 accumulator/result variable");
+      return;
+    }
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
+
     std::string accumulator = nextTempRegister();
     std::string index = nextTempRegister();
     std::string vl = nextTempRegister();
@@ -2017,11 +2031,15 @@ private:
     os << loopLabel << ":\n";
     os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
-    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
-    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth
+       << ", m1, ta, ma\n";
+    if (byteShift == 0)
+      os << "  mv " << offset << ", " << index << "\n";
+    else
+      os << "  slli " << offset << ", " << index << ", " << byteShift << "\n";
     os << "  add " << inputAddress << ", " << input->second.name << ", "
        << offset << "\n";
-    os << "  vle32.v v0, 0(" << inputAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v0, 0(" << inputAddress << ")\n";
     os << "  vmv.s.x v1, " << accumulator << "\n";
     os << "  vredsum.vs v2, v0, v1\n";
     os << "  vmv.x.s " << accumulator << ", v2\n";
@@ -2029,7 +2047,8 @@ private:
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
 
-    variables[statement.getResult()] = {accumulator, "i32"};
+    variables[statement.getResult()] = {accumulator,
+                                        resultVariable->second.type};
   }
 
   void emitReturn(const ReturnStmtAST &statement) {

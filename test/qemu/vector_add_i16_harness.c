@@ -12,6 +12,8 @@ extern int vmul_i8(int8_t *c, int8_t *a, int8_t *b, int n);
 extern int vmul_i64(int64_t *c, int64_t *a, int64_t *b, int n);
 extern int vscale_i8(int8_t *out, int8_t *input, int factor, int n);
 extern int vscale_i64(int64_t *out, int64_t *input, int64_t factor, int n);
+extern int vreduce_i8(int8_t *input, int n);
+extern int64_t vreduce_i64(int64_t *input, int64_t sum, int n);
 extern int select_gt_i8(int8_t *lhs, int8_t *rhs, int8_t *true_values,
                         int8_t *false_values, int8_t *out, int n);
 extern int select_gt_i64(int64_t *lhs, int64_t *rhs, int64_t *true_values,
@@ -266,6 +268,38 @@ static int run_i64_scale_one(int n) {
   return 0;
 }
 
+static int run_i8_reduce_one(int n) {
+  int8_t input[CAPACITY];
+  int8_t expected = 0;
+
+  for (int i = 0; i < CAPACITY; ++i)
+    input[i] = wrap_i8((i % 2 == 0) ? (40 - i * 3) : (-31 + i * 2));
+  for (int i = 0; i < n; ++i)
+    expected = wrap_i8((int)expected + (int)input[i]);
+
+  int got = vreduce_i8(input, n);
+  if (got != (int)expected)
+    return 10;
+  return 0;
+}
+
+static int run_i64_reduce_one(int n) {
+  int64_t input[CAPACITY];
+  int64_t initial = -5000000000LL;
+  int64_t expected = initial;
+
+  for (int i = 0; i < CAPACITY; ++i)
+    input[i] = (i % 2 == 0) ? (int64_t)(100000000LL + i * 17)
+                            : (int64_t)(-70000000LL - i * 19);
+  for (int i = 0; i < n; ++i)
+    expected += input[i];
+
+  int64_t got = vreduce_i64(input, initial, n);
+  if (got != expected)
+    return 10;
+  return 0;
+}
+
 static int run_i8_select_one(int n) {
   int8_t lhs[CAPACITY];
   int8_t rhs[CAPACITY];
@@ -365,13 +399,20 @@ int main(void) {
     status = run_i64_scale_one(lengths[i]);
     if (status != 0)
       return 1000 + status;
-    status = run_i8_select_one(lengths[i]);
+    status = run_i8_reduce_one(lengths[i]);
     if (status != 0)
       return 1100 + status;
-    status = run_i64_select_one(lengths[i]);
+    status = run_i64_reduce_one(lengths[i]);
     if (status != 0)
       return 1200 + status;
+    status = run_i8_select_one(lengths[i]);
+    if (status != 0)
+      return 1300 + status;
+    status = run_i64_select_one(lengths[i]);
+    if (status != 0)
+      return 1400 + status;
   }
-  printf("vector SEW demo n=31 i8/i16/i64 add/copy/mul/scale/select passed\n");
+  printf("vector SEW demo n=31 i8/i16/i64 "
+         "add/copy/mul/reduce/scale/select passed\n");
   return 0;
 }

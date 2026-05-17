@@ -798,11 +798,11 @@ Completed slices:
   selection and QEMU tail checks.
 - Phase 40B1: `i8/i64` unit-stride multiply and scalar-scale slices with typed
   SEW selection and QEMU tail checks.
+- Phase 40B2: `i8/i64` unit-stride reduction slices with explicit same-SEW
+  accumulator/result policy.
 
 Next long-range phases:
 
-- Phase 40B2: design and implement typed reduction policy for `i8/i64`,
-  including accumulator/result-width semantics.
 - Phase 40C: broaden non-unit memory to more SEW values after documenting
   indexed-memory EMUL/register-group policy.
 - Phase 41A: add more widening/narrowing operations and unsigned widening variants.

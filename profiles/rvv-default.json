@@ -132,6 +132,11 @@
           32,
           64
         ],
+        "vector_reduce_add": [
+          8,
+          32,
+          64
+        ],
         "vector_select_gt": [
           8,
           32,
@@ -343,6 +348,8 @@
       "vector_mul_i64",
       "vector_scale_i8",
       "vector_scale_i64",
+      "vector_reduce_add_i8",
+      "vector_reduce_add_i64",
       "vector_select_i8_gt",
       "vector_select_i64_gt",
       "vector_strided_load",

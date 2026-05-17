@@ -131,6 +131,7 @@ The current validated unit-stride SEW matrix includes `ptr<i8>`, `ptr<i16>`,
 `ptr<i32>`, and `ptr<i64>` slices. Coverage is not uniform across every
 operation family yet: Phase 40A validates `i8/i64` add, copy, and `select_gt`;
 Phase 40B1 validates `i8/i64` multiply and scalar-scale;
+Phase 40B2 validates `i8/i64` same-SEW reduction;
 older phases validate `i16` add/widen and the broader `i32` memory/mask surface.
 Future SEW phases should continue adding one operation family at a time with
 profile, golden, objdump, host, and QEMU checks.
@@ -320,6 +321,8 @@ vector_mul c_i8, a_i8, b_i8, n;
 vector_mul c_i64, a_i64, b_i64, n;
 vector_scale out_i8, input_i8, factor, n;
 vector_scale out_i64, input_i64, factor, n;
+vector_reduce_add sum_i8, input_i8, n;
+vector_reduce_add sum_i64, input_i64, n;
 vector_select_gt out_i8, lhs_i8, rhs_i8, true_i8, false_i8, n;
 vector_select_gt out_i64, lhs_i64, rhs_i64, true_i64, false_i64, n;
 vector_strided_load out, input, stride, n;
@@ -345,6 +348,10 @@ Direct RVV/RISC-V mappings added in this iteration:
   unit-stride slices.
 - `vector_mul` and `vector_scale` choose typed `vle{SEW}.v`, `vmul.vv` or
   `vmul.vx`, and `vse{SEW}.v` for validated `i8/i32/i64` unit-stride slices.
+- `vector_reduce_add` chooses typed `vle{SEW}.v` and `vredsum.vs` for validated
+  `i8/i32/i64` unit-stride slices. `i8` uses same-SEW wrapping reduction with
+  scalar extraction into the existing `i32` source scalar slot; `i64` requires an
+  `i64` accumulator/result.
 - `vector_add_m2` emits `vsetvli ..., e16, m2, ta, ma` for the validated i16 LMUL slice.
 - `vector_add_m4` emits `vsetvli ..., e16, m4, ta, ma` for the validated i16 LMUL slice, using RVV-aligned register groups starting at `v0`, `v4`, and `v8`.
 - `vector_strided_load` emits `vlse32.v` and unit-stride output stores.

@@ -1,0 +1,4 @@
+func vreduce_i64(input: ptr<i64>, sum: i64, n: i32) -> i64 {
+  vector_reduce_add sum, input, n;
+  return sum;
+}

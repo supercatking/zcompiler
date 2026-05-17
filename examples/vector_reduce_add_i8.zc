@@ -1,0 +1,5 @@
+func vreduce_i8(input: ptr<i8>, n: i32) -> i32 {
+  let sum = 0;
+  vector_reduce_add sum, input, n;
+  return sum;
+}

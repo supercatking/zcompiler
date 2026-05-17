@@ -66,6 +66,18 @@
       ]
     },
     {
+      "area": "sew",
+      "feature": "i8_i64_unit_stride_reduction",
+      "status": "supported",
+      "phase": "40B2",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
       "area": "lmul",
       "feature": "m1",
       "status": "supported",

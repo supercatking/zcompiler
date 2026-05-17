@@ -1,0 +1,11 @@
+Module
+  Function name=vreduce_i64 return=i64
+    Params
+      Param name=input type=ptr<i64>
+      Param name=sum type=i64
+      Param name=n type=i32
+    VectorReduceAddStmt result=sum input=input
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      VariableExpr name=sum

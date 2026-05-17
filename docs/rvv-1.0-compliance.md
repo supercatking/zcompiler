@@ -39,7 +39,7 @@ Required profile fields for RVV 1.0 tracking:
 | --- | --- | --- |
 | Base target | `rv64gcv`, `lp64d` | assembler, linker, QEMU |
 | RVV spec target | RVV 1.0 profile field | JSON validation |
-| SEW | validated unit-stride `i8/i16/i32/i64` slices for add/copy/mul/scale/select coverage, plus broader `i32` memory/mask coverage and `i16` widen coverage | QEMU correctness tests |
+| SEW | validated unit-stride `i8/i16/i32/i64` slices for add/copy/mul/reduce/scale/select coverage, plus broader `i32` memory/mask coverage and `i16` widen coverage | QEMU correctness tests |
 | LMUL | `m1`, plus `i16` `m2`/`m4` vector-add slices | assembly inspection and QEMU |
 | Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads/stores, including masked strided/indexed `i32` loads/stores | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
@@ -69,7 +69,7 @@ Required profile fields for RVV 1.0 tracking:
 
 | Area | Gap | Planned phase |
 | --- | --- | --- |
-| Element widths | typed-buffer contract exists and `i8/i64` add/copy/mul/scale/select slices are validated; reductions, masks, and non-unit memory are not yet complete across every SEW | Phase 40B2/40C |
+| Element widths | typed-buffer contract exists and `i8/i64` add/copy/mul/reduce/scale/select slices are validated; masks and non-unit memory are not yet complete across every SEW | Phase 40C |
 | LMUL policy | `m2`/`m4` are validated for i16 add only; other kernels remain mostly `m1` | Phase 42A |
 | Memory forms | strided/indexed unmasked and masked loads/stores exist for `i32`; segment, FOF, and whole-register forms remain missing | Phase 47 |
 | Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
@@ -142,6 +142,8 @@ The current QEMU test covers the length set above for:
 - `vector_mul_i64`
 - `vector_scale_i8`
 - `vector_scale_i64`
+- `vector_reduce_add_i8`
+- `vector_reduce_add_i64`
 - `vector_select_i8_gt`
 - `vector_select_i64_gt`
 - `vector_strided_load`
@@ -267,3 +269,11 @@ now validated unit-stride SEW slices. They emit legal RVV 1.0 `e8`/`e64`
 configurations with matching `vle*.v`, `vmul.vv` or `vmul.vx`, and `vse*.v`.
 QEMU checks cover lengths `0, 1, 2, 3, 5, 8, 17, 31` and verify tail-lane
 preservation.
+
+## Phase 40B2 Compliance Update
+
+`vector_reduce_add_i8` and `vector_reduce_add_i64` are now validated
+unit-stride SEW slices. The direct backend emits legal RVV 1.0 `e8`/`e64`
+configurations with matching `vle*.v`, `vredsum.vs`, and scalar extraction.
+This is a same-SEW reduction policy, not a widening reduction policy. QEMU checks
+cover lengths `0, 1, 2, 3, 5, 8, 17, 31`.

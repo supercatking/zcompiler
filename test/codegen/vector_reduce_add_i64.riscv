@@ -1,0 +1,21 @@
+  .option nopic
+  .text
+  .globl vreduce_i64
+vreduce_i64:
+  mv t0, a1
+  li t1, 0
+.Lvector_reduce_add.0:
+  bgeu t1, a2, .Lvector_reduce_add_end.1
+  sub t2, a2, t1
+  vsetvli t2, t2, e64, m1, ta, ma
+  slli t3, t1, 3
+  add t4, a0, t3
+  vle64.v v0, 0(t4)
+  vmv.s.x v1, t0
+  vredsum.vs v2, v0, v1
+  vmv.x.s t0, v2
+  add t1, t1, t2
+  j .Lvector_reduce_add.0
+.Lvector_reduce_add_end.1:
+  mv a0, t0
+  ret

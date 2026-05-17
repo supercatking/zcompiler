@@ -65,6 +65,7 @@ tutorial. It currently supports:
 - Direct RVV reference assembly for vector copy, vector scale, and vector
   multiply, including validated `i8/i64` unit-stride scale and multiply slices.
 - Direct RVV reference assembly for vector reduce add.
+- Direct RVV reference assembly for same-SEW `i8/i32/i64` vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
 - Direct RVV reference assembly for strided/indexed i32 loads and stores,
   masked strided/indexed i32 loads and stores, logical mask composition, and
@@ -210,6 +211,8 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy_i64.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul_i8.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_mul_i64.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add_i8.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_reduce_add_i64.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale_i8.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_scale_i64.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_i8_gt.zc --emit-riscv-asm

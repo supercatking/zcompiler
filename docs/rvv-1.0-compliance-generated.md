@@ -28,12 +28,13 @@ Do not edit the table by hand; update the JSON and regenerate it.
 | `sew` | `i8_i16_i64` | `partial` | `32B/32C` | lexer, parser, qemu_i16, qemu_i8, qemu_i64 |
 | `sew` | `i8_i64_unit_stride_add_copy_select` | `supported` | `40A` | lexer, parser, objdump, qemu |
 | `sew` | `i8_i64_unit_stride_mul_scale` | `supported` | `40B1` | lexer, parser, objdump, qemu |
+| `sew` | `i8_i64_unit_stride_reduction` | `supported` | `40B2` | lexer, parser, objdump, qemu |
 | `target` | `rv64gcv_lp64d` | `supported` | `29A` | assembler, qemu |
 | `widening` | `widen_add` | `supported` | `36A` | objdump, qemu |
 
 ## Status Counts
 
-- `supported`: 22
+- `supported`: 23
 - `partial`: 2
 - `planned`: 0
 - `blocked`: 1
