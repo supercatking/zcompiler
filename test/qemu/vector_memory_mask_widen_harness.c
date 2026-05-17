@@ -7,6 +7,18 @@ extern int32_t vector_indexed_load_demo(int32_t *out, int32_t *input,
                                         int32_t *indices, int32_t n);
 extern int32_t vector_strided_store_demo(int32_t *base, int32_t *values,
                                          int32_t stride, int32_t n);
+extern int32_t vector_strided_load_i8_demo(int8_t *out, int8_t *input,
+                                           int32_t stride, int32_t n);
+extern int32_t vector_strided_load_i16_demo(int16_t *out, int16_t *input,
+                                            int32_t stride, int32_t n);
+extern int32_t vector_strided_load_i64_demo(int64_t *out, int64_t *input,
+                                            int32_t stride, int32_t n);
+extern int32_t vector_strided_store_i8_demo(int8_t *base, int8_t *values,
+                                            int32_t stride, int32_t n);
+extern int32_t vector_strided_store_i16_demo(int16_t *base, int16_t *values,
+                                             int32_t stride, int32_t n);
+extern int32_t vector_strided_store_i64_demo(int64_t *base, int64_t *values,
+                                             int32_t stride, int32_t n);
 extern int32_t vector_indexed_store_demo(int32_t *base, int32_t *values,
                                          int32_t *indices, int32_t n);
 extern int32_t vector_masked_strided_load_demo(int32_t *out, int32_t *input,
@@ -45,9 +57,159 @@ static int check_i32(const char *name, const int32_t *got,
   return 0;
 }
 
+static int check_i8(const char *name, const int8_t *got, const int8_t *expected,
+                    int n) {
+  for (int i = 0; i < n; ++i) {
+    if (got[i] != expected[i]) {
+      fprintf(stderr, "%s mismatch at %d: got %d expected %d\n", name, i,
+              (int)got[i], (int)expected[i]);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static int check_i16(const char *name, const int16_t *got,
+                     const int16_t *expected, int n) {
+  for (int i = 0; i < n; ++i) {
+    if (got[i] != expected[i]) {
+      fprintf(stderr, "%s mismatch at %d: got %d expected %d\n", name, i,
+              (int)got[i], (int)expected[i]);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static int check_i64(const char *name, const int64_t *got,
+                     const int64_t *expected, int n) {
+  for (int i = 0; i < n; ++i) {
+    if (got[i] != expected[i]) {
+      fprintf(stderr, "%s mismatch at %d: got %lld expected %lld\n", name, i,
+              (long long)got[i], (long long)expected[i]);
+      return 1;
+    }
+  }
+  return 0;
+}
+
 enum { STORE_N = 31, STORE_CAPACITY = 128 };
 
 static int mask_true(int32_t lhs, int32_t rhs) { return lhs > rhs; }
+
+static int run_strided_load_i8_case(int n) {
+  int8_t input[STORE_CAPACITY];
+  int8_t out[STORE_N];
+  int8_t expected[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i)
+    input[i] = (int8_t)(100 - i * 3);
+  for (int i = 0; i < STORE_N; ++i) {
+    out[i] = (int8_t)(-40 - i);
+    expected[i] = out[i];
+  }
+  for (int i = 0; i < n; ++i)
+    expected[i] = input[i * stride];
+
+  if (vector_strided_load_i8_demo(out, input, stride, n) != 0)
+    return 1;
+  return check_i8("vector_strided_load_i8", out, expected, STORE_N);
+}
+
+static int run_strided_load_i16_case(int n) {
+  int16_t input[STORE_CAPACITY];
+  int16_t out[STORE_N];
+  int16_t expected[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i)
+    input[i] = (int16_t)(30000 - i * 17);
+  for (int i = 0; i < STORE_N; ++i) {
+    out[i] = (int16_t)(-12000 - i);
+    expected[i] = out[i];
+  }
+  for (int i = 0; i < n; ++i)
+    expected[i] = input[i * stride];
+
+  if (vector_strided_load_i16_demo(out, input, stride, n) != 0)
+    return 1;
+  return check_i16("vector_strided_load_i16", out, expected, STORE_N);
+}
+
+static int run_strided_load_i64_case(int n) {
+  int64_t input[STORE_CAPACITY];
+  int64_t out[STORE_N];
+  int64_t expected[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i)
+    input[i] = 90000000000LL + i * 101;
+  for (int i = 0; i < STORE_N; ++i) {
+    out[i] = -91000000000LL - i;
+    expected[i] = out[i];
+  }
+  for (int i = 0; i < n; ++i)
+    expected[i] = input[i * stride];
+
+  if (vector_strided_load_i64_demo(out, input, stride, n) != 0)
+    return 1;
+  return check_i64("vector_strided_load_i64", out, expected, STORE_N);
+}
+
+static int run_strided_store_i8_case(int n) {
+  int8_t base[STORE_CAPACITY];
+  int8_t expected[STORE_CAPACITY];
+  int8_t values[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i) {
+    base[i] = (int8_t)(-90 + i);
+    expected[i] = base[i];
+  }
+  for (int i = 0; i < STORE_N; ++i)
+    values[i] = (int8_t)(70 - i * 5);
+  for (int i = 0; i < n; ++i)
+    expected[i * stride] = values[i];
+
+  if (vector_strided_store_i8_demo(base, values, stride, n) != 0)
+    return 1;
+  return check_i8("vector_strided_store_i8", base, expected, STORE_CAPACITY);
+}
+
+static int run_strided_store_i16_case(int n) {
+  int16_t base[STORE_CAPACITY];
+  int16_t expected[STORE_CAPACITY];
+  int16_t values[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i) {
+    base[i] = (int16_t)(-20000 + i * 3);
+    expected[i] = base[i];
+  }
+  for (int i = 0; i < STORE_N; ++i)
+    values[i] = (int16_t)(15000 - i * 29);
+  for (int i = 0; i < n; ++i)
+    expected[i * stride] = values[i];
+
+  if (vector_strided_store_i16_demo(base, values, stride, n) != 0)
+    return 1;
+  return check_i16("vector_strided_store_i16", base, expected, STORE_CAPACITY);
+}
+
+static int run_strided_store_i64_case(int n) {
+  int64_t base[STORE_CAPACITY];
+  int64_t expected[STORE_CAPACITY];
+  int64_t values[STORE_N];
+  int32_t stride = 3;
+  for (int i = 0; i < STORE_CAPACITY; ++i) {
+    base[i] = -300000000000LL - i;
+    expected[i] = base[i];
+  }
+  for (int i = 0; i < STORE_N; ++i)
+    values[i] = 400000000000LL + i * 31;
+  for (int i = 0; i < n; ++i)
+    expected[i * stride] = values[i];
+
+  if (vector_strided_store_i64_demo(base, values, stride, n) != 0)
+    return 1;
+  return check_i64("vector_strided_store_i64", base, expected, STORE_CAPACITY);
+}
 
 static int run_strided_store_case(int n) {
   int32_t base[STORE_CAPACITY];
@@ -223,6 +385,18 @@ int main(void) {
       return 50 + i;
     if (run_masked_indexed_store_case(store_lengths[i]))
       return 60 + i;
+    if (run_strided_load_i8_case(store_lengths[i]))
+      return 70 + i;
+    if (run_strided_load_i16_case(store_lengths[i]))
+      return 80 + i;
+    if (run_strided_load_i64_case(store_lengths[i]))
+      return 90 + i;
+    if (run_strided_store_i8_case(store_lengths[i]))
+      return 100 + i;
+    if (run_strided_store_i16_case(store_lengths[i]))
+      return 110 + i;
+    if (run_strided_store_i64_case(store_lengths[i]))
+      return 120 + i;
   }
 
   int32_t strided_input[80];
@@ -282,7 +456,7 @@ int main(void) {
     return 4;
 
   printf("vector memory/mask/widen demo passed n=%d store_n=%d "
-         "masked_nonunit_n=%d\n",
-         N, STORE_N, STORE_N);
+         "masked_nonunit_n=%d strided_sew_n=%d\n",
+         N, STORE_N, STORE_N, STORE_N);
   return 0;
 }

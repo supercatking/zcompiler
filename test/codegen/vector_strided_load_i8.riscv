@@ -1,0 +1,22 @@
+  .option nopic
+  .text
+  .globl vector_strided_load_i8_demo
+vector_strided_load_i8_demo:
+  li t0, 0
+.Lvector_strided_load.0:
+  bgeu t0, a3, .Lvector_strided_load_end.1
+  sub t1, a3, t0
+  vsetvli t1, t1, e8, m1, ta, ma
+  mv t2, t0
+  mv t4, a2
+  mul t3, t0, a2
+  add t5, a1, t3
+  add t6, a0, t2
+  vlse8.v v0, (t5), t4
+  vse8.v v0, 0(t6)
+  add t0, t0, t1
+  j .Lvector_strided_load.0
+.Lvector_strided_load_end.1:
+  li t0, 0
+  mv a0, t0
+  ret

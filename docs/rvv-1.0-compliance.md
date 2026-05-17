@@ -277,3 +277,16 @@ unit-stride SEW slices. The direct backend emits legal RVV 1.0 `e8`/`e64`
 configurations with matching `vle*.v`, `vredsum.vs`, and scalar extraction.
 This is a same-SEW reduction policy, not a widening reduction policy. QEMU checks
 cover lengths `0, 1, 2, 3, 5, 8, 17, 31`.
+
+## Phase 40C1 Compliance Update
+
+The current RVV 1.0-compatible subset now includes typed unmasked strided memory
+for `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, and `ptr<i64>`. The direct backend emits
+legal RVV 1.0 `vlse{SEW}.v` and `vsse{SEW}.v` instructions under `m1, ta, ma`,
+with source strides counted in elements and converted to byte strides during
+lowering. Runtime validation covers lengths `0, 1, 2, 3, 5, 8, 17, 31` under
+QEMU.
+
+Current memory gap after this phase: indexed and masked non-unit memory remain
+validated only for the `i32` memory subset; segment, fault-only-first, and
+whole-register memory forms are still planned work.

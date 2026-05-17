@@ -1,0 +1,4 @@
+func vector_strided_store_i16_demo(base: ptr<i16>, values: ptr<i16>, stride: i32, n: i32) -> i32 {
+  vector_strided_store base, values, stride, n;
+  return 0;
+}

@@ -809,3 +809,26 @@ Next long-range phases:
 - Phase 42A: introduce a reusable RVV lowering helper layer so direct assembly emitters stop duplicating loop skeletons.
 - Phase 43A: build or select a same-version LLVM/MLIR toolchain with RISC-V target enabled, then rerun Phase 37A until formal RVV assembly is produced.
 - Phase 44A: add architecture-level RVV compliance tests beyond QEMU smoke checks, including disassembly legality checks per instruction family.
+
+## Phase 40C1: Typed Strided Memory SEW
+
+Goal: broaden unmasked strided memory to the full currently tracked integer SEW
+set without changing source syntax.
+
+Completed slices:
+
+- `vector_strided_load` validated for `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, and
+  `ptr<i64>`.
+- `vector_strided_store` validated for `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, and
+  `ptr<i64>`.
+- Direct RVV lowering now emits `vlse{SEW}.v` and `vsse{SEW}.v` from typed buffer
+  width.
+- QEMU checks cover touched lanes, untouched lanes, and tail preservation for
+  lengths `0, 1, 2, 3, 5, 8, 17, 31`.
+
+Next slices:
+
+- Phase 40C2: document indexed-memory EMUL/register policy and broaden indexed
+  load/store beyond the current `i32` forms.
+- Phase 40C3: decide whether masked non-unit memory should be broadened by SEW
+  before or after reusable RVV lowering helpers land.

@@ -1,0 +1,14 @@
+Module
+  Function name=vector_strided_store_i8_demo return=i32
+    Params
+      Param name=base type=ptr<i8>
+      Param name=values type=ptr<i8>
+      Param name=stride type=i32
+      Param name=n type=i32
+    VectorStridedStoreStmt base=base values=values
+      Stride
+        VariableExpr name=stride
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

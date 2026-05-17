@@ -214,6 +214,18 @@
       ]
     },
     {
+      "area": "memory",
+      "feature": "typed_strided_load_store_i8_i16_i64",
+      "status": "supported",
+      "phase": "40C1",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
       "area": "integer",
       "feature": "add_sub_mul",
       "status": "supported",

@@ -975,9 +975,10 @@ private:
       result.addDiagnostic("unknown buffer in vector_strided_store statement");
       return;
     }
-    if (base->second.type != "ptr<i32>" || values->second.type != "ptr<i32>") {
+    unsigned elementWidth = getIntegerTypeWidth(base->second.type);
+    if (getIntegerTypeWidth(values->second.type) != elementWidth) {
       result.addDiagnostic(
-          "vector_strided_store currently requires ptr<i32> data buffers");
+          "vector_strided_store requires matching element widths");
       return;
     }
 
@@ -986,6 +987,7 @@ private:
     if (stride.name.empty() || length.name.empty())
       return;
 
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
     std::string index = nextTempRegister();
     std::string vl = nextTempRegister();
     std::string valuesOffset = nextTempRegister();
@@ -1000,18 +1002,29 @@ private:
     os << loopLabel << ":\n";
     os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
-    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
-    os << "  slli " << valuesOffset << ", " << index << ", 2\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth
+       << ", m1, ta, ma\n";
+    if (byteShift == 0) {
+      os << "  mv " << valuesOffset << ", " << index << "\n";
+      os << "  mv " << byteStride << ", " << stride.name << "\n";
+    } else {
+      os << "  slli " << valuesOffset << ", " << index << ", " << byteShift
+         << "\n";
+      os << "  slli " << byteStride << ", " << stride.name << ", " << byteShift
+         << "\n";
+    }
     os << "  mul " << baseOffset << ", " << index << ", " << stride.name
        << "\n";
-    os << "  slli " << baseOffset << ", " << baseOffset << ", 2\n";
-    os << "  slli " << byteStride << ", " << stride.name << ", 2\n";
+    if (byteShift != 0)
+      os << "  slli " << baseOffset << ", " << baseOffset << ", " << byteShift
+         << "\n";
     os << "  add " << valuesAddress << ", " << values->second.name << ", "
        << valuesOffset << "\n";
     os << "  add " << baseAddress << ", " << base->second.name << ", "
        << baseOffset << "\n";
-    os << "  vle32.v v0, 0(" << valuesAddress << ")\n";
-    os << "  vsse32.v v0, (" << baseAddress << "), " << byteStride << "\n";
+    os << "  vle" << elementWidth << ".v v0, 0(" << valuesAddress << ")\n";
+    os << "  vsse" << elementWidth << ".v v0, (" << baseAddress << "), "
+       << byteStride << "\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";

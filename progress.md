@@ -2445,3 +2445,34 @@ slices with explicit accumulator semantics.
 
 Phase 40B2 validates `i8` and `i64` unit-stride reduction under QEMU. The tested
 length matrix is `0, 1, 2, 3, 5, 8, 17, 31`.
+
+## Phase 40C1: Typed Strided Memory SEW
+
+### Execution Target
+
+Broaden unmasked strided RVV memory from the original `i32` slice to validated
+`i8`, `i16`, and `i64` typed-buffer slices while preserving the existing `i32`
+behavior.
+
+### Execution Summary
+
+- Generalized direct-RVV `vector_strided_store` to derive SEW from typed buffer
+  operands.
+- Reused the existing generic `vector_strided_load` path for typed load
+  validation.
+- Added `vector_strided_load_i8/i16/i64` and
+  `vector_strided_store_i8/i16/i64` examples.
+- Added lexer, parser, and RISC-V assembly goldens.
+- Added objdump checks for `vlse8/16/64.v` and `vsse8/16/64.v`.
+- Extended the QEMU memory harness to validate typed strided load/store lengths
+  `0, 1, 2, 3, 5, 8, 17, 31`.
+- Updated RVV profile and compliance matrix entries.
+
+### Execution Result
+
+Phase 40C1 validates typed strided memory for `ptr<i8>`, `ptr<i16>`,
+`ptr<i32>`, and `ptr<i64>` under the direct RVV reference backend. The source
+stride remains element-based; the backend converts it to byte stride before
+emitting `vlse{SEW}.v` or `vsse{SEW}.v`. Indexed memory for non-`i32` SEW values
+is deferred to Phase 40C2 so EMUL and register-group policy can be documented
+before implementation.

@@ -22,6 +22,7 @@ Do not edit the table by hand; update the JSON and regenerate it.
 | `memory` | `masked_strided_store` | `supported` | `39C` | lexer, parser, objdump, qemu |
 | `memory` | `strided_load` | `supported` | `34A` | objdump, qemu |
 | `memory` | `strided_store` | `supported` | `39A` | lexer, parser, objdump, qemu |
+| `memory` | `typed_strided_load_store_i8_i16_i64` | `supported` | `40C1` | lexer, parser, objdump, qemu |
 | `memory` | `unit_stride_load_store` | `supported` | `20A` | objdump, qemu |
 | `reduction` | `sum` | `supported` | `25C` | objdump, qemu |
 | `sew` | `i32_e32` | `supported` | `29A` | objdump, qemu |
@@ -34,7 +35,7 @@ Do not edit the table by hand; update the JSON and regenerate it.
 
 ## Status Counts
 
-- `supported`: 23
+- `supported`: 24
 - `partial`: 2
 - `planned`: 0
 - `blocked`: 1

@@ -422,3 +422,22 @@ cd /home/zyz/zcompiler
 ./build/tools/zc/zc examples/vector_reduce_add_i64.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```
+
+## Phase 40C1 Capability Addendum
+
+The compiler can now compile typed unmasked strided memory examples across the
+current integer SEW set:
+
+```bash
+cd /home/zyz/zcompiler
+./build/tools/zc/zc examples/vector_strided_load_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_load_i16.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_load_i64.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_store_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_store_i16.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_store_i64.zc --emit-riscv-asm
+```
+
+The generated assembly uses `vlse8/16/64.v` and `vsse8/16/64.v`; the existing
+`i32` examples continue to use `vlse32.v` and `vsse32.v`. The QEMU validation
+line now reports `strided_sew_n=31` from the memory/mask/widen harness.

@@ -87,7 +87,7 @@
       32,
       64
     ],
-    "source_memory_access": "unit-stride i32/i16 buffers, strided/indexed i32 loads and stores, masked strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
+    "source_memory_access": "unit-stride i32/i16 buffers, typed strided i8/i16/i32/i64 loads and stores, indexed i32 loads and stores, masked strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
@@ -139,6 +139,20 @@
         ],
         "vector_select_gt": [
           8,
+          32,
+          64
+        ]
+      },
+      "validated_strided_widths": {
+        "vector_strided_load": [
+          8,
+          16,
+          32,
+          64
+        ],
+        "vector_strided_store": [
+          8,
+          16,
           32,
           64
         ]
@@ -232,9 +246,29 @@
         "vector_masked_strided_load",
         "vector_masked_indexed_load",
         "vector_masked_strided_store",
-        "vector_masked_indexed_store"
+        "vector_masked_indexed_store",
+        "vector_strided_load_i8",
+        "vector_strided_load_i16",
+        "vector_strided_load_i64",
+        "vector_strided_store_i8",
+        "vector_strided_store_i16",
+        "vector_strided_store_i64"
       ],
-      "direct_rvv_policy": "vlse32.v/vsse32.v for element-strided i32 reads and writes; vluxei32.v/vsuxei32.v with i32 element indices shifted to byte offsets for indexed reads and writes; masked non-unit memory forms use the same address policy with v0.t and false-lane preservation"
+      "direct_rvv_policy": "vlse{SEW}.v/vsse{SEW}.v for element-strided i8/i16/i32/i64 reads and writes; vluxei32.v/vsuxei32.v with i32 element indices shifted to byte offsets for indexed reads and writes; masked non-unit memory forms currently use i32 address policy with v0.t and false-lane preservation",
+      "validated_strided_width_bits": {
+        "load": [
+          8,
+          16,
+          32,
+          64
+        ],
+        "store": [
+          8,
+          16,
+          32,
+          64
+        ]
+      }
     },
     "widening_operations": {
       "implemented": [
@@ -361,7 +395,13 @@
       "vector_masked_strided_store",
       "vector_masked_indexed_store",
       "vector_mask_logical",
-      "vector_widen_add_i16_i32"
+      "vector_widen_add_i16_i32",
+      "vector_strided_load_i8",
+      "vector_strided_load_i16",
+      "vector_strided_load_i64",
+      "vector_strided_store_i8",
+      "vector_strided_store_i16",
+      "vector_strided_store_i64"
     ],
     "phase39_store_tested_lengths": [
       0,
@@ -384,6 +424,16 @@
       31
     ],
     "phase40_sew_tested_lengths": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      17,
+      31
+    ],
+    "phase40c1_strided_memory_tested_lengths": [
       0,
       1,
       2,

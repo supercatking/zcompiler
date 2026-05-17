@@ -307,3 +307,15 @@ Planning documents for the accelerator direction:
 - [docs/phase30r-masked-store.md](docs/phase30r-masked-store.md)
 - [docs/phase30s-masked-load.md](docs/phase30s-masked-load.md)
 - [docs/phase31t-mma.md](docs/phase31t-mma.md)
+
+## Phase 40C1 Typed Strided Memory Quick Check
+
+The direct RVV reference backend now validates typed strided load/store slices
+for `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, and `ptr<i64>`. Useful manual commands:
+
+```bash
+cd /home/zyz/zcompiler
+./build/tools/zc/zc examples/vector_strided_load_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_strided_store_i64.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```

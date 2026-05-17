@@ -392,3 +392,20 @@ byte offsets before emitting `vlse32.v`, `vluxei32.v`, `vsse32.v`, or
 `vsuxei32.v` with `v0.t`. Masked loads explicitly merge with passthrough values
 under the active `ta, ma` policy. See
 [phase39c-masked-nonunit-memory.md](phase39c-masked-nonunit-memory.md).
+
+## Phase 40C1 Typed Strided Memory
+
+Phase 40C1 broadens unmasked strided memory to the current integer SEW set. The
+same source operations are used for all widths:
+
+```zc
+vector_strided_load out, input, stride, n;
+vector_strided_store base, values, stride, n;
+```
+
+The direct RVV reference backend derives SEW from typed buffer operands and now
+emits `vlse8.v`, `vlse16.v`, `vlse32.v`, `vlse64.v`, `vsse8.v`, `vsse16.v`,
+`vsse32.v`, and `vsse64.v` as appropriate. Stride is still source-level element
+stride; byte scaling is handled in the backend. See
+[phase40c1-strided-memory-sew.md](phase40c1-strided-memory-sew.md) for the
+focused phase note.

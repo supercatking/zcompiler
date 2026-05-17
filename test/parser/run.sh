@@ -103,7 +103,7 @@ diff -u "$source_root/test/parser/vector_masked_load_gt.ast" \
   "$tmp_dir/vector_masked_load_gt.ast"
 
 
-for example in matrix_pack_b_then_multiply vector_add_i8 vector_add_i16   vector_add_i16_m2 vector_add_i16_m4 vector_add_i64 vector_copy_i8   vector_copy_i64 vector_mul_i8 vector_mul_i64 vector_reduce_add_i8   vector_reduce_add_i64 vector_scale_i8 vector_scale_i64 vector_select_i8_gt   vector_select_i64_gt vector_strided_load vector_indexed_load vector_strided_store   vector_indexed_store vector_masked_strided_load vector_masked_indexed_load   vector_masked_strided_store vector_masked_indexed_store vector_mask_logical   vector_widen_add_i16_i32; do
+for example in matrix_pack_b_then_multiply vector_add_i8 vector_add_i16   vector_add_i16_m2 vector_add_i16_m4 vector_add_i64 vector_copy_i8   vector_copy_i64 vector_mul_i8 vector_mul_i64 vector_reduce_add_i8   vector_reduce_add_i64 vector_scale_i8 vector_scale_i64 vector_select_i8_gt   vector_select_i64_gt vector_strided_load vector_strided_load_i8   vector_strided_load_i16 vector_strided_load_i64 vector_indexed_load   vector_strided_store vector_strided_store_i8 vector_strided_store_i16   vector_strided_store_i64 vector_indexed_store vector_masked_strided_load   vector_masked_indexed_load vector_masked_strided_store   vector_masked_indexed_store vector_mask_logical vector_widen_add_i16_i32; do
   "$zc_bin" "$source_root/examples/${example}.zc" --emit-ast     > "$tmp_dir/${example}.ast"
   diff -u "$source_root/test/parser/${example}.ast"     "$tmp_dir/${example}.ast"
 done

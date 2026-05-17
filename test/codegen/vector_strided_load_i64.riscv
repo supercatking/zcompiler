@@ -1,0 +1,23 @@
+  .option nopic
+  .text
+  .globl vector_strided_load_i64_demo
+vector_strided_load_i64_demo:
+  li t0, 0
+.Lvector_strided_load.0:
+  bgeu t0, a3, .Lvector_strided_load_end.1
+  sub t1, a3, t0
+  vsetvli t1, t1, e64, m1, ta, ma
+  slli t2, t0, 3
+  slli t4, a2, 3
+  mul t3, t0, a2
+  slli t3, t3, 3
+  add t5, a1, t3
+  add t6, a0, t2
+  vlse64.v v0, (t5), t4
+  vse64.v v0, 0(t6)
+  add t0, t0, t1
+  j .Lvector_strided_load.0
+.Lvector_strided_load_end.1:
+  li t0, 0
+  mv a0, t0
+  ret

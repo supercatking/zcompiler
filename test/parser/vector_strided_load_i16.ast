@@ -1,0 +1,14 @@
+Module
+  Function name=vector_strided_load_i16_demo return=i32
+    Params
+      Param name=out type=ptr<i16>
+      Param name=input type=ptr<i16>
+      Param name=stride type=i32
+      Param name=n type=i32
+    VectorStridedLoadStmt output=out input=input
+      Stride
+        VariableExpr name=stride
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0
