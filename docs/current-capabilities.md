@@ -281,6 +281,10 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 - `examples/vector_add_i64.zc`
 - `examples/vector_copy_i8.zc`
 - `examples/vector_copy_i64.zc`
+- `examples/vector_mul_i8.zc`
+- `examples/vector_mul_i64.zc`
+- `examples/vector_scale_i8.zc`
+- `examples/vector_scale_i64.zc`
 - `examples/vector_select_i8_gt.zc`
 - `examples/vector_select_i64_gt.zc`
 - `examples/vector_strided_load.zc`
@@ -304,7 +308,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 The new QEMU harness prints:
 
 ```text
-vector SEW demo n=31 i8/i16/i64 add/copy/select passed
+vector SEW demo n=31 i8/i16/i64 add/copy/mul/scale/select passed
 vector memory/mask/widen demo passed n=17 store_n=31 masked_nonunit_n=31
 ```
 
@@ -379,5 +383,21 @@ Manual validation:
 cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_add_i8.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_select_i64_gt.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```
+
+## Phase 40B1 Capability Addendum
+
+`vector_mul` and `vector_scale` now use typed SEW selection in the direct RVV
+backend for the validated `ptr<i8>`, `ptr<i32>`, and `ptr<i64>` unit-stride
+slices. `ptr<i8>` emits `vle8.v`/`vse8.v`; `ptr<i64>` emits
+`vle64.v`/`vse64.v`; both use `vmul.vv` or `vmul.vx`.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_mul_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_scale_i64.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```

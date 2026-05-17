@@ -146,6 +146,7 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
 "$zc_bin" "$source_root/examples/vector_add_i16_m4.zc" \
   --emit-riscv-asm > "$tmp_dir/vector_add_i16_m4.s"
 for example in vector_add_i8 vector_add_i64 vector_copy_i8 vector_copy_i64 \
+  vector_mul_i8 vector_mul_i64 vector_scale_i8 vector_scale_i64 \
   vector_select_i8_gt vector_select_i64_gt; do
   "$zc_bin" "$source_root/examples/${example}.zc" \
     --emit-riscv-asm > "$tmp_dir/${example}.s"
@@ -158,6 +159,10 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/vector_add_i64.s" \
   "$tmp_dir/vector_copy_i8.s" \
   "$tmp_dir/vector_copy_i64.s" \
+  "$tmp_dir/vector_mul_i8.s" \
+  "$tmp_dir/vector_mul_i64.s" \
+  "$tmp_dir/vector_scale_i8.s" \
+  "$tmp_dir/vector_scale_i64.s" \
   "$tmp_dir/vector_select_i8_gt.s" \
   "$tmp_dir/vector_select_i64_gt.s" \
   "$source_root/test/qemu/vector_add_i16_harness.c" \

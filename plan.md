@@ -796,11 +796,13 @@ Completed slices:
   `vsse32.v`, and `vsuxei32.v` with `v0.t` plus QEMU false-lane/tail checks.
 - Phase 40A: `i8/i64` unit-stride add/copy/select slices with typed-buffer SEW
   selection and QEMU tail checks.
+- Phase 40B1: `i8/i64` unit-stride multiply and scalar-scale slices with typed
+  SEW selection and QEMU tail checks.
 
 Next long-range phases:
 
-- Phase 40B: broaden remaining unit-stride arithmetic/reduction slices to
-  `i8/i64` where semantics are documented.
+- Phase 40B2: design and implement typed reduction policy for `i8/i64`,
+  including accumulator/result-width semantics.
 - Phase 40C: broaden non-unit memory to more SEW values after documenting
   indexed-memory EMUL/register-group policy.
 - Phase 41A: add more widening/narrowing operations and unsigned widening variants.

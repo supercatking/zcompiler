@@ -2397,3 +2397,28 @@ operations.
 Phase 40A validates `i8` and `i64` unit-stride add/copy/select slices under
 QEMU. The tested length matrix is `0, 1, 2, 3, 5, 8, 17, 31`, with tail elements
 checked for preservation.
+
+## Phase 40B1: i8/i64 Unit-Stride Mul/Scale
+
+### Execution Target
+
+Broaden the validated SEW matrix for the remaining simple unit-stride
+elementwise arithmetic operations.
+
+### Execution Summary
+
+- Generalized direct-RVV `vector_mul` to derive `e8/e16/e32/e64` from typed
+  buffer operands.
+- Generalized direct-RVV `vector_scale` to derive `e8/e16/e32/e64` from typed
+  buffer operands.
+- Added `vector_mul_i8`, `vector_mul_i64`, `vector_scale_i8`, and
+  `vector_scale_i64` examples.
+- Added lexer/parser/codegen goldens, profile/compliance entries, and QEMU
+  runtime checks.
+
+### Execution Result
+
+Phase 40B1 validates `i8` and `i64` unit-stride multiply and scalar-scale slices
+under QEMU. The tested length matrix is `0, 1, 2, 3, 5, 8, 17, 31`, with tail
+elements checked for preservation. Reduction remains a separate follow-up
+because accumulator/result-width policy needs a dedicated design.

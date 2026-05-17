@@ -1,0 +1,21 @@
+  .option nopic
+  .text
+  .globl vscale_i8
+vscale_i8:
+  li t0, 0
+.Lvector_scale.0:
+  bgeu t0, a3, .Lvector_scale_end.1
+  sub t1, a3, t0
+  vsetvli t1, t1, e8, m1, ta, ma
+  mv t2, t0
+  add t3, a1, t2
+  add t4, a0, t2
+  vle8.v v0, 0(t3)
+  vmul.vx v1, v0, a2
+  vse8.v v1, 0(t4)
+  add t0, t0, t1
+  j .Lvector_scale.0
+.Lvector_scale_end.1:
+  li t5, 0
+  mv a0, t5
+  ret

@@ -1,0 +1,4 @@
+func vscale_i64(out: ptr<i64>, input: ptr<i64>, factor: i64, n: i32) -> i32 {
+  vector_scale out, input, factor, n;
+  return 0;
+}
