@@ -2372,3 +2372,28 @@ Phase 39C completes masked non-unit load/store slices for `ptr<i32>`. QEMU
 covers lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies false-lane plus tail-lane
 preservation. Segment, fault-only-first, whole-register memory, and wider SEW
 coverage remain future work.
+
+## Phase 40A: i8/i64 Unit-Stride SEW Slice
+
+### Execution Target
+
+Broaden the validated SEW matrix with `i8` and `i64` unit-stride vector
+operations.
+
+### Execution Summary
+
+- Added `vector_add_i8` and `vector_add_i64` examples.
+- Generalized direct-RVV `vector_copy` to derive `e8/e16/e32/e64` from typed
+  buffer operands.
+- Generalized direct-RVV `vector_select` to derive `e8/e16/e32/e64` from typed
+  buffer operands.
+- Added `vector_copy_i8`, `vector_copy_i64`, `vector_select_i8_gt`, and
+  `vector_select_i64_gt` examples.
+- Added lexer/parser/codegen goldens, profile/compliance entries, and QEMU
+  runtime checks.
+
+### Execution Result
+
+Phase 40A validates `i8` and `i64` unit-stride add/copy/select slices under
+QEMU. The tested length matrix is `0, 1, 2, 3, 5, 8, 17, 31`, with tail elements
+checked for preservation.

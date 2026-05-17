@@ -1,0 +1,4 @@
+func select_gt_i64(lhs: ptr<i64>, rhs: ptr<i64>, true_values: ptr<i64>, false_values: ptr<i64>, out: ptr<i64>, n: i32) -> i32 {
+  vector_select_gt out, lhs, rhs, true_values, false_values, n;
+  return 0;
+}

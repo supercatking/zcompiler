@@ -277,6 +277,12 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 - `examples/matrix_pack_b_then_multiply.zc`
 - `examples/vector_add_i16.zc`
 - `examples/vector_add_i16_m2.zc`
+- `examples/vector_add_i8.zc`
+- `examples/vector_add_i64.zc`
+- `examples/vector_copy_i8.zc`
+- `examples/vector_copy_i64.zc`
+- `examples/vector_select_i8_gt.zc`
+- `examples/vector_select_i64_gt.zc`
 - `examples/vector_strided_load.zc`
 - `examples/vector_indexed_load.zc`
 - `examples/vector_strided_store.zc`
@@ -298,6 +304,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 The new QEMU harness prints:
 
 ```text
+vector SEW demo n=31 i8/i16/i64 add/copy/select passed
 vector memory/mask/widen demo passed n=17 store_n=31 masked_nonunit_n=31
 ```
 
@@ -349,5 +356,28 @@ Manual validation:
 cd /home/zyz/zcomipler
 ./build/tools/zc/zc examples/vector_masked_strided_load.zc --emit-riscv-asm
 ./build/tools/zc/zc examples/vector_masked_indexed_store.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```
+
+## Phase 40A Capability Addendum
+
+The compiler now validates `i8` and `i64` unit-stride vector slices:
+
+```zc
+vector_add c, a, b, n;
+vector_copy out, input, n;
+vector_select_gt out, lhs, rhs, true_values, false_values, n;
+```
+
+For `ptr<i8>` the direct RVV backend emits `e8`, `vle8.v`, and `vse8.v`. For
+`ptr<i64>` it emits `e64`, `vle64.v`, and `vse64.v`. The QEMU harness checks
+lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies tail preservation.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_add_i8.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_select_i64_gt.zc --emit-riscv-asm
 ctest --test-dir build -R qemu-riscv64 --output-on-failure
 ```

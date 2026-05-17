@@ -1,0 +1,20 @@
+  .option nopic
+  .text
+  .globl vcopy_i64
+vcopy_i64:
+  li t0, 0
+.Lvector_copy.0:
+  bgeu t0, a2, .Lvector_copy_end.1
+  sub t1, a2, t0
+  vsetvli t1, t1, e64, m1, ta, ma
+  slli t2, t0, 3
+  add t3, a1, t2
+  add t4, a0, t2
+  vle64.v v0, 0(t3)
+  vse64.v v0, 0(t4)
+  add t0, t0, t1
+  j .Lvector_copy.0
+.Lvector_copy_end.1:
+  li t5, 0
+  mv a0, t5
+  ret

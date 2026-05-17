@@ -794,10 +794,15 @@ Completed slices:
 - Phase 39B: `vector_indexed_store` using `vsuxei32.v` with element-index to byte-offset lowering and QEMU validation.
 - Phase 39C: masked strided/indexed load/store using `vlse32.v`, `vluxei32.v`,
   `vsse32.v`, and `vsuxei32.v` with `v0.t` plus QEMU false-lane/tail checks.
+- Phase 40A: `i8/i64` unit-stride add/copy/select slices with typed-buffer SEW
+  selection and QEMU tail checks.
 
 Next long-range phases:
 
-- Phase 40A: broaden SEW coverage with i8/i64 arithmetic and load/store slices.
+- Phase 40B: broaden remaining unit-stride arithmetic/reduction slices to
+  `i8/i64` where semantics are documented.
+- Phase 40C: broaden non-unit memory to more SEW values after documenting
+  indexed-memory EMUL/register-group policy.
 - Phase 41A: add more widening/narrowing operations and unsigned widening variants.
 - Phase 42A: introduce a reusable RVV lowering helper layer so direct assembly emitters stop duplicating loop skeletons.
 - Phase 43A: build or select a same-version LLVM/MLIR toolchain with RISC-V target enabled, then rerun Phase 37A until formal RVV assembly is produced.

@@ -103,18 +103,36 @@ for instruction in matrix_pack_b vsetvli vle32.v vmul.vv vredsum.vs sw; do
   grep -q "$instruction" "$tmp_dir/matrix_pack_b_then_multiply.riscv"
 done
 
-for example in vector_add_i16 vector_add_i16_m2 vector_add_i16_m4   vector_strided_load vector_indexed_load vector_strided_store   vector_indexed_store vector_masked_strided_load vector_masked_indexed_load   vector_masked_strided_store vector_masked_indexed_store vector_mask_logical   vector_widen_add_i16_i32; do
+for example in vector_add_i8 vector_add_i16 vector_add_i16_m2   vector_add_i16_m4 vector_add_i64 vector_copy_i8 vector_copy_i64   vector_select_i8_gt vector_select_i64_gt vector_strided_load vector_indexed_load   vector_strided_store vector_indexed_store vector_masked_strided_load   vector_masked_indexed_load vector_masked_strided_store   vector_masked_indexed_store vector_mask_logical vector_widen_add_i16_i32; do
   "$zc_bin" "$source_root/examples/${example}.zc" --emit-riscv-asm     > "$tmp_dir/${example}.riscv"
   diff -u "$source_root/test/codegen/${example}.riscv"     "$tmp_dir/${example}.riscv"
 done
 for instruction in "e16, m1" vle16.v vse16.v vadd.vv; do
   grep -q "$instruction" "$tmp_dir/vector_add_i16.riscv"
 done
+for instruction in "e8, m1" vle8.v vse8.v vadd.vv; do
+  grep -q "$instruction" "$tmp_dir/vector_add_i8.riscv"
+done
+for instruction in "e64, m1" vle64.v vse64.v vadd.vv; do
+  grep -q "$instruction" "$tmp_dir/vector_add_i64.riscv"
+done
 for instruction in "e16, m2" vle16.v vse16.v vadd.vv; do
   grep -q "$instruction" "$tmp_dir/vector_add_i16_m2.riscv"
 done
 for instruction in "e16, m4" vle16.v vse16.v vadd.vv; do
   grep -q "$instruction" "$tmp_dir/vector_add_i16_m4.riscv"
+done
+for instruction in "e8, m1" vle8.v vse8.v; do
+  grep -q "$instruction" "$tmp_dir/vector_copy_i8.riscv"
+done
+for instruction in "e64, m1" vle64.v vse64.v; do
+  grep -q "$instruction" "$tmp_dir/vector_copy_i64.riscv"
+done
+for instruction in "e8, m1" vle8.v vse8.v vmslt.vv vmerge.vvm; do
+  grep -q "$instruction" "$tmp_dir/vector_select_i8_gt.riscv"
+done
+for instruction in "e64, m1" vle64.v vse64.v vmslt.vv vmerge.vvm; do
+  grep -q "$instruction" "$tmp_dir/vector_select_i64_gt.riscv"
 done
 for instruction in vlse32.v vse32.v; do
   grep -q "$instruction" "$tmp_dir/vector_strided_load.riscv"

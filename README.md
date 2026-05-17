@@ -43,12 +43,17 @@ tutorial. It currently supports:
 - Scalar indexed `load` / `store`.
 - Target-independent `matrix_multiply c, a, b, rows, cols, inner;` syntax for row-major `i32` MMA v1.
 - RVV-friendly `matrix_multiply_packed_b c, a, packed_b, rows, cols, inner;` syntax for column-packed `B`.
-- Target-independent `vector_add` syntax, including validated `ptr<i16>` `m1`, `m2`, and `m4` LMUL slices.
-- Target-independent `vector_copy` syntax.
+- Target-independent `vector_add` syntax, including validated `ptr<i8>`,
+  `ptr<i16>`, `ptr<i32>`, and `ptr<i64>` unit-stride slices plus `ptr<i16>`
+  `m2` and `m4` LMUL slices.
+- Target-independent `vector_copy` syntax with validated `ptr<i8>`,
+  `ptr<i32>`, and `ptr<i64>` unit-stride slices.
 - Target-independent `vector_scale` syntax.
 - Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
-- Target-independent compare/select syntax for signed and unsigned `i32` predicates.
+- Target-independent compare/select syntax for signed and unsigned predicates,
+  with validated `ptr<i8>`, `ptr<i32>`, and `ptr<i64>` `vector_select_gt`
+  slices.
 - Transient mask syntax for signed/unsigned compare predicates plus
   `vector_masked_add/sub/mul/store/load` and masked strided/indexed memory.
 - Built-in `print_i32` statement for RISC-V terminal output.
@@ -198,7 +203,13 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_add_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_store_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_load_gt.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i8.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i16_m4.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i64.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy_i8.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_copy_i64.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_i8_gt.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_select_i64_gt.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_strided_store.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_indexed_store.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_strided_load.zc --emit-riscv-asm

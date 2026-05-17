@@ -39,7 +39,7 @@ Required profile fields for RVV 1.0 tracking:
 | --- | --- | --- |
 | Base target | `rv64gcv`, `lp64d` | assembler, linker, QEMU |
 | RVV spec target | RVV 1.0 profile field | JSON validation |
-| SEW | `i32` source kernels plus validated `i16` add/widen slices | QEMU correctness tests |
+| SEW | validated unit-stride `i8/i16/i32/i64` slices for add/copy/select coverage, plus broader `i32` memory/mask coverage and `i16` widen coverage | QEMU correctness tests |
 | LMUL | `m1`, plus `i16` `m2`/`m4` vector-add slices | assembly inspection and QEMU |
 | Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads/stores, including masked strided/indexed `i32` loads/stores | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
@@ -69,7 +69,7 @@ Required profile fields for RVV 1.0 tracking:
 
 | Area | Gap | Planned phase |
 | --- | --- | --- |
-| Element widths | typed-buffer contract exists; `i16` add/widen and `i32` kernels are validated, but `i8`/`i64` remain incomplete | Phase 40A |
+| Element widths | typed-buffer contract exists and `i8/i64` add/copy/select slices are validated; remaining arithmetic, reductions, masks, and non-unit memory are not yet complete across every SEW | Phase 40B/40C |
 | LMUL policy | `m2`/`m4` are validated for i16 add only; other kernels remain mostly `m1` | Phase 42A |
 | Memory forms | strided/indexed unmasked and masked loads/stores exist for `i32`; segment, FOF, and whole-register forms remain missing | Phase 47 |
 | Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
@@ -134,6 +134,12 @@ The current QEMU test covers the length set above for:
 - `vector_add_i16`
 - `vector_add_i16_m2`
 - `vector_add_i16_m4`
+- `vector_add_i8`
+- `vector_add_i64`
+- `vector_copy_i8`
+- `vector_copy_i64`
+- `vector_select_i8_gt`
+- `vector_select_i64_gt`
 - `vector_strided_load`
 - `vector_indexed_load`
 - `vector_strided_store`
@@ -239,4 +245,13 @@ supported for the current `ptr<i32>` RVV subset. Loads use `vlse32.v` or
 `vluxei32.v` with `v0.t` plus explicit `vmerge.vvm` passthrough. Stores use
 `vsse32.v` or `vsuxei32.v` with `v0.t` so false lanes preserve existing memory.
 QEMU checks cover lengths `0, 1, 2, 3, 5, 8, 17, 31` and verify false-lane plus
+tail-lane preservation.
+
+## Phase 40A Compliance Update
+
+The validated SEW matrix now includes `i8` and `i64` unit-stride slices.
+`vector_add_i8`, `vector_add_i64`, `vector_copy_i8`, `vector_copy_i64`,
+`vector_select_i8_gt`, and `vector_select_i64_gt` emit legal RVV 1.0
+`vsetvli` configurations with `e8` or `e64` plus matching unit-stride load/store
+instructions. QEMU checks cover lengths `0, 1, 2, 3, 5, 8, 17, 31` and verify
 tail-lane preservation.

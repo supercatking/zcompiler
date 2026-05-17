@@ -127,9 +127,12 @@ Phase 29B chooses a typed-buffer-first contract for SEW expansion. Kernel names
 remain width-neutral; the pointee type of `ptr<i8>`, `ptr<i16>`, `ptr<i32>`, or
 `ptr<i64>` will drive MLIR element types and direct RVV `vsetvli` SEW selection.
 
-The current implementation still supports only `ptr<i32>` vector kernels. Future
-SEW phases should add one width at a time with profile, golden, objdump, host,
-and QEMU checks.
+The current validated unit-stride SEW matrix includes `ptr<i8>`, `ptr<i16>`,
+`ptr<i32>`, and `ptr<i64>` slices. Coverage is not uniform across every
+operation family yet: Phase 40A validates `i8/i64` add, copy, and `select_gt`;
+older phases validate `i16` add/widen and the broader `i32` memory/mask surface.
+Future SEW phases should continue adding one operation family at a time with
+profile, golden, objdump, host, and QEMU checks.
 
 ## Current Implemented Kernel Surface
 
@@ -252,7 +255,8 @@ docs/rvv-1.0-compliance.md
 
 Current committed subset:
 
-- `SEW=32` plus validated `i16` add/widen slices
+- validated unit-stride `SEW=8/16/32/64` slices for add/copy/select coverage,
+  plus broader `i32` memory/mask coverage and `i16` widen coverage
 - `LMUL=m1` plus validated `i16` `m2` and `m4` vector-add slices
 - unit-stride memory plus strided/indexed `i32` loads and stores, including
   masked non-unit forms
@@ -307,6 +311,12 @@ The source-level RVV surface now additionally includes:
 matrix_pack_b packed_b, b, cols, inner;
 vector_add_m2 c, a, b, n;
 vector_add_m4 c, a, b, n;
+vector_add c_i8, a_i8, b_i8, n;
+vector_add c_i64, a_i64, b_i64, n;
+vector_copy out_i8, input_i8, n;
+vector_copy out_i64, input_i64, n;
+vector_select_gt out_i8, lhs_i8, rhs_i8, true_i8, false_i8, n;
+vector_select_gt out_i64, lhs_i64, rhs_i64, true_i64, false_i64, n;
 vector_strided_load out, input, stride, n;
 vector_indexed_load out, input, indices, n;
 vector_strided_store base, values, stride, n;
@@ -324,7 +334,10 @@ vector_widen_add_i16_i32 out, a, b, n;
 
 Direct RVV/RISC-V mappings added in this iteration:
 
-- `vector_add` chooses `vle{SEW}.v`, `vadd.vv`, and `vse{SEW}.v` from typed pointer operands for the current validated `i16` and `i32` slices.
+- `vector_add` chooses `vle{SEW}.v`, `vadd.vv`, and `vse{SEW}.v` from typed pointer operands for the current validated `i8/i16/i32/i64` slices.
+- `vector_copy` and `vector_select_gt` now also choose `vle{SEW}.v` and
+  `vse{SEW}.v` from typed pointer operands for the validated `i8/i32/i64`
+  unit-stride slices.
 - `vector_add_m2` emits `vsetvli ..., e16, m2, ta, ma` for the validated i16 LMUL slice.
 - `vector_add_m4` emits `vsetvli ..., e16, m4, ta, ma` for the validated i16 LMUL slice, using RVV-aligned register groups starting at `v0`, `v4`, and `v8`.
 - `vector_strided_load` emits `vlse32.v` and unit-stride output stores.

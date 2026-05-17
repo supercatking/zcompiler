@@ -1,0 +1,4 @@
+func vadd_i64(c: ptr<i64>, a: ptr<i64>, b: ptr<i64>, n: i32) -> i32 {
+  vector_add c, a, b, n;
+  return 0;
+}

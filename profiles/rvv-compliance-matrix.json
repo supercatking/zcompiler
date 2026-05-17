@@ -36,7 +36,21 @@
       "validation": [
         "lexer",
         "parser",
-        "qemu_i16"
+        "qemu_i16",
+        "qemu_i8",
+        "qemu_i64"
+      ]
+    },
+    {
+      "area": "sew",
+      "feature": "i8_i64_unit_stride_add_copy_select",
+      "status": "supported",
+      "phase": "40A",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
       ]
     },
     {

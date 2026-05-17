@@ -1,0 +1,4 @@
+func vcopy_i64(out: ptr<i64>, input: ptr<i64>, n: i32) -> i32 {
+  vector_copy out, input, n;
+  return 0;
+}

@@ -1,0 +1,12 @@
+Module
+  Function name=vadd_i8 return=i32
+    Params
+      Param name=c type=ptr<i8>
+      Param name=a type=ptr<i8>
+      Param name=b type=ptr<i8>
+      Param name=n type=i32
+    VectorAddStmt output=c lhs=a rhs=b lmul=m1
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

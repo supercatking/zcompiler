@@ -25,13 +25,14 @@ Do not edit the table by hand; update the JSON and regenerate it.
 | `memory` | `unit_stride_load_store` | `supported` | `20A` | objdump, qemu |
 | `reduction` | `sum` | `supported` | `25C` | objdump, qemu |
 | `sew` | `i32_e32` | `supported` | `29A` | objdump, qemu |
-| `sew` | `i8_i16_i64` | `partial` | `32B/32C` | lexer, parser, qemu_i16 |
+| `sew` | `i8_i16_i64` | `partial` | `32B/32C` | lexer, parser, qemu_i16, qemu_i8, qemu_i64 |
+| `sew` | `i8_i64_unit_stride_add_copy_select` | `supported` | `40A` | lexer, parser, objdump, qemu |
 | `target` | `rv64gcv_lp64d` | `supported` | `29A` | assembler, qemu |
 | `widening` | `widen_add` | `supported` | `36A` | objdump, qemu |
 
 ## Status Counts
 
-- `supported`: 20
+- `supported`: 21
 - `partial`: 2
 - `planned`: 0
 - `blocked`: 1

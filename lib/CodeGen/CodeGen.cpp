@@ -1088,6 +1088,13 @@ private:
     if (length.name.empty())
       return;
 
+    unsigned elementWidth = getIntegerTypeWidth(output->second.type);
+    if (getIntegerTypeWidth(input->second.type) != elementWidth) {
+      result.addDiagnostic("vector_copy requires matching element widths");
+      return;
+    }
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
+
     std::string index = nextTempRegister();
     std::string vl = nextTempRegister();
     std::string offset = nextTempRegister();
@@ -1100,14 +1107,18 @@ private:
     os << loopLabel << ":\n";
     os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
-    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
-    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth
+       << ", m1, ta, ma\n";
+    if (byteShift == 0)
+      os << "  mv " << offset << ", " << index << "\n";
+    else
+      os << "  slli " << offset << ", " << index << ", " << byteShift << "\n";
     os << "  add " << inputAddress << ", " << input->second.name << ", "
        << offset << "\n";
     os << "  add " << outputAddress << ", " << output->second.name << ", "
        << offset << "\n";
-    os << "  vle32.v v0, 0(" << inputAddress << ")\n";
-    os << "  vse32.v v0, 0(" << outputAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v0, 0(" << inputAddress << ")\n";
+    os << "  vse" << elementWidth << ".v v0, 0(" << outputAddress << ")\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";
@@ -1368,6 +1379,16 @@ private:
     if (length.name.empty())
       return;
 
+    unsigned elementWidth = getIntegerTypeWidth(output->second.type);
+    if (getIntegerTypeWidth(lhs->second.type) != elementWidth ||
+        getIntegerTypeWidth(rhs->second.type) != elementWidth ||
+        getIntegerTypeWidth(trueValues->second.type) != elementWidth ||
+        getIntegerTypeWidth(falseValues->second.type) != elementWidth) {
+      result.addDiagnostic("vector_select requires matching element widths");
+      return;
+    }
+    unsigned byteShift = getByteShiftForWidth(elementWidth);
+
     std::string index = nextTempRegister();
     std::string vl = nextTempRegister();
     std::string offset = nextTempRegister();
@@ -1384,8 +1405,12 @@ private:
     os << loopLabel << ":\n";
     os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
     os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
-    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
-    os << "  slli " << offset << ", " << index << ", 2\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e" << elementWidth
+       << ", m1, ta, ma\n";
+    if (byteShift == 0)
+      os << "  mv " << offset << ", " << index << "\n";
+    else
+      os << "  slli " << offset << ", " << index << ", " << byteShift << "\n";
     os << "  add " << lhsAddress << ", " << lhs->second.name << ", " << offset
        << "\n";
     os << "  add " << rhsAddress << ", " << rhs->second.name << ", " << offset
@@ -1394,15 +1419,15 @@ private:
        << offset << "\n";
     os << "  add " << falseAddress << ", " << falseValues->second.name << ", "
        << offset << "\n";
-    os << "  vle32.v v1, 0(" << lhsAddress << ")\n";
-    os << "  vle32.v v2, 0(" << rhsAddress << ")\n";
-    os << "  vle32.v v3, 0(" << trueAddress << ")\n";
-    os << "  vle32.v v4, 0(" << falseAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v1, 0(" << lhsAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v2, 0(" << rhsAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v3, 0(" << trueAddress << ")\n";
+    os << "  vle" << elementWidth << ".v v4, 0(" << falseAddress << ")\n";
     emitVectorSelectCompare(statement.getPredicate());
     os << "  vmerge.vvm v5, v4, v3, v0\n";
     os << "  add " << lhsAddress << ", " << output->second.name << ", "
        << offset << "\n";
-    os << "  vse32.v v5, 0(" << lhsAddress << ")\n";
+    os << "  vse" << elementWidth << ".v v5, 0(" << lhsAddress << ")\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";

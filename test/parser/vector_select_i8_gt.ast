@@ -1,0 +1,14 @@
+Module
+  Function name=select_gt_i8 return=i32
+    Params
+      Param name=lhs type=ptr<i8>
+      Param name=rhs type=ptr<i8>
+      Param name=true_values type=ptr<i8>
+      Param name=false_values type=ptr<i8>
+      Param name=out type=ptr<i8>
+      Param name=n type=i32
+    VectorSelectStmt predicate=gt output=out lhs=lhs rhs=rhs true=true_values false=false_values
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

@@ -80,10 +80,12 @@
       "vector_mask_not",
       "vector_widen_add_i16_i32"
     ],
-    "source_element_type": "typed integer buffers; production RVV kernels are i32 plus validated i16 add/widen slices",
+    "source_element_type": "typed integer buffers; production RVV kernels include i8/i16/i32/i64 unit-stride slices, with broader i32 memory/mask coverage and i16 widening slices",
     "source_element_width_bits": [
+      8,
       16,
-      32
+      32,
+      64
     ],
     "source_memory_access": "unit-stride i32/i16 buffers, strided/indexed i32 loads and stores, masked strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
     "mlir_vector_type": "vector<4xi32>",
@@ -95,8 +97,10 @@
       "strategy": "typed_buffers_first",
       "operation_names": "width-neutral",
       "current_implemented_width_bits": [
+        8,
         16,
-        32
+        32,
+        64
       ],
       "planned_width_bits": [
         8,
@@ -105,7 +109,25 @@
         64
       ],
       "length_unit": "elements",
-      "mixed_width_kernel_policy": "reject unless an operation explicitly documents widening or narrowing; vector_widen_add_i16_i32 documents i16 inputs and i32 output"
+      "mixed_width_kernel_policy": "reject unless an operation explicitly documents widening or narrowing; vector_widen_add_i16_i32 documents i16 inputs and i32 output",
+      "validated_unit_stride_widths": {
+        "vector_add": [
+          8,
+          16,
+          32,
+          64
+        ],
+        "vector_copy": [
+          8,
+          32,
+          64
+        ],
+        "vector_select_gt": [
+          8,
+          32,
+          64
+        ]
+      }
     },
     "select_predicates": {
       "signed": [
@@ -219,8 +241,10 @@
       },
       "validated_element_widths": {
         "m1": [
+          8,
           16,
-          32
+          32,
+          64
         ],
         "m2": [
           16
@@ -301,6 +325,12 @@
       "vector_add_i16",
       "vector_add_i16_m2",
       "vector_add_i16_m4",
+      "vector_add_i8",
+      "vector_add_i64",
+      "vector_copy_i8",
+      "vector_copy_i64",
+      "vector_select_i8_gt",
+      "vector_select_i64_gt",
       "vector_strided_load",
       "vector_indexed_load",
       "vector_strided_store",
@@ -323,6 +353,16 @@
       31
     ],
     "phase39_masked_nonunit_tested_lengths": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      17,
+      31
+    ],
+    "phase40_sew_tested_lengths": [
       0,
       1,
       2,

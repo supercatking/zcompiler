@@ -1,0 +1,4 @@
+func vcopy_i8(out: ptr<i8>, input: ptr<i8>, n: i32) -> i32 {
+  vector_copy out, input, n;
+  return 0;
+}

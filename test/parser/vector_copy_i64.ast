@@ -1,0 +1,11 @@
+Module
+  Function name=vcopy_i64 return=i32
+    Params
+      Param name=out type=ptr<i64>
+      Param name=input type=ptr<i64>
+      Param name=n type=i32
+    VectorCopyStmt output=out input=input
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0
