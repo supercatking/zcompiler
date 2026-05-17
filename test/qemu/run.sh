@@ -154,7 +154,9 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
 "$qemu_bin" -cpu "$qemu_cpu" "$tmp_dir/vector_add_i16"
 
 for example in vector_strided_load vector_indexed_load vector_strided_store \
-  vector_indexed_store vector_mask_logical vector_widen_add_i16_i32; do
+  vector_indexed_store vector_masked_strided_load vector_masked_indexed_load \
+  vector_masked_strided_store vector_masked_indexed_store vector_mask_logical \
+  vector_widen_add_i16_i32; do
   "$zc_bin" "$source_root/examples/${example}.zc" \
     --emit-riscv-asm > "$tmp_dir/${example}.s"
 done
@@ -163,6 +165,10 @@ riscv64-linux-gnu-gcc -static -no-pie -march=rv64gcv -mabi=lp64d \
   "$tmp_dir/vector_indexed_load.s" \
   "$tmp_dir/vector_strided_store.s" \
   "$tmp_dir/vector_indexed_store.s" \
+  "$tmp_dir/vector_masked_strided_load.s" \
+  "$tmp_dir/vector_masked_indexed_load.s" \
+  "$tmp_dir/vector_masked_strided_store.s" \
+  "$tmp_dir/vector_masked_indexed_store.s" \
   "$tmp_dir/vector_mask_logical.s" \
   "$tmp_dir/vector_widen_add_i16_i32.s" \
   "$source_root/test/qemu/vector_memory_mask_widen_harness.c" \

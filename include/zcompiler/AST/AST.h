@@ -44,6 +44,10 @@ enum class StmtKind {
   VectorMaskedBinary,
   VectorMaskedStore,
   VectorMaskedLoad,
+  VectorMaskedStridedLoad,
+  VectorMaskedIndexedLoad,
+  VectorMaskedStridedStore,
+  VectorMaskedIndexedStore,
 };
 
 enum class VectorSelectPredicate {
@@ -643,6 +647,117 @@ private:
   std::string input;
   std::string mask;
   std::string passthrough;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedStridedLoadStmtAST final : public StmtAST {
+public:
+  VectorMaskedStridedLoadStmtAST(std::string output, std::string input,
+                                 std::unique_ptr<ExprAST> stride,
+                                 std::string mask, std::string passthrough,
+                                 std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        stride(std::move(stride)), mask(std::move(mask)),
+        passthrough(std::move(passthrough)), length(std::move(length)) {}
+  StmtKind getKind() const override {
+    return StmtKind::VectorMaskedStridedLoad;
+  }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const ExprAST &getStride() const { return *stride; }
+  const std::string &getMask() const { return mask; }
+  const std::string &getPassthrough() const { return passthrough; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::unique_ptr<ExprAST> stride;
+  std::string mask;
+  std::string passthrough;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedIndexedLoadStmtAST final : public StmtAST {
+public:
+  VectorMaskedIndexedLoadStmtAST(std::string output, std::string input,
+                                 std::string indices, std::string mask,
+                                 std::string passthrough,
+                                 std::unique_ptr<ExprAST> length)
+      : output(std::move(output)), input(std::move(input)),
+        indices(std::move(indices)), mask(std::move(mask)),
+        passthrough(std::move(passthrough)), length(std::move(length)) {}
+  StmtKind getKind() const override {
+    return StmtKind::VectorMaskedIndexedLoad;
+  }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getOutput() const { return output; }
+  const std::string &getInput() const { return input; }
+  const std::string &getIndices() const { return indices; }
+  const std::string &getMask() const { return mask; }
+  const std::string &getPassthrough() const { return passthrough; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string output;
+  std::string input;
+  std::string indices;
+  std::string mask;
+  std::string passthrough;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedStridedStoreStmtAST final : public StmtAST {
+public:
+  VectorMaskedStridedStoreStmtAST(std::string base, std::string values,
+                                  std::unique_ptr<ExprAST> stride,
+                                  std::string mask,
+                                  std::unique_ptr<ExprAST> length)
+      : base(std::move(base)), values(std::move(values)),
+        stride(std::move(stride)), mask(std::move(mask)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override {
+    return StmtKind::VectorMaskedStridedStore;
+  }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBase() const { return base; }
+  const std::string &getValues() const { return values; }
+  const ExprAST &getStride() const { return *stride; }
+  const std::string &getMask() const { return mask; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string base;
+  std::string values;
+  std::unique_ptr<ExprAST> stride;
+  std::string mask;
+  std::unique_ptr<ExprAST> length;
+};
+
+class VectorMaskedIndexedStoreStmtAST final : public StmtAST {
+public:
+  VectorMaskedIndexedStoreStmtAST(std::string base, std::string values,
+                                  std::string indices, std::string mask,
+                                  std::unique_ptr<ExprAST> length)
+      : base(std::move(base)), values(std::move(values)),
+        indices(std::move(indices)), mask(std::move(mask)),
+        length(std::move(length)) {}
+  StmtKind getKind() const override {
+    return StmtKind::VectorMaskedIndexedStore;
+  }
+  void dump(llvm::raw_ostream &os, unsigned indent) const override;
+  const std::string &getBase() const { return base; }
+  const std::string &getValues() const { return values; }
+  const std::string &getIndices() const { return indices; }
+  const std::string &getMask() const { return mask; }
+  const ExprAST &getLength() const { return *length; }
+
+private:
+  std::string base;
+  std::string values;
+  std::string indices;
+  std::string mask;
   std::unique_ptr<ExprAST> length;
 };
 

@@ -313,6 +313,14 @@ Token Lexer::lexIdentifierOrKeyword() {
     kind = TokenKind::KwVectorMaskedStore;
   else if (text == "vector_masked_load")
     kind = TokenKind::KwVectorMaskedLoad;
+  else if (text == "vector_masked_strided_load")
+    kind = TokenKind::KwVectorMaskedStridedLoad;
+  else if (text == "vector_masked_indexed_load")
+    kind = TokenKind::KwVectorMaskedIndexedLoad;
+  else if (text == "vector_masked_strided_store")
+    kind = TokenKind::KwVectorMaskedStridedStore;
+  else if (text == "vector_masked_indexed_store")
+    kind = TokenKind::KwVectorMaskedIndexedStore;
 
   return {kind, text.str(), tokenLine, tokenColumn};
 }

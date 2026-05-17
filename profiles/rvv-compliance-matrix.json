@@ -128,6 +128,54 @@
       ]
     },
     {
+      "area": "memory",
+      "feature": "masked_strided_load",
+      "status": "supported",
+      "phase": "39C",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "masked_indexed_load",
+      "status": "supported",
+      "phase": "39C",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "masked_strided_store",
+      "status": "supported",
+      "phase": "39C",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
+      "area": "memory",
+      "feature": "masked_indexed_store",
+      "status": "supported",
+      "phase": "39C",
+      "validation": [
+        "lexer",
+        "parser",
+        "objdump",
+        "qemu"
+      ]
+    },
+    {
       "area": "integer",
       "feature": "add_sub_mul",
       "status": "supported",

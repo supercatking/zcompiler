@@ -279,6 +279,14 @@ std::unique_ptr<StmtAST> Parser::parseStatement() {
     return parseVectorMaskedStoreStatement();
   if (check(TokenKind::KwVectorMaskedLoad))
     return parseVectorMaskedLoadStatement();
+  if (check(TokenKind::KwVectorMaskedStridedLoad))
+    return parseVectorMaskedStridedLoadStatement();
+  if (check(TokenKind::KwVectorMaskedIndexedLoad))
+    return parseVectorMaskedIndexedLoadStatement();
+  if (check(TokenKind::KwVectorMaskedStridedStore))
+    return parseVectorMaskedStridedStoreStatement();
+  if (check(TokenKind::KwVectorMaskedIndexedStore))
+    return parseVectorMaskedIndexedStoreStatement();
   if (check(TokenKind::Identifier) && peek(1).kind == TokenKind::Equal)
     return parseAssignStatement();
   if (check(TokenKind::KwReturn))
@@ -1185,6 +1193,228 @@ std::unique_ptr<StmtAST> Parser::parseVectorMaskedLoadStatement() {
   return std::make_unique<VectorMaskedLoadStmtAST>(
       std::move(output), std::move(input), std::move(mask),
       std::move(passthrough), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedStridedLoadStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_masked_strided_load");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_load output"))
+    return nullptr;
+
+  std::string input =
+      parseName("expected input buffer in vector_masked_strided_load");
+  if (input.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_load input"))
+    return nullptr;
+
+  auto stride = parseExpression();
+  if (!stride)
+    return nullptr;
+  if (!expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_load stride"))
+    return nullptr;
+
+  std::string mask =
+      parseName("expected mask name in vector_masked_strided_load");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_load mask"))
+    return nullptr;
+
+  std::string passthrough =
+      parseName("expected passthrough buffer in vector_masked_strided_load");
+  if (passthrough.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_load passthrough"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_strided_load statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedStridedLoadStmtAST>(
+      std::move(output), std::move(input), std::move(stride), std::move(mask),
+      std::move(passthrough), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedIndexedLoadStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string output =
+      parseName("expected output buffer after vector_masked_indexed_load");
+  if (output.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_load output"))
+    return nullptr;
+
+  std::string input =
+      parseName("expected input buffer in vector_masked_indexed_load");
+  if (input.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_load input"))
+    return nullptr;
+
+  std::string indices =
+      parseName("expected index buffer in vector_masked_indexed_load");
+  if (indices.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_load indices"))
+    return nullptr;
+
+  std::string mask =
+      parseName("expected mask name in vector_masked_indexed_load");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_load mask"))
+    return nullptr;
+
+  std::string passthrough =
+      parseName("expected passthrough buffer in vector_masked_indexed_load");
+  if (passthrough.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_load passthrough"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_indexed_load statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedIndexedLoadStmtAST>(
+      std::move(output), std::move(input), std::move(indices), std::move(mask),
+      std::move(passthrough), std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedStridedStoreStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string base =
+      parseName("expected base buffer after vector_masked_strided_store");
+  if (base.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_store base"))
+    return nullptr;
+
+  std::string values =
+      parseName("expected values buffer in vector_masked_strided_store");
+  if (values.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_store values"))
+    return nullptr;
+
+  auto stride = parseExpression();
+  if (!stride)
+    return nullptr;
+  if (!expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_store stride"))
+    return nullptr;
+
+  std::string mask =
+      parseName("expected mask name in vector_masked_strided_store");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_strided_store mask"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_strided_store statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedStridedStoreStmtAST>(
+      std::move(base), std::move(values), std::move(stride), std::move(mask),
+      std::move(length));
+}
+
+std::unique_ptr<StmtAST> Parser::parseVectorMaskedIndexedStoreStatement() {
+  advance();
+
+  auto parseName = [this](StringRef diagnostic) -> std::string {
+    if (!check(TokenKind::Identifier)) {
+      reportAtCurrent(diagnostic);
+      return {};
+    }
+    return advance().lexeme;
+  };
+
+  std::string base =
+      parseName("expected base buffer after vector_masked_indexed_store");
+  if (base.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_store base"))
+    return nullptr;
+
+  std::string values =
+      parseName("expected values buffer in vector_masked_indexed_store");
+  if (values.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_store values"))
+    return nullptr;
+
+  std::string indices =
+      parseName("expected index buffer in vector_masked_indexed_store");
+  if (indices.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_store indices"))
+    return nullptr;
+
+  std::string mask =
+      parseName("expected mask name in vector_masked_indexed_store");
+  if (mask.empty() ||
+      !expect(TokenKind::Comma,
+              "expected ',' after vector_masked_indexed_store mask"))
+    return nullptr;
+
+  auto length = parseExpression();
+  if (!length)
+    return nullptr;
+
+  if (!expect(TokenKind::Semicolon,
+              "expected ';' after vector_masked_indexed_store statement"))
+    return nullptr;
+
+  return std::make_unique<VectorMaskedIndexedStoreStmtAST>(
+      std::move(base), std::move(values), std::move(indices), std::move(mask),
+      std::move(length));
 }
 
 std::unique_ptr<StmtAST> Parser::parseReturnStatement() {

@@ -63,6 +63,10 @@ private:
                                    llvm::StringRef keyword);
   std::unique_ptr<StmtAST> parseVectorMaskedStoreStatement();
   std::unique_ptr<StmtAST> parseVectorMaskedLoadStatement();
+  std::unique_ptr<StmtAST> parseVectorMaskedStridedLoadStatement();
+  std::unique_ptr<StmtAST> parseVectorMaskedIndexedLoadStatement();
+  std::unique_ptr<StmtAST> parseVectorMaskedStridedStoreStatement();
+  std::unique_ptr<StmtAST> parseVectorMaskedIndexedStoreStatement();
   std::unique_ptr<StmtAST> parseReturnStatement();
   std::unique_ptr<StmtAST> parseIfStatement();
   std::unique_ptr<StmtAST> parseWhileStatement();

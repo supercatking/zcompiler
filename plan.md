@@ -792,10 +792,11 @@ Completed slices:
 - Phase 38A: dedicated `vector_add_m4` QEMU validation plus LMUL register-group and ABI clobber documentation.
 - Phase 39A: `vector_strided_store` using `vsse32.v` with untouched-lane QEMU validation.
 - Phase 39B: `vector_indexed_store` using `vsuxei32.v` with element-index to byte-offset lowering and QEMU validation.
+- Phase 39C: masked strided/indexed load/store using `vlse32.v`, `vluxei32.v`,
+  `vsse32.v`, and `vsuxei32.v` with `v0.t` plus QEMU false-lane/tail checks.
 
 Next long-range phases:
 
-- Phase 39C: add masked strided/indexed memory forms.
 - Phase 40A: broaden SEW coverage with i8/i64 arithmetic and load/store slices.
 - Phase 41A: add more widening/narrowing operations and unsigned widening variants.
 - Phase 42A: introduce a reusable RVV lowering helper layer so direct assembly emitters stop duplicating loop skeletons.

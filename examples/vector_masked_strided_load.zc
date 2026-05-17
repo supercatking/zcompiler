@@ -1,0 +1,5 @@
+func vector_masked_strided_load_demo(out: ptr<i32>, input: ptr<i32>, mask_lhs: ptr<i32>, mask_rhs: ptr<i32>, passthrough: ptr<i32>, stride: i32, n: i32) -> i32 {
+  vector_mask_gt m0, mask_lhs, mask_rhs, n;
+  vector_masked_strided_load out, input, stride, m0, passthrough, n;
+  return 0;
+}

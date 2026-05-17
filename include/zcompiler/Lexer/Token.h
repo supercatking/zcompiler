@@ -70,6 +70,10 @@ enum class TokenKind {
   KwVectorMaskedMul,
   KwVectorMaskedStore,
   KwVectorMaskedLoad,
+  KwVectorMaskedStridedLoad,
+  KwVectorMaskedIndexedLoad,
+  KwVectorMaskedStridedStore,
+  KwVectorMaskedIndexedStore,
 
   Plus,
   Minus,

@@ -49,7 +49,8 @@ tutorial. It currently supports:
 - Target-independent `vector_mul` syntax.
 - Target-independent `vector_reduce_add` syntax.
 - Target-independent compare/select syntax for signed and unsigned `i32` predicates.
-- Transient mask syntax for signed/unsigned compare predicates plus `vector_masked_add/sub/mul/store/load`.
+- Transient mask syntax for signed/unsigned compare predicates plus
+  `vector_masked_add/sub/mul/store/load` and masked strided/indexed memory.
 - Built-in `print_i32` statement for RISC-V terminal output.
 - Masked MLIR vector lowering for vector tails.
 - MLIR emission.
@@ -60,7 +61,9 @@ tutorial. It currently supports:
   multiply.
 - Direct RVV reference assembly for vector reduce add.
 - Direct RVV reference assembly for signed/unsigned compare-select, masked add/sub/mul, masked store, and masked load slices.
-- Direct RVV reference assembly for strided/indexed i32 loads and stores, logical mask composition, and signed i16-to-i32 widening add.
+- Direct RVV reference assembly for strided/indexed i32 loads and stores,
+  masked strided/indexed i32 loads and stores, logical mask composition, and
+  signed i16-to-i32 widening add.
 - Direct scalar RISC-V assembly for `matrix_multiply` with QEMU correctness validation.
 - Direct RISC-V `matrix_pack_b` plus RVV assembly for packed-B matrix multiply using unit-stride vector dot products.
 - Scalar-vs-vector benchmark metadata for vector add.
@@ -198,6 +201,10 @@ Current RVV vector-kernel path:
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_add_i16_m4.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_strided_store.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_indexed_store.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_strided_load.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_indexed_load.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_strided_store.zc --emit-riscv-asm
+/home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/vector_masked_indexed_store.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/matrix_multiply_packed_b.zc --emit-riscv-asm
 /home/zyz/zcomipler/build/tools/zc/zc /home/zyz/zcomipler/examples/complex_vector_pipeline.zc --emit-ast

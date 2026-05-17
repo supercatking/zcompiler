@@ -1,0 +1,17 @@
+Module
+  Function name=vector_masked_indexed_store_demo return=i32
+    Params
+      Param name=base type=ptr<i32>
+      Param name=values type=ptr<i32>
+      Param name=indices type=ptr<i32>
+      Param name=mask_lhs type=ptr<i32>
+      Param name=mask_rhs type=ptr<i32>
+      Param name=n type=i32
+    VectorMaskStmt predicate=gt mask=m0 lhs=mask_lhs rhs=mask_rhs
+      Length
+        VariableExpr name=n
+    VectorMaskedIndexedStoreStmt base=base values=values indices=indices mask=m0
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

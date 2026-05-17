@@ -419,6 +419,22 @@ private:
       emitVectorMaskedLoad(
           static_cast<const VectorMaskedLoadStmtAST &>(statement));
       return;
+    case StmtKind::VectorMaskedStridedLoad:
+      emitVectorMaskedStridedLoad(
+          static_cast<const VectorMaskedStridedLoadStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskedIndexedLoad:
+      emitVectorMaskedIndexedLoad(
+          static_cast<const VectorMaskedIndexedLoadStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskedStridedStore:
+      emitVectorMaskedStridedStore(
+          static_cast<const VectorMaskedStridedStoreStmtAST &>(statement));
+      return;
+    case StmtKind::VectorMaskedIndexedStore:
+      emitVectorMaskedIndexedStore(
+          static_cast<const VectorMaskedIndexedStoreStmtAST &>(statement));
+      return;
     }
     result.addDiagnostic("unknown statement kind");
   }
@@ -1659,6 +1675,262 @@ private:
     os << "  vle32.v v4, 0(" << address1 << ")\n";
     os << "  vmerge.vvm v5, v4, v3, v0\n";
     os << "  vse32.v v5, 0(" << address2 << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void
+  emitVectorMaskedStridedLoad(const VectorMaskedStridedLoadStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_masked_strided_load text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    auto passthrough = variables.find(statement.getPassthrough());
+    if (output == variables.end() || input == variables.end() ||
+        passthrough == variables.end()) {
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_strided_load statement");
+      return;
+    }
+    if (output->second.type != "ptr<i32>" || input->second.type != "ptr<i32>" ||
+        passthrough->second.type != "ptr<i32>") {
+      result.addDiagnostic("vector_masked_strided_load currently requires "
+                           "ptr<i32> data buffers");
+      return;
+    }
+
+    EmittedValue stride = emitExpression(statement.getStride());
+    EmittedValue length = emitExpression(statement.getLength());
+    if (stride.name.empty() || length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string inputOffset = nextTempRegister();
+    std::string byteStride = nextTempRegister();
+    std::string address0 = nextTempRegister();
+    std::string address1 = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_masked_strided_load");
+    std::string endLabel = nextLabel(".Lvector_masked_strided_load_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
+
+    os << "  mul " << inputOffset << ", " << index << ", " << stride.name
+       << "\n";
+    os << "  slli " << inputOffset << ", " << inputOffset << ", 2\n";
+    os << "  slli " << byteStride << ", " << stride.name << ", 2\n";
+    os << "  add " << address0 << ", " << input->second.name << ", "
+       << inputOffset << "\n";
+    os << "  add " << address1 << ", " << passthrough->second.name << ", "
+       << offset << "\n";
+    os << "  add " << offset << ", " << output->second.name << ", " << offset
+       << "\n";
+    os << "  vlse32.v v3, (" << address0 << "), " << byteStride << ", v0.t\n";
+    os << "  vle32.v v4, 0(" << address1 << ")\n";
+    os << "  vmerge.vvm v5, v4, v3, v0\n";
+    os << "  vse32.v v5, 0(" << offset << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void
+  emitVectorMaskedIndexedLoad(const VectorMaskedIndexedLoadStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_masked_indexed_load text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto output = variables.find(statement.getOutput());
+    auto input = variables.find(statement.getInput());
+    auto indices = variables.find(statement.getIndices());
+    auto passthrough = variables.find(statement.getPassthrough());
+    if (output == variables.end() || input == variables.end() ||
+        indices == variables.end() || passthrough == variables.end()) {
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_indexed_load statement");
+      return;
+    }
+    if (output->second.type != "ptr<i32>" || input->second.type != "ptr<i32>" ||
+        indices->second.type != "ptr<i32>" ||
+        passthrough->second.type != "ptr<i32>") {
+      result.addDiagnostic(
+          "vector_masked_indexed_load currently requires ptr<i32> data and "
+          "indices");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string address0 = nextTempRegister();
+    std::string address1 = nextTempRegister();
+    std::string address2 = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_masked_indexed_load");
+    std::string endLabel = nextLabel(".Lvector_masked_indexed_load_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
+
+    os << "  add " << address0 << ", " << indices->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << passthrough->second.name << ", "
+       << offset << "\n";
+    os << "  add " << address2 << ", " << output->second.name << ", " << offset
+       << "\n";
+    os << "  vle32.v v3, 0(" << address0 << ")\n";
+    os << "  vsll.vi v3, v3, 2\n";
+    os << "  vluxei32.v v4, (" << input->second.name << "), v3, v0.t\n";
+    os << "  vle32.v v5, 0(" << address1 << ")\n";
+    os << "  vmerge.vvm v6, v5, v4, v0\n";
+    os << "  vse32.v v6, 0(" << address2 << ")\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorMaskedStridedStore(
+      const VectorMaskedStridedStoreStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_masked_strided_store text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto base = variables.find(statement.getBase());
+    auto values = variables.find(statement.getValues());
+    if (base == variables.end() || values == variables.end()) {
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_strided_store statement");
+      return;
+    }
+    if (base->second.type != "ptr<i32>" || values->second.type != "ptr<i32>") {
+      result.addDiagnostic("vector_masked_strided_store currently requires "
+                           "ptr<i32> data buffers");
+      return;
+    }
+
+    EmittedValue stride = emitExpression(statement.getStride());
+    EmittedValue length = emitExpression(statement.getLength());
+    if (stride.name.empty() || length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string baseOffset = nextTempRegister();
+    std::string byteStride = nextTempRegister();
+    std::string address0 = nextTempRegister();
+    std::string address1 = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_masked_strided_store");
+    std::string endLabel = nextLabel(".Lvector_masked_strided_store_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
+
+    os << "  mul " << baseOffset << ", " << index << ", " << stride.name
+       << "\n";
+    os << "  slli " << baseOffset << ", " << baseOffset << ", 2\n";
+    os << "  slli " << byteStride << ", " << stride.name << ", 2\n";
+    os << "  add " << address0 << ", " << values->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << base->second.name << ", "
+       << baseOffset << "\n";
+    os << "  vle32.v v3, 0(" << address0 << ")\n";
+    os << "  vsse32.v v3, (" << address1 << "), " << byteStride << ", v0.t\n";
+    os << "  add " << index << ", " << index << ", " << vl << "\n";
+    os << "  j " << loopLabel << "\n";
+    os << endLabel << ":\n";
+  }
+
+  void emitVectorMaskedIndexedStore(
+      const VectorMaskedIndexedStoreStmtAST &statement) {
+    if (dialect != TextDialect::RiscVAssembly) {
+      result.addDiagnostic("vector_masked_indexed_store text lowering is only "
+                           "available for RISC-V assembly");
+      return;
+    }
+
+    auto base = variables.find(statement.getBase());
+    auto values = variables.find(statement.getValues());
+    auto indices = variables.find(statement.getIndices());
+    if (base == variables.end() || values == variables.end() ||
+        indices == variables.end()) {
+      result.addDiagnostic(
+          "unknown buffer in vector_masked_indexed_store statement");
+      return;
+    }
+    if (base->second.type != "ptr<i32>" || values->second.type != "ptr<i32>" ||
+        indices->second.type != "ptr<i32>") {
+      result.addDiagnostic(
+          "vector_masked_indexed_store currently requires ptr<i32> data and "
+          "indices");
+      return;
+    }
+
+    EmittedValue length = emitExpression(statement.getLength());
+    if (length.name.empty())
+      return;
+
+    std::string index = nextTempRegister();
+    std::string vl = nextTempRegister();
+    std::string offset = nextTempRegister();
+    std::string address0 = nextTempRegister();
+    std::string address1 = nextTempRegister();
+    std::string loopLabel = nextLabel(".Lvector_masked_indexed_store");
+    std::string endLabel = nextLabel(".Lvector_masked_indexed_store_end");
+
+    os << "  li " << index << ", 0\n";
+    os << loopLabel << ":\n";
+    os << "  bgeu " << index << ", " << length.name << ", " << endLabel << "\n";
+    os << "  sub " << vl << ", " << length.name << ", " << index << "\n";
+    os << "  vsetvli " << vl << ", " << vl << ", e32, m1, ta, ma\n";
+    os << "  slli " << offset << ", " << index << ", 2\n";
+    if (!emitMaskIntoVectorRegister(statement.getMask(), "v0", offset, address0,
+                                    address1))
+      return;
+
+    os << "  add " << address0 << ", " << values->second.name << ", " << offset
+       << "\n";
+    os << "  add " << address1 << ", " << indices->second.name << ", " << offset
+       << "\n";
+    os << "  vle32.v v3, 0(" << address0 << ")\n";
+    os << "  vle32.v v4, 0(" << address1 << ")\n";
+    os << "  vsll.vi v4, v4, 2\n";
+    os << "  vsuxei32.v v3, (" << base->second.name << "), v4, v0.t\n";
     os << "  add " << index << ", " << index << ", " << vl << "\n";
     os << "  j " << loopLabel << "\n";
     os << endLabel << ":\n";

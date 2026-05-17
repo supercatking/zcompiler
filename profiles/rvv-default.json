@@ -70,6 +70,10 @@
       "vector_indexed_load",
       "vector_strided_store",
       "vector_indexed_store",
+      "vector_masked_strided_load",
+      "vector_masked_indexed_load",
+      "vector_masked_strided_store",
+      "vector_masked_indexed_store",
       "vector_mask_and",
       "vector_mask_or",
       "vector_mask_xor",
@@ -81,7 +85,7 @@
       16,
       32
     ],
-    "source_memory_access": "unit-stride i32/i16 buffers, strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
+    "source_memory_access": "unit-stride i32/i16 buffers, strided/indexed i32 loads and stores, masked strided/indexed i32 loads and stores, and column-packed B for matrix_multiply_packed_b",
     "mlir_vector_type": "vector<4xi32>",
     "mlir_tail_handling": "vector.create_mask plus masked transfer_read/write",
     "preferred_riscv_backend": "direct_rvv_reference_assembly",
@@ -144,7 +148,11 @@
         "vector_masked_sub",
         "vector_masked_mul",
         "vector_masked_store",
-        "vector_masked_load"
+        "vector_masked_load",
+        "vector_masked_strided_load",
+        "vector_masked_indexed_load",
+        "vector_masked_strided_store",
+        "vector_masked_indexed_store"
       ],
       "mask_source": "transient function-local vector_mask_* or vector_mask_and/or/xor/not symbol",
       "current_predicates": [
@@ -159,10 +167,14 @@
         "ugt",
         "uge"
       ],
-      "direct_rvv_policy": "v0 compare/logical mask plus masked arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory; vector_masked_load uses masked vle32.v plus vmerge.vvm passthrough because the active policy is ta, ma",
+      "direct_rvv_policy": "v0 compare/logical mask plus masked arithmetic; vector_masked_store uses predicated vse32.v with v0.t and preserves false lanes in memory; vector_masked_load uses masked vle32.v plus vmerge.vvm passthrough because the active policy is ta, ma; masked strided/indexed memory uses vlse32.v/vluxei32.v/vsse32.v/vsuxei32.v with v0.t and explicit passthrough merge for loads",
       "memory_consumers": [
         "vector_masked_load",
-        "vector_masked_store"
+        "vector_masked_store",
+        "vector_masked_strided_load",
+        "vector_masked_indexed_load",
+        "vector_masked_strided_store",
+        "vector_masked_indexed_store"
       ]
     },
     "matrix_operations": {
@@ -179,9 +191,13 @@
         "vector_strided_load",
         "vector_indexed_load",
         "vector_strided_store",
-        "vector_indexed_store"
+        "vector_indexed_store",
+        "vector_masked_strided_load",
+        "vector_masked_indexed_load",
+        "vector_masked_strided_store",
+        "vector_masked_indexed_store"
       ],
-      "direct_rvv_policy": "vlse32.v/vsse32.v for element-strided i32 reads and writes; vluxei32.v/vsuxei32.v with i32 element indices shifted to byte offsets for indexed reads and writes"
+      "direct_rvv_policy": "vlse32.v/vsse32.v for element-strided i32 reads and writes; vluxei32.v/vsuxei32.v with i32 element indices shifted to byte offsets for indexed reads and writes; masked non-unit memory forms use the same address policy with v0.t and false-lane preservation"
     },
     "widening_operations": {
       "implemented": [
@@ -289,10 +305,24 @@
       "vector_indexed_load",
       "vector_strided_store",
       "vector_indexed_store",
+      "vector_masked_strided_load",
+      "vector_masked_indexed_load",
+      "vector_masked_strided_store",
+      "vector_masked_indexed_store",
       "vector_mask_logical",
       "vector_widen_add_i16_i32"
     ],
     "phase39_store_tested_lengths": [
+      0,
+      1,
+      2,
+      3,
+      5,
+      8,
+      17,
+      31
+    ],
+    "phase39_masked_nonunit_tested_lengths": [
       0,
       1,
       2,

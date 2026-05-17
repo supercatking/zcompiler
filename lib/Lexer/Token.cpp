@@ -128,6 +128,14 @@ StringRef getTokenKindName(TokenKind kind) {
     return "kw_vector_masked_store";
   case TokenKind::KwVectorMaskedLoad:
     return "kw_vector_masked_load";
+  case TokenKind::KwVectorMaskedStridedLoad:
+    return "kw_vector_masked_strided_load";
+  case TokenKind::KwVectorMaskedIndexedLoad:
+    return "kw_vector_masked_indexed_load";
+  case TokenKind::KwVectorMaskedStridedStore:
+    return "kw_vector_masked_strided_store";
+  case TokenKind::KwVectorMaskedIndexedStore:
+    return "kw_vector_masked_indexed_store";
   case TokenKind::Plus:
     return "plus";
   case TokenKind::Minus:

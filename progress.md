@@ -2346,3 +2346,29 @@ Phase 39A/39B completes unmasked strided/indexed store slices for `ptr<i32>`.
 QEMU covers lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies untouched
 destination elements remain unchanged. Masked non-unit memory forms remain
 planned for Phase 39C.
+
+## Phase 39C: Masked Strided and Indexed Memory
+
+### Execution Target
+
+Add masked non-unit RVV memory forms for the current `ptr<i32>` subset.
+
+### Execution Summary
+
+- Added `vector_masked_strided_load out, input, stride, mask, passthrough, n;`.
+- Added `vector_masked_indexed_load out, input, indices, mask, passthrough, n;`.
+- Added `vector_masked_strided_store base, values, stride, mask, n;`.
+- Added `vector_masked_indexed_store base, values, indices, mask, n;`.
+- Lowered masked strided/indexed loads to `vlse32.v` / `vluxei32.v` with `v0.t`
+  and explicit `vmerge.vvm` passthrough.
+- Lowered masked strided/indexed stores to `vsse32.v` / `vsuxei32.v` with
+  `v0.t`.
+- Added examples, lexer/parser/codegen goldens, profile/compliance entries, and
+  QEMU checks.
+
+### Execution Result
+
+Phase 39C completes masked non-unit load/store slices for `ptr<i32>`. QEMU
+covers lengths `0, 1, 2, 3, 5, 8, 17, 31` and verifies false-lane plus tail-lane
+preservation. Segment, fault-only-first, whole-register memory, and wider SEW
+coverage remain future work.

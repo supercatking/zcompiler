@@ -333,6 +333,53 @@ void VectorMaskedLoadStmtAST::dump(raw_ostream &os, unsigned indent) const {
   length->dump(os, indent + 2);
 }
 
+void VectorMaskedStridedLoadStmtAST::dump(raw_ostream &os,
+                                          unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedStridedLoadStmt output=" << output << " input=" << input
+     << " mask=" << mask << " passthrough=" << passthrough << '\n';
+  writeIndent(os, indent + 1);
+  os << "Stride\n";
+  stride->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorMaskedIndexedLoadStmtAST::dump(raw_ostream &os,
+                                          unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedIndexedLoadStmt output=" << output << " input=" << input
+     << " indices=" << indices << " mask=" << mask
+     << " passthrough=" << passthrough << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorMaskedStridedStoreStmtAST::dump(raw_ostream &os,
+                                           unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedStridedStoreStmt base=" << base << " values=" << values
+     << " mask=" << mask << '\n';
+  writeIndent(os, indent + 1);
+  os << "Stride\n";
+  stride->dump(os, indent + 2);
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
+void VectorMaskedIndexedStoreStmtAST::dump(raw_ostream &os,
+                                           unsigned indent) const {
+  writeIndent(os, indent);
+  os << "VectorMaskedIndexedStoreStmt base=" << base << " values=" << values
+     << " indices=" << indices << " mask=" << mask << '\n';
+  writeIndent(os, indent + 1);
+  os << "Length\n";
+  length->dump(os, indent + 2);
+}
+
 void ReturnStmtAST::dump(raw_ostream &os, unsigned indent) const {
   writeIndent(os, indent);
   os << "ReturnStmt\n";

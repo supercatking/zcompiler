@@ -48,6 +48,10 @@ zc vector source syntax
 - `zc.vector_masked_mul`
 - `zc.vector_masked_store`
 - `zc.vector_masked_load`
+- `zc.vector_masked_strided_load`
+- `zc.vector_masked_indexed_load`
+- `zc.vector_masked_strided_store`
+- `zc.vector_masked_indexed_store`
 
 ## Initial RVV Assembly Goals
 
@@ -65,6 +69,8 @@ Target RVV instruction families:
 - masked arithmetic using `v0.t`
 - predicated stores using `vse32.v ..., v0.t`
 - masked loads using `vle32.v ..., v0.t` plus explicit passthrough merge
+- masked non-unit memory using `vlse32.v`, `vluxei32.v`, `vsse32.v`,
+  `vsuxei32.v`, and `v0.t`
 
 ## Validation Plan
 
@@ -160,6 +166,10 @@ vector_masked_sub out, a, b, m0, passthrough, n;
 vector_masked_mul out, a, b, m0, passthrough, n;
 vector_masked_store out, values, m0, n;
 vector_masked_load out, input, m0, passthrough, n;
+vector_masked_strided_load out, input, stride, m0, passthrough, n;
+vector_masked_indexed_load out, input, indices, m0, passthrough, n;
+vector_masked_strided_store base, values, stride, m0, n;
+vector_masked_indexed_store base, values, indices, m0, n;
 ```
 
 Current direct RVV reference mappings:
@@ -182,6 +192,16 @@ Current direct RVV reference mappings:
 - `vector_mask_*` + `vector_masked_add/sub/mul`: compare into `v0`, masked `vadd.vv` / `vsub.vv` / `vmul.vv`, `vmerge.vvm`, `vse32.v`
 - `vector_mask_*` + `vector_masked_store`: compare into `v0`, `vse32.v ..., v0.t` to preserve false lanes in memory
 - `vector_mask_*` + `vector_masked_load`: compare into `v0`, masked `vle32.v ..., v0.t`, `vmerge.vvm` passthrough, `vse32.v`
+- `vector_mask_*` + `vector_masked_strided_load`: compare into `v0`,
+  `vlse32.v ..., v0.t`, explicit `vmerge.vvm` passthrough, `vse32.v`
+- `vector_mask_*` + `vector_masked_indexed_load`: compare into `v0`, shift
+  element indices to byte offsets, `vluxei32.v ..., v0.t`, explicit
+  `vmerge.vvm` passthrough, `vse32.v`
+- `vector_mask_*` + `vector_masked_strided_store`: compare into `v0`,
+  `vsse32.v ..., v0.t` to preserve false lanes in memory
+- `vector_mask_*` + `vector_masked_indexed_store`: compare into `v0`, shift
+  element indices to byte offsets, `vsuxei32.v ..., v0.t` to preserve false
+  lanes in memory
 
 All current vector kernels use a `vsetvli` loop and keep source-level syntax
 independent from RVV instruction names.
@@ -234,7 +254,8 @@ Current committed subset:
 
 - `SEW=32` plus validated `i16` add/widen slices
 - `LMUL=m1` plus validated `i16` `m2` and `m4` vector-add slices
-- unit-stride memory plus strided/indexed `i32` loads and stores
+- unit-stride memory plus strided/indexed `i32` loads and stores, including
+  masked non-unit forms
 - `ta, ma` direct assembly policy
 - QEMU-tested lengths: `0, 1, 2, 3, 4, 5, 7, 8, 9, 16, 17`
 
@@ -290,6 +311,10 @@ vector_strided_load out, input, stride, n;
 vector_indexed_load out, input, indices, n;
 vector_strided_store base, values, stride, n;
 vector_indexed_store base, values, indices, n;
+vector_masked_strided_load out, input, stride, m0, passthrough, n;
+vector_masked_indexed_load out, input, indices, m0, passthrough, n;
+vector_masked_strided_store base, values, stride, m0, n;
+vector_masked_indexed_store base, values, indices, m0, n;
 vector_mask_and m2, m0, m1, n;
 vector_mask_or m3, m0, m1, n;
 vector_mask_xor m4, m0, m1, n;
@@ -306,6 +331,10 @@ Direct RVV/RISC-V mappings added in this iteration:
 - `vector_indexed_load` emits `vle32.v` for element indices, shifts to byte offsets, then emits `vluxei32.v`.
 - `vector_strided_store` emits `vle32.v` from contiguous values and `vsse32.v` into element-strided output.
 - `vector_indexed_store` emits `vle32.v` for values and indices, shifts element indices to byte offsets, then emits `vsuxei32.v`.
+- `vector_masked_strided_load` and `vector_masked_indexed_load` emit masked
+  non-unit loads with `v0.t` and explicit `vmerge.vvm` passthrough selection.
+- `vector_masked_strided_store` and `vector_masked_indexed_store` emit masked
+  non-unit stores with `v0.t`, preserving false lanes in memory.
 - `vector_mask_and/or/xor/not` emits RVV mask logical instructions and feeds the final mask into `v0` for masked consumers.
 - `vector_widen_add_i16_i32` emits `vle16.v`, signed `vwadd.vv`, and `vse32.v`.
 
@@ -330,5 +359,9 @@ The active RVV memory subset now includes unmasked strided and indexed stores fo
 `ptr<i32>`. Source strides and indices are element based. The direct backend
 converts them to byte offsets for `vsse32.v` and `vsuxei32.v`.
 
-Masked strided/indexed stores and masked non-unit loads remain planned for Phase
-39C.
+Phase 39C adds masked strided/indexed loads and stores for `ptr<i32>`. Source
+strides and indices remain element based; the backend converts to byte strides or
+byte offsets before emitting `vlse32.v`, `vluxei32.v`, `vsse32.v`, or
+`vsuxei32.v` with `v0.t`. Masked loads explicitly merge with passthrough values
+under the active `ta, ma` policy. See
+[phase39c-masked-nonunit-memory.md](phase39c-masked-nonunit-memory.md).

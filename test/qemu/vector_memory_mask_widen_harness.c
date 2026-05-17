@@ -9,6 +9,24 @@ extern int32_t vector_strided_store_demo(int32_t *base, int32_t *values,
                                          int32_t stride, int32_t n);
 extern int32_t vector_indexed_store_demo(int32_t *base, int32_t *values,
                                          int32_t *indices, int32_t n);
+extern int32_t vector_masked_strided_load_demo(int32_t *out, int32_t *input,
+                                               int32_t *mask_lhs,
+                                               int32_t *mask_rhs,
+                                               int32_t *passthrough,
+                                               int32_t stride, int32_t n);
+extern int32_t vector_masked_indexed_load_demo(int32_t *out, int32_t *input,
+                                               int32_t *indices,
+                                               int32_t *mask_lhs,
+                                               int32_t *mask_rhs,
+                                               int32_t *passthrough, int32_t n);
+extern int32_t vector_masked_strided_store_demo(int32_t *base, int32_t *values,
+                                                int32_t *mask_lhs,
+                                                int32_t *mask_rhs,
+                                                int32_t stride, int32_t n);
+extern int32_t vector_masked_indexed_store_demo(int32_t *base, int32_t *values,
+                                                int32_t *indices,
+                                                int32_t *mask_lhs,
+                                                int32_t *mask_rhs, int32_t n);
 extern int32_t vector_mask_logical_demo(int32_t *out, int32_t *lhs,
                                         int32_t *rhs, int32_t *x, int32_t *y,
                                         int32_t *passthrough, int32_t n);
@@ -28,6 +46,8 @@ static int check_i32(const char *name, const int32_t *got,
 }
 
 enum { STORE_N = 31, STORE_CAPACITY = 128 };
+
+static int mask_true(int32_t lhs, int32_t rhs) { return lhs > rhs; }
 
 static int run_strided_store_case(int n) {
   int32_t base[STORE_CAPACITY];
@@ -69,6 +89,122 @@ static int run_indexed_store_case(int n) {
   return check_i32("vector_indexed_store", base, expected, STORE_CAPACITY);
 }
 
+static int run_masked_strided_load_case(int n) {
+  int32_t input[STORE_CAPACITY];
+  int32_t out[STORE_N];
+  int32_t expected[STORE_N];
+  int32_t mask_lhs[STORE_N];
+  int32_t mask_rhs[STORE_N];
+  int32_t passthrough[STORE_N];
+  int32_t stride = 3;
+
+  for (int i = 0; i < STORE_CAPACITY; ++i)
+    input[i] = 3000 + i * 19;
+  for (int i = 0; i < STORE_N; ++i) {
+    out[i] = -300000 - i;
+    expected[i] = out[i];
+    mask_lhs[i] = (i % 5) + i;
+    mask_rhs[i] = (i % 3) + 3;
+    passthrough[i] = 90000 + i * 7;
+  }
+  for (int i = 0; i < n; ++i)
+    expected[i] = mask_true(mask_lhs[i], mask_rhs[i]) ? input[i * stride]
+                                                      : passthrough[i];
+
+  if (vector_masked_strided_load_demo(out, input, mask_lhs, mask_rhs,
+                                      passthrough, stride, n) != 0)
+    return 1;
+  return check_i32("vector_masked_strided_load", out, expected, STORE_N);
+}
+
+static int run_masked_indexed_load_case(int n) {
+  int32_t input[STORE_CAPACITY];
+  int32_t out[STORE_N];
+  int32_t expected[STORE_N];
+  int32_t indices[STORE_N];
+  int32_t mask_lhs[STORE_N];
+  int32_t mask_rhs[STORE_N];
+  int32_t passthrough[STORE_N];
+
+  for (int i = 0; i < STORE_CAPACITY; ++i)
+    input[i] = -4000 + i * 23;
+  for (int i = 0; i < STORE_N; ++i) {
+    out[i] = -400000 - i;
+    expected[i] = out[i];
+    indices[i] = (i * 7 + 3) % STORE_CAPACITY;
+    mask_lhs[i] = (i % 7) + 2;
+    mask_rhs[i] = (i % 4) + 4;
+    passthrough[i] = -91000 - i * 5;
+  }
+  for (int i = 0; i < n; ++i)
+    expected[i] = mask_true(mask_lhs[i], mask_rhs[i]) ? input[indices[i]]
+                                                      : passthrough[i];
+
+  if (vector_masked_indexed_load_demo(out, input, indices, mask_lhs, mask_rhs,
+                                      passthrough, n) != 0)
+    return 1;
+  return check_i32("vector_masked_indexed_load", out, expected, STORE_N);
+}
+
+static int run_masked_strided_store_case(int n) {
+  int32_t base[STORE_CAPACITY];
+  int32_t expected[STORE_CAPACITY];
+  int32_t values[STORE_N];
+  int32_t mask_lhs[STORE_N];
+  int32_t mask_rhs[STORE_N];
+  int32_t stride = 3;
+
+  for (int i = 0; i < STORE_CAPACITY; ++i) {
+    base[i] = -500000 - i;
+    expected[i] = base[i];
+  }
+  for (int i = 0; i < STORE_N; ++i) {
+    values[i] = 12000 + i * 31;
+    mask_lhs[i] = (i % 6) + i;
+    mask_rhs[i] = (i % 5) + 4;
+  }
+  for (int i = 0; i < n; ++i) {
+    if (mask_true(mask_lhs[i], mask_rhs[i]))
+      expected[i * stride] = values[i];
+  }
+
+  if (vector_masked_strided_store_demo(base, values, mask_lhs, mask_rhs, stride,
+                                       n) != 0)
+    return 1;
+  return check_i32("vector_masked_strided_store", base, expected,
+                   STORE_CAPACITY);
+}
+
+static int run_masked_indexed_store_case(int n) {
+  int32_t base[STORE_CAPACITY];
+  int32_t expected[STORE_CAPACITY];
+  int32_t values[STORE_N];
+  int32_t indices[STORE_N];
+  int32_t mask_lhs[STORE_N];
+  int32_t mask_rhs[STORE_N];
+
+  for (int i = 0; i < STORE_CAPACITY; ++i) {
+    base[i] = -600000 - i;
+    expected[i] = base[i];
+  }
+  for (int i = 0; i < STORE_N; ++i) {
+    values[i] = -13000 + i * 29;
+    indices[i] = (i * 7 + 3) % STORE_CAPACITY;
+    mask_lhs[i] = (i % 8) + 1;
+    mask_rhs[i] = (i % 3) + 5;
+  }
+  for (int i = 0; i < n; ++i) {
+    if (mask_true(mask_lhs[i], mask_rhs[i]))
+      expected[indices[i]] = values[i];
+  }
+
+  if (vector_masked_indexed_store_demo(base, values, indices, mask_lhs,
+                                       mask_rhs, n) != 0)
+    return 1;
+  return check_i32("vector_masked_indexed_store", base, expected,
+                   STORE_CAPACITY);
+}
+
 int main(void) {
   enum { N = 17 };
   int store_lengths[] = {0, 1, 2, 3, 5, 8, 17, 31};
@@ -79,6 +215,14 @@ int main(void) {
       return 10 + i;
     if (run_indexed_store_case(store_lengths[i]))
       return 20 + i;
+    if (run_masked_strided_load_case(store_lengths[i]))
+      return 30 + i;
+    if (run_masked_indexed_load_case(store_lengths[i]))
+      return 40 + i;
+    if (run_masked_strided_store_case(store_lengths[i]))
+      return 50 + i;
+    if (run_masked_indexed_store_case(store_lengths[i]))
+      return 60 + i;
   }
 
   int32_t strided_input[80];
@@ -137,6 +281,8 @@ int main(void) {
   if (check_i32("vector_widen_add_i16_i32", widen_out, widen_expected, N))
     return 4;
 
-  printf("vector memory/mask/widen demo passed n=%d store_n=%d\n", N, STORE_N);
+  printf("vector memory/mask/widen demo passed n=%d store_n=%d "
+         "masked_nonunit_n=%d\n",
+         N, STORE_N, STORE_N);
   return 0;
 }

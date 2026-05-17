@@ -1,0 +1,20 @@
+Module
+  Function name=vector_masked_strided_load_demo return=i32
+    Params
+      Param name=out type=ptr<i32>
+      Param name=input type=ptr<i32>
+      Param name=mask_lhs type=ptr<i32>
+      Param name=mask_rhs type=ptr<i32>
+      Param name=passthrough type=ptr<i32>
+      Param name=stride type=i32
+      Param name=n type=i32
+    VectorMaskStmt predicate=gt mask=m0 lhs=mask_lhs rhs=mask_rhs
+      Length
+        VariableExpr name=n
+    VectorMaskedStridedLoadStmt output=out input=input mask=m0 passthrough=passthrough
+      Stride
+        VariableExpr name=stride
+      Length
+        VariableExpr name=n
+    ReturnStmt
+      IntegerExpr value=0

@@ -217,6 +217,10 @@ private:
     case StmtKind::VectorIndexedLoad:
     case StmtKind::VectorStridedStore:
     case StmtKind::VectorIndexedStore:
+    case StmtKind::VectorMaskedStridedLoad:
+    case StmtKind::VectorMaskedIndexedLoad:
+    case StmtKind::VectorMaskedStridedStore:
+    case StmtKind::VectorMaskedIndexedStore:
       result.addDiagnostic("MLIR API generation for strided/indexed RVV memory "
                            "forms is planned after "
                            "the direct RISC-V reference slice");

@@ -41,7 +41,7 @@ Required profile fields for RVV 1.0 tracking:
 | RVV spec target | RVV 1.0 profile field | JSON validation |
 | SEW | `i32` source kernels plus validated `i16` add/widen slices | QEMU correctness tests |
 | LMUL | `m1`, plus `i16` `m2`/`m4` vector-add slices | assembly inspection and QEMU |
-| Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads and stores | QEMU correctness tests |
+| Memory access | unit-stride `i32`/`i16` buffers plus strided/indexed `i32` loads/stores, including masked strided/indexed `i32` loads/stores | QEMU correctness tests |
 | Vector length | dynamic `vsetvli` from remaining elements | tail-length QEMU tests |
 | Tail/mask policy | `ta, ma` direct assembly policy | assembly inspection |
 | Signed runtime inputs | mixed positive/negative `i32` including overflow bit patterns | QEMU |
@@ -63,6 +63,7 @@ Required profile fields for RVV 1.0 tracking:
 | Masked arithmetic predicates | `vector_mask_*` + `vector_masked_add/sub/mul` slices -> RVV compare mask, masked arithmetic, `vmerge.vvm` passthrough | objdump and QEMU |
 | Masked store | `vector_mask_*` + `vector_masked_store` -> RVV compare mask and predicated `vse32.v ..., v0.t` | objdump and QEMU |
 | Masked load | `vector_mask_*` + `vector_masked_load` -> masked `vle32.v ..., v0.t` plus `vmerge.vvm` passthrough | objdump and QEMU |
+| Masked non-unit memory | masked strided/indexed `i32` load/store forms -> `vlse32.v`, `vluxei32.v`, `vsse32.v`, `vsuxei32.v` with `v0.t` | objdump and QEMU |
 
 ## Current Gaps
 
@@ -70,7 +71,7 @@ Required profile fields for RVV 1.0 tracking:
 | --- | --- | --- |
 | Element widths | typed-buffer contract exists; `i16` add/widen and `i32` kernels are validated, but `i8`/`i64` remain incomplete | Phase 40A |
 | LMUL policy | `m2`/`m4` are validated for i16 add only; other kernels remain mostly `m1` | Phase 42A |
-| Memory forms | strided/indexed unmasked loads and stores exist; masked non-unit memory, segment, FOF, and whole-register forms remain missing | Phase 39C |
+| Memory forms | strided/indexed unmasked and masked loads/stores exist for `i32`; segment, FOF, and whole-register forms remain missing | Phase 47 |
 | Masked arithmetic | add/sub/mul slices exist; no min/max/logic/widening/saturating/floating-point masked arithmetic yet | Phase 31C |
 | Compare/select | signed and unsigned i32 select predicates are supported; reusable first-class masks exist as transient function-local compare symbols only | Phase 31D |
 | Reductions | only add reduction is implemented | Phase 31A |
@@ -137,6 +138,10 @@ The current QEMU test covers the length set above for:
 - `vector_indexed_load`
 - `vector_strided_store`
 - `vector_indexed_store`
+- `vector_masked_strided_load`
+- `vector_masked_indexed_load`
+- `vector_masked_strided_store`
+- `vector_masked_indexed_store`
 - `vector_mask_logical`
 - `vector_widen_add_i16_i32`
 
@@ -225,3 +230,13 @@ current `ptr<i32>` RVV subset. `vector_strided_store` uses legal RVV 1.0
 indices shifted to byte offsets. QEMU checks cover lengths
 `0, 1, 2, 3, 5, 8, 17, 31` and verify unselected destination elements remain
 unchanged.
+
+## Phase 39C Compliance Update
+
+`vector_masked_strided_load`, `vector_masked_indexed_load`,
+`vector_masked_strided_store`, and `vector_masked_indexed_store` are now
+supported for the current `ptr<i32>` RVV subset. Loads use `vlse32.v` or
+`vluxei32.v` with `v0.t` plus explicit `vmerge.vvm` passthrough. Stores use
+`vsse32.v` or `vsuxei32.v` with `v0.t` so false lanes preserve existing memory.
+QEMU checks cover lengths `0, 1, 2, 3, 5, 8, 17, 31` and verify false-lane plus
+tail-lane preservation.

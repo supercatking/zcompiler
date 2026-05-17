@@ -16,6 +16,10 @@ Do not edit the table by hand; update the JSON and regenerate it.
 | `matrix` | `packed_b_matmul` | `supported` | `31U` | objdump, qemu |
 | `memory` | `indexed_load` | `supported` | `34B` | objdump, qemu |
 | `memory` | `indexed_store` | `supported` | `39B` | lexer, parser, objdump, qemu |
+| `memory` | `masked_indexed_load` | `supported` | `39C` | lexer, parser, objdump, qemu |
+| `memory` | `masked_indexed_store` | `supported` | `39C` | lexer, parser, objdump, qemu |
+| `memory` | `masked_strided_load` | `supported` | `39C` | lexer, parser, objdump, qemu |
+| `memory` | `masked_strided_store` | `supported` | `39C` | lexer, parser, objdump, qemu |
 | `memory` | `strided_load` | `supported` | `34A` | objdump, qemu |
 | `memory` | `strided_store` | `supported` | `39A` | lexer, parser, objdump, qemu |
 | `memory` | `unit_stride_load_store` | `supported` | `20A` | objdump, qemu |
@@ -27,7 +31,7 @@ Do not edit the table by hand; update the JSON and regenerate it.
 
 ## Status Counts
 
-- `supported`: 16
+- `supported`: 20
 - `partial`: 2
 - `planned`: 0
 - `blocked`: 1

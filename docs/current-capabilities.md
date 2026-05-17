@@ -281,6 +281,10 @@ Additional programs now compile and run through the direct RISC-V/RVV backend:
 - `examples/vector_indexed_load.zc`
 - `examples/vector_strided_store.zc`
 - `examples/vector_indexed_store.zc`
+- `examples/vector_masked_strided_load.zc`
+- `examples/vector_masked_indexed_load.zc`
+- `examples/vector_masked_strided_store.zc`
+- `examples/vector_masked_indexed_store.zc`
 - `examples/vector_mask_logical.zc`
 - `examples/vector_widen_add_i16_i32.zc`
 
@@ -294,7 +298,7 @@ ctest --test-dir build -R qemu-riscv64 --output-on-failure
 The new QEMU harness prints:
 
 ```text
-vector memory/mask/widen demo passed n=17 store_n=31
+vector memory/mask/widen demo passed n=17 store_n=31 masked_nonunit_n=31
 ```
 
 Phase 37A also provides a repeatable formal lowering probe:
@@ -322,3 +326,28 @@ Current probe status: `blocked_at_riscv_llc`.
   QEMU.
 - Store validation checks full destination arrays so untouched and tail elements
   remain unchanged.
+
+## Phase 39C Capability Addendum
+
+Masked non-unit RVV memory is now supported for the current `ptr<i32>` subset:
+
+```zc
+vector_masked_strided_load out, input, stride, m0, passthrough, n;
+vector_masked_indexed_load out, input, indices, m0, passthrough, n;
+vector_masked_strided_store base, values, stride, m0, n;
+vector_masked_indexed_store base, values, indices, m0, n;
+```
+
+The direct RVV backend emits `vlse32.v` / `vluxei32.v` for masked non-unit loads
+and `vsse32.v` / `vsuxei32.v` for masked non-unit stores, all guarded by
+`v0.t`. Masked loads explicitly merge with passthrough values; masked stores
+preserve false lanes in memory.
+
+Manual validation:
+
+```bash
+cd /home/zyz/zcomipler
+./build/tools/zc/zc examples/vector_masked_strided_load.zc --emit-riscv-asm
+./build/tools/zc/zc examples/vector_masked_indexed_store.zc --emit-riscv-asm
+ctest --test-dir build -R qemu-riscv64 --output-on-failure
+```
